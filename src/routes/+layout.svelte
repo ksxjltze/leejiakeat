@@ -26,7 +26,7 @@
 	</main>
 
 	<footer>
-		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
+		<p>visit <a href="ksxjltze.github.io">ksxjltze.github.io</a> to see my old website</p>
 	</footer>
 </div>
 

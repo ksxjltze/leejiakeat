@@ -26,7 +26,7 @@
 	</main>
 
 	<footer>
-		<p>visit <a href="ksxjltze.github.io">ksxjltze.github.io</a> to see my old website</p>
+		<p>visit <a href="https://ksxjltze.github.io">ksxjltze.github.io</a> to see my old website</p>
 	</footer>
 </div>
 

@@ -2,23 +2,23 @@
 layout: project
 title: "Spring Booter"
 permalink: "projects/spring-booter/"
-game-engine:
+engine:
 
-start-date: 2023-06-16
-github-link: https://github.com/ksxjltze/rest-service
+date: 2023-06-16
+src: https://github.com/ksxjltze/rest-service
 description: Learning how to use Spring boot for backend development.
 
-project-icon: /images/spring-booter/spring-booter-logo.png
-icon-animation: bulge
+icon: /images/spring-booter/spring-booter-logo.png
+
 icon-scale: 1.25
 icon-radius: 100%
 
 background: /images/spring-booter/spring-booter-background.png
-text-background-color: rgba(0.0, 0.0, 0.0, 0.5)
-text-background-offset-x: 95%
-text-background-offset-y: 10%
 
-text-color: white
+
+
+
+
 ---
 
 A simple project for learning the Spring Boot framework.

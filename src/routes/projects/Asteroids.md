@@ -2,24 +2,20 @@
 layout: project
 title: "Asteroids"
 permalink: "projects/asteroids/"
-game-engine: "CProcessing"
+engine: "CProcessing"
 
-start-date: 2020-09-01
-end-date: 2020-12-01
+date: 2020-09-01
+endDate: 2020-12-01
 
-school-project: True
+academic: True
 school: DigiPen Institute of Technology Singapore
 module: Software Engineering Project 1
 
-github-link: https://github.com/ksxjltze/Asteroids
+src: https://github.com/ksxjltze/Asteroids
 description: A twist on the classic Asteroids arcade game.
 
-project-icon: /images/asteroids/asteroids-icon.png
-icon-animation: spin
+icon: /images/asteroids/asteroids-icon.png
 background: /images/asteroids/asteroids-gameplay.png
-
-text-color: white
-text-background-color: rgba(0.0, 0.0, 0.0, 0.5)
 ---
 
 Shooter game inspired by the classic arcade game of the same name.<br>

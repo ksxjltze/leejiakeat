@@ -2,23 +2,23 @@
 layout: project
 title: "Iconoclasm: Fall of the False God"
 permalink: "projects/iconoclasm/"
-game-engine: "EngineEngine"
+engine: "EngineEngine"
 
-start-date: 2022-09-01
-end-date: 2023-03-01
+date: 2022-09-01
+endDate: 2023-03-01
 
-school-project: True
+academic: True
 school: DigiPen Institute of Technology Singapore
 module: Software Engineering Project 5-6
 
 description: 3D hack-n-slash action game.
 
-project-icon: /images/iconoclasm/godkillers-team-logo.png
-icon-animation: flip
+icon: /images/iconoclasm/godkillers-team-logo.png
+
 background: /images/iconoclasm-logo.jpeg
 
-text-color: white
-text-background-color: rgba(0.0, 0.0, 0.0, 0.6)
+
+
 
 short-title: Iconoclasm
 ---

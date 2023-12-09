@@ -2,26 +2,26 @@
 layout: project
 title: "Captain Stealth"
 permalink: "projects/captainstealth/"
-game-engine: "AlphaEngine"
+engine: "AlphaEngine"
 
-start-date: 2021-01-01
-end-date: 2021-04-01
+date: 2021-01-01
+endDate: 2021-04-01
 
-school-project: True
+academic: True
 school: DigiPen Institute of Technology Singapore
 module: Software Engineering Project 2
 
-github-link: https://github.com/ksxjltze/StarBangBang
+src: https://github.com/ksxjltze/StarBangBang
 description: Stealth game where the player has to juggle two characters.
 
-project-icon: /images/captain-stealth/captain-stealth-player.png
-icon-animation: flip
+icon: /images/captain-stealth/captain-stealth-player.png
+
 icon-scale: 1.5
 background: /images/captain-stealth/captain-stealth-menu.png
 
-text-color: white
-text-background-color: rgba(0.0, 0.0, 0.0, 0.4)
-text-background-offset-y: 15%
+
+
+
 ---
 
 2D Top-down stealth game developed in C++. Switch between two characters to work together to escape the prison.

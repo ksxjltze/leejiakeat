@@ -2,27 +2,27 @@
 layout: project
 title: "Canvars"
 permalink: "projects/canvars/"
-game-engine: "AWS Amplify"
+engine: "AWS Amplify"
 
-start-date: 2023-03-01
-end-date: 2023-04-01
+date: 2023-03-01
+endDate: 2023-04-01
 
-school-project: True
+academic: True
 school: DigiPen Institute of Technology Singapore
 module: CSD3156 - Mobile and Cloud Computing 
 
-github-link: https://github.com/CloudyBestFriends/canvars
+src: https://github.com/CloudyBestFriends/canvars
 description: Portfolio Showcase Cloud Web App.
 
-project-icon: /images/canvars/matt.png
-icon-animation: bulge
+icon: /images/canvars/matt.png
+
 icon-radius: 100%
 icon-scale: 1.25
 background: /images/canvars/canvars-carousel.png
 
-text-color: white
-text-background-color: rgba(0.0, 0.0, 0.0, 0.4)
-text-background-offset-y: 0
+
+
+
 ---
 
 Canvars is a simple portfolio showcase web app created using AWS Amplify and ReactJS.

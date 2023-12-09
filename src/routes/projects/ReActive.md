@@ -2,10 +2,10 @@
 layout: project
 title: "ReActive"
 permalink: "projects/reactive/"
-game-engine: "Unity"
-start-date: 2018-01-01
-end-date: 2018-01-01
-school-project: True
+engine: "Unity"
+date: 2018-01-01
+endDate: 2018-01-01
+academic: True
 school: Ngee Ann Polytechnic
 module: Portfolio 2
 ---

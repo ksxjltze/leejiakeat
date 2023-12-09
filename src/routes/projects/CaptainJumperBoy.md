@@ -2,24 +2,24 @@
 layout: project
 title: "Captain Jumper Boy"
 permalink: "projects/captainjumperboy/"
-game-engine: "Android Studio"
+engine: "Android Studio"
 
-start-date: 2023-02-01
-end-date: 2023-03-01
+date: 2023-02-01
+endDate: 2023-03-01
 
-school-project: True
+academic: True
 school: DigiPen Institute of Technology Singapore
 module: CSD3156 - Mobile and Cloud Computing 
 
-github-link: https://github.com/ksxjltze/captain_jumper_boy
+src: https://github.com/ksxjltze/captain_jumper_boy
 description: Simple Doodle Jump clone.
 
-project-icon: /images/captainjumperboy/captainjumperboy-logo.png
-icon-animation: jump
+icon: /images/captainjumperboy/captainjumperboy-logo.png
+
 background: /images/captainjumperboy/captainjumperboy-gameplay.png
 
-text-color: white
-text-background-color: rgba(0.0, 0.0, 0.0, 0.5)
+
+
 ---
 
 CaptainJumperBoy is a simple 2D mobile game inspired by the classic Doodle Jump mobile game.

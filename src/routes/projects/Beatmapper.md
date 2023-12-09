@@ -2,27 +2,20 @@
 layout: project
 title: "Beatmapper"
 permalink: "projects/beatmapper/"
-game-engine: "Unity"
-start-date: 2019-10-01
-end-date: 2020-01-01
-school-project: True
+engine: "Unity"
+date: 2019-10-01
+endDate: 2020-01-01
+academic: True
 school: Ngee Ann Polytechnic
 module: Capstone Project
 
-github-link: https://github.com/dylanhan99/BeatMapper
+src: https://github.com/dylanhan99/BeatMapper
 description: A novel 2D rhythm game editor concept.
 
-project-icon: /images/beatmapper/beatmapper-mascot.png
-icon-animation: bulge
+icon: /images/beatmapper/beatmapper-mascot.png
+
 icon-scale: 1.0
 background: /images/beatmapper/beatmapper-title.png
-
-text-color: black
-text-background-color: rgba(0.0, 0.0, 0.0, 0.0)
-text-background-offset-x: 95%
-text-background-offset-y: 40%
-text-background-size: 35%
-text-background-repeat: no-repeat;
 ---
 
 2D Vertical Scrolling Rhythm Game beatmap player and editor.

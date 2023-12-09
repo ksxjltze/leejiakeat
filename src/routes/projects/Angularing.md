@@ -1,30 +1,22 @@
 ---
 layout: project
-title: "Angularing"
-permalink: "projects/angularing/"
-game-engine:
+title: Angularing
+permalink: projects/angularing/
+engine: null
 
-start-date: 2023-06-13
-github-link: https://github.com/ksxjltze/angularing
+date: '2023-06-13'
+src: https://github.com/ksxjltze/angularing
 description: Learning how to use Angular for frontend development.
 
-project-icon: /images/angularing/angularing-logo.png
-icon-animation: spin
-icon-scale: 1.5
+icon: /images/angularing/angularing-logo.png
 background: /images/angularing/angularing-background.png
-
-text-color: white
-text-background-color: rgba(0.0, 0.0, 0.0, 0.6)
-text-background-offset-x: 95%
-text-background-offset-y: 10%
-text-background-size: 80%
-text-background-repeat: no-repeat;
 ---
 
 A simple project for learning the Angular framework.
 Thanks to Vercel, you can see it in action [here](https://angularing.vercel.app/).
 
 The project name is a work-in-progress, I'll most likely change it after I decide what I actually want to make (after the tutorial).
+<br/>
 
 ## Diary of sorts
 <hr/>

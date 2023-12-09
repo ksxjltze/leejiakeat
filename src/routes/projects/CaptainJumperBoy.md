@@ -4,8 +4,8 @@ title: "Captain Jumper Boy"
 permalink: "projects/captainjumperboy/"
 engine: "Android Studio"
 
-date: 2023-02-01
-endDate: 2023-03-01
+date: '2023-02-01'
+endDate: '2023-03-01'
 
 academic: True
 school: DigiPen Institute of Technology Singapore

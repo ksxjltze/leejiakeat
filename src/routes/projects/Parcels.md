@@ -3,8 +3,8 @@ layout: project
 title: "Parcels"
 permalink: "projects/parcels/"
 engine: "PogEngine"
-date: 2021-09-01
-endDate: 2022-04-01
+date: '2021-09-01'
+endDate: '2022-04-01'
 academic: True
 school: DigiPen Institute of Technology Singapore
 module: Software Engineering Project 3-4

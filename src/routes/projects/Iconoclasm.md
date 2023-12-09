@@ -4,8 +4,8 @@ title: "Iconoclasm: Fall of the False God"
 permalink: "projects/iconoclasm/"
 engine: "EngineEngine"
 
-date: 2022-09-01
-endDate: 2023-03-01
+date: '2022-09-01'
+endDate: '2023-03-01'
 
 academic: True
 school: DigiPen Institute of Technology Singapore

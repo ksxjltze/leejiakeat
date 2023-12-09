@@ -4,8 +4,8 @@ title: "Canvars"
 permalink: "projects/canvars/"
 engine: "AWS Amplify"
 
-date: 2023-03-01
-endDate: 2023-04-01
+date: '2023-03-01'
+endDate: '2023-04-01'
 
 academic: True
 school: DigiPen Institute of Technology Singapore

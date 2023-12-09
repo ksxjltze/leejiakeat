@@ -4,7 +4,7 @@ title: "Spring Booter"
 permalink: "projects/spring-booter/"
 engine:
 
-date: 2023-06-16
+date: '2023-06-16'
 src: https://github.com/ksxjltze/rest-service
 description: Learning how to use Spring boot for backend development.
 

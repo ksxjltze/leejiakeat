@@ -3,8 +3,8 @@ layout: project
 title: "Beatmapper"
 permalink: "projects/beatmapper/"
 engine: "Unity"
-date: 2019-10-01
-endDate: 2020-01-01
+date: '2019-10-01'
+endDate: '2020-01-01'
 academic: True
 school: Ngee Ann Polytechnic
 module: Capstone Project

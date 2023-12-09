@@ -2,8 +2,8 @@
 layout: project
 title: "Robert Surov"
 permalink: "side-projects/robertsurov/"
-date: 2021-07-30
-endDate: 2021-08-22
+date: '2021-07-30'
+endDate: '2021-08-22'
 src: https://github.com/ksxjltze/robert
 ---
 

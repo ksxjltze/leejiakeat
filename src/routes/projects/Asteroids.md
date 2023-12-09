@@ -4,8 +4,8 @@ title: "Asteroids"
 permalink: "projects/asteroids/"
 engine: "CProcessing"
 
-date: 2020-09-01
-endDate: 2020-12-01
+date: '2020-09-01'
+endDate: '2020-12-01'
 
 academic: True
 school: DigiPen Institute of Technology Singapore

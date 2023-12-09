@@ -16,7 +16,7 @@ description: Stealth game where the player has to juggle two characters.
 
 icon: /images/captain-stealth/captain-stealth-player.png
 
-icon-scale: 1.5
+
 background: /images/captain-stealth/captain-stealth-menu.png
 
 

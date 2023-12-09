@@ -14,13 +14,7 @@ module: Software Engineering Project 5-6
 description: 3D hack-n-slash action game.
 
 icon: /images/iconoclasm/godkillers-team-logo.png
-
 background: /images/iconoclasm-logo.jpeg
-
-
-
-
-short-title: Iconoclasm
 ---
 
 Iconoclasm is a 3D hack-n-slash action game.<br>
@@ -70,26 +64,27 @@ This makes it easy to create a loading screen, using synchronization to concurre
 Operations that must be run on the main thread such as creating buffers, uploading textures or loading audio make use of std::condition_variable and atomics to achieve synchronization.
 
 ##### Example Code
-```
+```cpp
 while (1)
 {
-std::unique_lock<std::mutex> lock(uploadMutex);
-rm.cv.wait(lock);
+    std::unique_lock<std::mutex> lock(uploadMutex);
+    rm.cv.wait(lock);
 
-if (ContentBrowserPanel::loadScreen.stopLoading) // Check if we should stop running
-    break;
+    if (ContentBrowserPanel::loadScreen.stopLoading) // Check if we should stop running
+        break;
 
-ContentBrowserPanel::loadScreen.Draw(loadCount, rm.GetResourceTable().size());
+    ContentBrowserPanel::loadScreen.Draw(loadCount, rm.GetResourceTable().size());
 
-if (ready)
-    break;
+    if (ready)
+        break;
 
-rm.uploadFunction();
-rm.waitingOnUpload = false;
+    rm.uploadFunction();
+    rm.waitingOnUpload = false;
 }
 ```
 <i>Loop in main thread draws the loading screen while waiting for assets to finish loading.</i>
-```
+
+```cpp
 void ResourceManager::Upload(std::function<void()> fn)
 {
     uploadFunction = fn;
@@ -122,7 +117,7 @@ One advantage of the asset compiler being an executable separate from the engine
 Every asset file has an associated descriptor which is generated during engine startup. The descriptor contains important information pertaining to how the asset should be compiled, processed, and used during runtime. The descriptor is stored as a plaintext file in a custom format for rapid prototyping and easy modification.
 
 ##### Descriptor Example
-```
+```cpp
 v190922_1634
 12911302302787934649
 bunny
@@ -155,20 +150,20 @@ Each function object is associated with a key, the type id of the Type to be ser
 Using runtime reflection, this type id can be queried for any type, allowing the serializer to dynamically serialize and deserialize types to and from JSON. This modular design allows complex types to reuse the serialization code of its component types, without the need for explicit serialization of the type as a whole.
 
 ##### Code Example
-```
-template <typename T>
-using Entry = std::pair<entt::id_type, T>;
-using WriterEntry = Entry<PrimitiveWriter>;
+```cpp
+    template <typename T>
+    using Entry = std::pair<entt::id_type, T>;
+    using WriterEntry = Entry<PrimitiveWriter>;
 
-template <typename T>
-WriterEntry CreatePrimitiveWriter()
-{
-    return WriterEntry(GetTypeIndex<T>(), [](WriterParams params)
+    template <typename T>
+    WriterEntry CreatePrimitiveWriter()
     {
-        auto& allocator = params.document.GetAllocator();
-        params.object.AddMember(rapidjson::StringRef(params.name.data()), params.value.cast<T>(), allocator);
-    });
-}
+        return WriterEntry(GetTypeIndex<T>(), [](WriterParams params)
+        {
+            auto& allocator = params.document.GetAllocator();
+            params.object.AddMember(rapidjson::StringRef(params.name.data()), params.value.cast<T>(), allocator);
+        });
+    }
 ```
 <i>Example of a function to create a primitive type serializer.</i>
 

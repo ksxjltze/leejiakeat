@@ -10,8 +10,8 @@ description: Learning how to use Spring boot for backend development.
 
 icon: /images/spring-booter/spring-booter-logo.png
 
-icon-scale: 1.25
-icon-radius: 100%
+
+
 
 background: /images/spring-booter/spring-booter-background.png
 

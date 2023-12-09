@@ -16,8 +16,8 @@ description: Portfolio Showcase Cloud Web App.
 
 icon: /images/canvars/matt.png
 
-icon-radius: 100%
-icon-scale: 1.25
+
+
 background: /images/canvars/canvars-carousel.png
 
 

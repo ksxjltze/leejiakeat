@@ -7,3 +7,9 @@
     <p>Date: {data.date}</p>
     <svelte:component this={data.content} />
 </article>
+
+<style lang="postcss">
+    h1 {
+        margin-bottom: 1rem;
+    }
+</style>

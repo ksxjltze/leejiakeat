@@ -14,7 +14,7 @@ description: A novel 2D rhythm game editor concept.
 
 icon: /images/beatmapper/beatmapper-mascot.png
 
-icon-scale: 1.0
+
 background: /images/beatmapper/beatmapper-title.png
 ---
 

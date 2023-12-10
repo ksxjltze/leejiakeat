@@ -43,16 +43,16 @@ Building on top of the classic Asteroids game, new elements were added for a twi
 
 ## Media
 ### Title Screen
-<img alt="image" src="/images/asteroids/asteroids-menu.png">
+<img alt="menu" src="/images/asteroids/asteroids-menu.png">
 
 ### Gameplay
-<img alt="image" src="/images/asteroids/asteroids-gameplay.png">
+<img alt="gameplay" src="/images/asteroids/asteroids-gameplay.png">
 
 ### Upgrades Menu
-<img alt="image" src="/images/asteroids/asteroids-upgrades.png">
+<img alt="upgrades" src="/images/asteroids/asteroids-upgrades.png">
 
 ### Player Guide
-<img alt="image" src="/images/asteroids/asteroids-guide.png">
+<img alt="guide" src="/images/asteroids/asteroids-guide.png">
 
 ### Boss
-<img alt="image" src="/images/asteroids/asteroids-boss.png">
+<img alt="boss" src="/images/asteroids/asteroids-boss.png">

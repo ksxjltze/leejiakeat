@@ -47,17 +47,17 @@ Learn more about my backend project [here](/projects/spring-booter/).
 
 ## Media
 ### Day One
-<img alt="image" src="/images/angularing/angularing-day-one.png"/>
+<img alt="day one" src="/images/angularing/angularing-day-one.png"/>
 <i>First day's results of working on the Angular tutorial.</i>
 
 ### Day Three
 <div id="day-three">
-    <img alt="image" src="/images/angularing/angularing-day-three-home.png"/>
+    <img alt="home" src="/images/angularing/angularing-day-three-home.png"/>
     <i>Home page.</i>
     <br><br>
-    <img alt="image" src="/images/angularing/angularing-day-three-filter.png"/>
+    <img alt="filter" src="/images/angularing/angularing-day-three-filter.png"/>
     <i>Filtering by city name.</i>
     <br><br>
-    <img alt="image" src="/images/angularing/angularing-day-three-details.png"/>
+    <img alt="details" src="/images/angularing/angularing-day-three-details.png"/>
     <i>Details page with form.</i>
 </div>

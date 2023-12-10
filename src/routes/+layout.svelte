@@ -5,9 +5,12 @@
 	import Header from './Header.svelte';
 	import '../app.css'
 	import './styles.css';
+	import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit"
 
 	/** @type {import('./$types').LayoutServerData} */
 	export let data;
+
+	injectSpeedInsights();
 
 	$: if (browser && data?.analyticsId) {
 		webVitals({

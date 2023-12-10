@@ -39,7 +39,7 @@ Using Firebase authentication, users of the application are able to sign up, log
 ## Media
 
 ### Presentation
-<iframe src="https://drive.google.com/file/d/127-aCRGw0gI-yyn3SyQKWkeVlIlS-4Rc/preview" width="100%" height="480em" allow="autoplay" allowfullscreen="allowfullscreen"></iframe>
+<iframe title="CaptainJumperBoy presentation" src="https://drive.google.com/file/d/127-aCRGw0gI-yyn3SyQKWkeVlIlS-4Rc/preview" width="100%" height="480em" allow="autoplay" allowfullscreen="allowfullscreen"></iframe>
 
 ### Gameplay
-<iframe src="https://drive.google.com/file/d/1kHi_ut2HEbvpUdRwsUdL6lzstrGT3kgg/preview" width="100%" height="480em" allow="autoplay" allowfullscreen="allowfullscreen"></iframe>
+<iframe title="CaptainJumperBoy gameplay" src="https://drive.google.com/file/d/1kHi_ut2HEbvpUdRwsUdL6lzstrGT3kgg/preview" width="100%" height="480em" allow="autoplay" allowfullscreen="allowfullscreen"></iframe>

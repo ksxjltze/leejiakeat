@@ -72,7 +72,7 @@ As for why this didn't affect my local build, I forgot to account for my env.pro
 It has a nice 2 month trial period where you can play around with $200 worth of credits. This was good enough for me, so I decided to just go with it and think about changing cloud providers 2 months later.
 
 ## Project Icon
-<img width="100%" src="/images/spring-booter/spring-booter-logo.png"/>
+<img alt="logo" width="100%" src="/images/spring-booter/spring-booter-logo.png"/>
 
 Curious about where the icon comes from? I generated it using Stable Diffusion, I like to think that it looks pretty decent for a beginner.
 See the beginner's guide [here](https://stable-diffusion-art.com/beginners-guide/).

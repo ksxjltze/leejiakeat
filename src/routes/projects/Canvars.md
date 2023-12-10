@@ -36,7 +36,7 @@ The web app is longer in service.
 I was responsible for setting up the IAM Identity Centre accounts and roles for my team members.
 I created an AWS organization and setup the necessary permissions for collaboration on the project.
 
-<img src="/images/canvars/canvars-iam-users.png" width="100%">
+<img alt="image" src="/images/canvars/canvars-iam-users.png" width="100%">
 <i>IAM Identity Center Users</i>
 
 ### Development
@@ -53,9 +53,9 @@ The AWS Amplify backend automatically allocates AWS resources such as AppSync fo
 
 Modifying the database was done through AWS Amplify Studio, making it easy to create and modify database schemas using Data Models (No Code).
 
-<img src="/images/canvars/canvars-amplify-data-model.png" width="100%">
+<img alt="image" src="/images/canvars/canvars-amplify-data-model.png" width="100%">
 <i>Example Data Model</i>
-<img src="/images/canvars/canvars-ci-cd.png" width="100%">
+<img alt="image" src="/images/canvars/canvars-ci-cd.png" width="100%">
 <i>Example Deployment</i>
 
 ### Authentication
@@ -68,7 +68,7 @@ Unfortunately, due to a rushed project schedule, unfamiliarity with the framewor
 
 ## Media
 ### Projects Page
-<img src="/images/canvars/canvars-projectlist.png">
+<img alt="image" src="/images/canvars/canvars-projectlist.png">
 
 ### Project Demo
 <iframe src="https://drive.google.com/file/d/1ccyuTSwQmTK3wzOKlm3AU4OC7l_bZoag/preview" width="100%" height="480em" allow="autoplay" allowfullscreen="allowfullscreen"></iframe>

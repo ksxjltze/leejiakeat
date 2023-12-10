@@ -18,10 +18,6 @@ icon: /images/captain-stealth/captain-stealth-player.png
 
 
 background: /images/captain-stealth/captain-stealth-menu.png
-
-
-
-
 ---
 
 2D Top-down stealth game developed in C++. Switch between two characters to work together to escape the prison.
@@ -84,20 +80,20 @@ These are some of the other features that were not implemented by me.
 - Collision
 
 ## Media
-<iframe src="https://drive.google.com/file/d/1OaPQCj2O88W9qHDNm-h-FbGT-6YiNMLh/preview" width="100%" height="480" allow="autoplay" allowfullscreen></iframe>
+<iframe title="gameplay demo" src="https://drive.google.com/file/d/1OaPQCj2O88W9qHDNm-h-FbGT-6YiNMLh/preview" width="100%" height="480" allow="autoplay" allowfullscreen></iframe>
 <i>Gameplay Demo</i>
 
-<img src="/images/captain-stealth/captain-stealth-menu.png">
+<img alt="menu" src="/images/captain-stealth/captain-stealth-menu.png">
 <i>Main Menu</i>
 
-<img src="/images/captain-stealth/captain-stealth-gameplay.png">
+<img alt="gameplay" src="/images/captain-stealth/captain-stealth-gameplay.png">
 <i>Gameplay</i>
 
-<img src="/images/captain-stealth/captain-stealth-vent.png">
+<img alt="vent" src="/images/captain-stealth/captain-stealth-vent.png">
 <i>Vent</i>
 
-<img src="/images/captain-stealth/captain-stealth-player.png">
+<img alt="player" src="/images/captain-stealth/captain-stealth-player.png">
 <i>Captain Stealth Sprite</i>
 
-<img src="/images/captain-stealth/captain-stealth-prisoner.png">
+<img alt="prisoner" src="/images/captain-stealth/captain-stealth-prisoner.png">
 <i>Prisoner Sprite</i>

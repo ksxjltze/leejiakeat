@@ -1,50 +1,56 @@
 
 import * as THREE from 'three';
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-const cube = new THREE.Mesh(geometry, material);
-let renderer: any;
-scene.add(cube);
-camera.position.z = 5;
+export class Scene {
+  readonly scene = new THREE.Scene();
+  readonly camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  readonly geometry = new THREE.BoxGeometry();
+  readonly material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  readonly cube = new THREE.Mesh(this.geometry, this.material);
 
-let surfaceContainer: HTMLElement;
-
-const spinCube = () => {
-  cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
-}
-
-const animate = () => {
-  requestAnimationFrame(animate);
-  spinCube();
-  renderer.render(scene, camera);
-};
-
-const resize = () => {
-  if (surfaceContainer) {
-    renderer.setSize(surfaceContainer.clientWidth, surfaceContainer.clientHeight)
-    camera.aspect = surfaceContainer.clientWidth / surfaceContainer.clientHeight;
-    camera.updateProjectionMatrix();
-    return;
+  renderer: any;
+  surfaceContainer: HTMLElement;
+  
+  constructor() {
+    this.scene.add(this.cube);
+    this.camera.position.z = 5;
+    
+    window.addEventListener('resize', this.resize);
   }
 
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-};
+  private spinCube() {
+    this.cube.rotation.x += 0.01;
+    this.cube.rotation.y += 0.01;
+  }
+  
+  private animate() {
+    requestAnimationFrame(this.animate);
+    this.spinCube();
+    this.renderer.render(this.scene, this.camera);
+  };
+  
+  private resize() {
+    if (this.surfaceContainer) {
+      this.renderer.setSize(this.surfaceContainer.clientWidth, this.surfaceContainer.clientHeight)
+      this.camera.aspect = this.surfaceContainer.clientWidth / this.surfaceContainer.clientHeight;
+      this.camera.updateProjectionMatrix();
+      return;
+    }
+  
+    this.renderer.setSize(window.innerWidth, window.innerHeight)
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+  };
 
-export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement) => {
-  renderer = new THREE.WebGLRenderer({ antialias: true, canvas: surface });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(surface.width, surface.height);
+  createSceneWithContainer(surface: HTMLCanvasElement, container: HTMLElement) {
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas: surface });
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(surface.width, surface.height);
+  
+    this.surfaceContainer = container;
+  
+    this.resize();
+    this.animate();
+  }
 
-  surfaceContainer = container;
-
-  resize();
-  animate();
 }
-
-window.addEventListener('resize', resize);

@@ -4,16 +4,16 @@
 
 	import * as THREE from 'three';
     import { onMount } from 'svelte';
-    import { Scene } from "$lib/scene";
+    import { createSceneWithContainer } from "$lib/scene";
 
     let surface: HTMLCanvasElement;
     let container: HTMLDivElement;
 
 	onMount(() => {
-        let scene: Scene = new Scene();
         surface.width = container.clientWidth;
         surface.height = container.clientHeight;
-		scene.createSceneWithContainer(surface, container);
+
+		createSceneWithContainer(surface, container);
 	});
 </script>
 

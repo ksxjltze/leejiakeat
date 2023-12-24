@@ -24,7 +24,7 @@ const animate = () => {
   renderer.render(scene, camera);
 };
 
-const resize = () => {
+export const resize = () => {
   if (!renderer || !camera || !window)
     return;
 

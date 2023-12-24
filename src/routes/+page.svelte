@@ -17,18 +17,14 @@
 		<p>Welcome to my website.</p>
 		<p>My name is Lee Jia Keat, a software engineer based in Singapore.</p>
 	</section>
-	
-	<h2 style="font-size: larger; margin-bottom: 2rem;">Click <a style="text-decoration: underline" href="/projects">here</a> to see my work</h2>
+
+	<h2 style="font-size: larger; margin-bottom: 2rem;">
+		Click <a style="text-decoration: underline" href="/projects">here</a> to see my work
+	</h2>
 
 	<p>Find me on:</p>
 	<section>
-		<a
-			href="
-		https://www.linkedin.com/in/leejiakeat/
-		"
-			target="_blank"
-			rel="noopener noreferrer"
-		>
+		<a href="https://www.linkedin.com/in/leejiakeat/" target="_blank" rel="noopener noreferrer">
 			<img
 				src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white"
 				alt="Lee Jia Keat's LinkedIn Profile"

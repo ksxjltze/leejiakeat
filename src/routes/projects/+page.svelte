@@ -36,7 +36,9 @@
 			>
 		</p>
 
-		<p style="margin-bottom: -0.5rem;"><strong>Double click</strong> anywhere to enter full screen mode.</p>
+		<p style="margin-bottom: -0.5rem;">
+			<strong>Double click</strong> anywhere to enter full screen mode.
+		</p>
 		<p>Press <strong>ESC</strong> to exit full screen mode.</p>
 	</section>
 

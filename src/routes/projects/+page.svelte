@@ -4,7 +4,7 @@
 
 	import * as THREE from 'three';
 	import { onMount } from 'svelte';
-	import { createSceneWithContainer, resize } from '$lib/scene';
+	import { createSceneWithContainer, resize, lockControls } from '$lib/scene';
 
 	let surface: HTMLCanvasElement;
 	let container: HTMLDivElement;
@@ -22,6 +22,7 @@
 			surface.width = window.innerWidth;
 			surface.height = window.innerHeight;
 			resize();
+			lockControls();
 		});
 	};
 </script>

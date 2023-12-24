@@ -14,7 +14,6 @@ let camera;
 let controls;
 let surfaceContainer: HTMLElement;
 
-let keydown = false;
 let keys = [];
 const moveSpeed = 10;
 
@@ -30,9 +29,7 @@ const animate = () => {
 	requestAnimationFrame(animate);
 	spinCube();
 
-	if (keydown) {
-		moveWASD(keys, dt);
-	}
+	moveWASD(keys, dt);
 
 	renderer.render(scene, camera);
 };
@@ -143,14 +140,12 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 
 	//wasd
 	const onKeyDown = (event: KeyboardEvent) => {
-		keydown = true;
     const key = event.key.toLowerCase();
     if (!keys.includes(key)) {
       keys.push(key);
     }
 	};
 	const onKeyUp = (event: KeyboardEvent) => {
-		keydown = false;
     const key = event.key.toLowerCase();
     if (keys.includes(key)) {
       keys = keys.filter((k) => k !== key);

@@ -13,6 +13,7 @@ let scene;
 let camera;
 let controls;
 let surfaceContainer: HTMLElement;
+let initialized = false;
 
 let keys = [];
 const moveSpeed = 10;
@@ -50,6 +51,12 @@ const moveWASD = (keys, dt: number) => {
 			case 'd':
 				controls.moveRight(moveSpeed * dt);
 				break;
+			case ' ':
+				camera.position.y += moveSpeed * dt;
+				break;
+			case 'shift':
+				camera.position.y -= moveSpeed * dt;
+				break;
 		}
 	}
 };
@@ -57,16 +64,18 @@ const moveWASD = (keys, dt: number) => {
 export const resize = () => {
 	if (!renderer || !camera || !window) return;
 
-	if (surfaceContainer) {
-		renderer.setSize(surfaceContainer.clientWidth, surfaceContainer.clientHeight);
-		camera.aspect = surfaceContainer.clientWidth / surfaceContainer.clientHeight;
+	if (document.fullscreenElement) {
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		camera.aspect = window.innerWidth / window.innerHeight;
 		camera.updateProjectionMatrix();
 		return;
 	}
 
-	renderer.setSize(window.innerWidth, window.innerHeight);
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
+	if (surfaceContainer) {
+		renderer.setSize(surfaceContainer.clientWidth, surfaceContainer.clientHeight);
+		camera.aspect = surfaceContainer.clientWidth / surfaceContainer.clientHeight;
+		camera.updateProjectionMatrix();
+	}
 };
 
 const init = () => {
@@ -155,6 +164,11 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	document.addEventListener('keyup', onKeyUp);
 
 	resize();
+
+	if (initialized)
+		return;
+	initialized = true;
+
 	animate();
 };
 

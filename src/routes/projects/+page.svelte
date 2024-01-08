@@ -40,6 +40,12 @@
 			<strong>Double click</strong> anywhere to enter full screen mode.
 		</p>
 		<p>Press <strong>ESC</strong> to exit full screen mode.</p>
+		<p>Instructions:</p>
+		<ul>
+			<li>WASD to move</li>
+			<li>Space to ascend, shift to descend</li>
+			<li>Mouse to look around</li>
+		</ul>
 	</section>
 
 	<div bind:this={container} class="w-full" style="height: 600px">

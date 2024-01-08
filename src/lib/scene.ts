@@ -16,7 +16,7 @@ let surfaceContainer: HTMLElement;
 let initialized = false;
 
 let keys = [];
-const moveSpeed = 10;
+const moveSpeed = 15;
 
 const spinCube = () => {
 	cube.rotation.x += 0.01;

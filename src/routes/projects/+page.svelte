@@ -14,16 +14,20 @@
 		surface.height = container.clientHeight;
 
 		createSceneWithContainer(surface, container);
-		window.addEventListener('dblclick', onFullScreenChange);
+		window.addEventListener('dblclick', onRequestFullScreen);
 	});
 
-	let onFullScreenChange = () => {
+	let onRequestFullScreen = () => {
 		surface.requestFullscreen().then(() => {
 			surface.width = window.innerWidth;
 			surface.height = window.innerHeight;
 			resize();
 			lockControls();
 		});
+	};
+
+	let onFullscreenButtonClick = () => {
+		onRequestFullScreen();
 	};
 </script>
 
@@ -36,9 +40,10 @@
 			>
 		</p>
 
-		<p style="margin-bottom: -0.5rem;">
+		<p>
 			<strong>Double click</strong> anywhere to enter full screen mode.
 		</p>
+		<button on:click={onFullscreenButtonClick}>Or click me</button>
 		<p>Press <strong>ESC</strong> to exit full screen mode.</p>
 		<p>Instructions:</p>
 		<ul>
@@ -81,5 +86,16 @@
 
 	p {
 		line-height: normal;
+	}
+
+	button {
+		margin: 0 0.5rem;
+		border: 1px solid #000;
+		border-radius: 0.25rem;
+		padding: 0.25rem 0.5rem;
+		font-size: 1rem;
+		font-weight: 400;
+		color: #fff;
+		background-color: #c300ff;
 	}
 </style>

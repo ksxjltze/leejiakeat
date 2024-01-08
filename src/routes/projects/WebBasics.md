@@ -14,7 +14,3 @@ background:
 ---
 
 A simple webpage project to refresh my HTML and CSS skills.
-View it [here](/side-projects/web-basics/website/index.html).
-
-## Or Here
-<embed style="border-radius: 20px;" type="text/html" src="/side-projects/web-basics/website/index.html" width="100%" height="1000em">

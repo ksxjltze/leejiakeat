@@ -15,12 +15,61 @@
 <section class="home-content">
 	<section style="line-height: normal; text-align: center; margin-bottom: 1rem;">
 		<p>Welcome to my website.</p>
-		<p>My name is Lee Jia Keat, a software engineer based in Singapore.</p>
+		<p>
+			My name is Lee Jia Keat, an aspiring software engineer based in Singapore. I'm a graduating
+			student from the DigiPen Institute of Technology Singapore, and specialize in building
+			real-time interactive software.
+		</p>
 	</section>
 
 	<h2 style="font-size: larger; margin-bottom: 2rem;">
 		Click <a style="text-decoration: underline" href="/projects">here</a> to see my work
 	</h2>
+
+	<section>
+		<div id="overview-panel" class="panel-darken">
+			<p>insert image here</p>
+			<section id="panel-info">
+				<div id="panel-info-skills">
+					<h3>Skills</h3>
+					<ul class="list-no-style">
+						<li>Full-stack Web Development</li>
+						<li>Game Programming</li>
+						<li>Graphics Programming</li>
+					</ul>
+				</div>
+				<div>
+					<h3>Tools</h3>
+					<ul class="list-no-style">
+						<li>Git</li>
+						<li>Visual Studio</li>
+						<li>Visual Studio Code</li>
+						<li>IntelliJ IDEA</li>
+					</ul>
+				</div>
+				<div>
+					<h3>Languages</h3>
+					<ul class="list-no-style">
+						<li>C/C++</li>
+						<li>Java</li>
+						<li>C#</li>
+						<li>Python</li>
+						<li>HTML, CSS</li>
+						<li>JavaScript/TypeScript</li>
+						<li>GLSL</li>
+					</ul>
+				</div>
+				<div>
+					<h3>Frameworks</h3>
+					<ul class="list-no-style">
+						<li>Angular</li>
+						<li>Spring</li>
+						<li>Svelte(kit)</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+	</section>
 
 	<p>Find me on:</p>
 	<section>
@@ -47,5 +96,47 @@
 		justify-content: center;
 
 		margin-top: 1rem;
+	}
+
+	#overview-panel {
+		width: 100%;
+		border: 1px solid #fff;
+		border-radius: 8px;
+		padding: 1rem;
+
+		display: flex;
+		column-gap: 2rem;
+		position: relative;
+
+		box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+		filter: contrast(1.2) brightness(0.9) saturate(1.2);
+	}
+
+	.panel-darken::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(
+			rgba(0, 0, 0, 0.1),
+			rgba(0, 0, 0, 0.1)
+		);
+		pointer-events: none;
+		z-index: -1;
+	}
+
+	#panel-info {
+		display: flex;
+		flex-direction: column;
+		/* gap: 1rem; */
+
+		filter: drop-shadow(0 0 0.075rem #ff5511);
+	}
+
+	.list-no-style {
+		padding: 0;
+		list-style: none;
 	}
 </style>

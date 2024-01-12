@@ -79,12 +79,12 @@ export const resize = () => {
 };
 
 const loadSkyboxTextures = () => {
-	const ft = new THREE.TextureLoader().load("./images/skybox/purple-nebula_front5.png");
-	const bk = new THREE.TextureLoader().load("./images/skybox/purple-nebula_back6.png");
-	const up = new THREE.TextureLoader().load("./images/skybox/purple-nebula_top3.png");
-	const dn = new THREE.TextureLoader().load("./images/skybox/purple-nebula_bottom4.png");
-	const rt = new THREE.TextureLoader().load("./images/skybox/purple-nebula_right1.png");
-	const lf = new THREE.TextureLoader().load("./images/skybox/purple-nebula_left2.png");
+	const ft = new THREE.TextureLoader().load("/images/skybox/purple-nebula_front5.png");
+	const bk = new THREE.TextureLoader().load("/images/skybox/purple-nebula_back6.png");
+	const up = new THREE.TextureLoader().load("/images/skybox/purple-nebula_top3.png");
+	const dn = new THREE.TextureLoader().load("/images/skybox/purple-nebula_bottom4.png");
+	const rt = new THREE.TextureLoader().load("/images/skybox/purple-nebula_right1.png");
+	const lf = new THREE.TextureLoader().load("/images/skybox/purple-nebula_left2.png");
 	
 	return [rt, lf, up, dn, ft, bk];
 }

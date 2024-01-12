@@ -134,7 +134,7 @@ const init = () => {
 	scene.add(ceilingLight);
 
 	const loader = new FontLoader();
-	loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
+	loader.load('/fonts/helvetiker_regular.typeface.json', function (font) {
 		const geometry = new TextGeometry('Hello World!', {
 			font: font,
 			size: 1,

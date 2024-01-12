@@ -26,7 +26,7 @@
 		Click <a style="text-decoration: underline" href="/projects">here</a> to see my work
 	</h2>
 
-	<section>
+	<section id="overview-section">
 		<div id="overview-panel" class="panel-darken">
 			<img id="leejiakeat-photo" src="/images/lee-jia-keat.png" alt="Lee Jia Keat">
 			<section id="panel-info">
@@ -110,7 +110,7 @@
 		width: 100%;
 		border: 1px solid #fff;
 		border-radius: 8px;
-		padding: 1rem;
+		padding: 1rem 2rem;
 
 		display: flex;
 		column-gap: 2rem;

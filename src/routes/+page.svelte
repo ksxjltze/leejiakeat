@@ -28,7 +28,7 @@
 
 	<section>
 		<div id="overview-panel" class="panel-darken">
-			<p>insert image here</p>
+			<img id="leejiakeat-photo" src="/images/lee-jia-keat.png" alt="Lee Jia Keat">
 			<section id="panel-info">
 				<div id="panel-info-skills">
 					<h3>Skills</h3>
@@ -98,6 +98,14 @@
 		margin-top: 1rem;
 	}
 
+	#leejiakeat-photo {
+		width: 50%;
+		height: fit-content;
+		
+		margin: auto;
+		border-radius: 8px;
+	}
+
 	#overview-panel {
 		width: 100%;
 		border: 1px solid #fff;
@@ -128,6 +136,9 @@
 	}
 
 	#panel-info {
+		width: 50%;
+		margin: auto;
+
 		display: flex;
 		flex-direction: column;
 		/* gap: 1rem; */

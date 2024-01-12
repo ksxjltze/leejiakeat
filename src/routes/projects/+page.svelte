@@ -96,6 +96,6 @@
 		font-size: 1rem;
 		font-weight: 400;
 		color: #fff;
-		background-color: #c300ff;
+		background-color: #ff5511;
 	}
 </style>

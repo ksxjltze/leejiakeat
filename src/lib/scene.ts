@@ -78,9 +78,29 @@ export const resize = () => {
 	}
 };
 
+const loadSkyboxTextures = () => {
+	const ft = new THREE.TextureLoader().load("./images/skybox/purple-nebula_front5.png");
+	const bk = new THREE.TextureLoader().load("./images/skybox/purple-nebula_back6.png");
+	const up = new THREE.TextureLoader().load("./images/skybox/purple-nebula_top3.png");
+	const dn = new THREE.TextureLoader().load("./images/skybox/purple-nebula_bottom4.png");
+	const rt = new THREE.TextureLoader().load("./images/skybox/purple-nebula_right1.png");
+	const lf = new THREE.TextureLoader().load("./images/skybox/purple-nebula_left2.png");
+	
+	return [rt, lf, up, dn, ft, bk];
+}
+
+const loadSkybox = () => {
+	const textures = loadSkyboxTextures();
+	const materialArray = textures.map((texture) => new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide }));
+
+	const skyboxGeom = new THREE.BoxGeometry(10000, 10000, 10000);
+	const skybox = new THREE.Mesh(skyboxGeom, materialArray);
+	return skybox;
+}
+
 const init = () => {
 	scene = new THREE.Scene();
-	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 
 	//scene setup
 	cube.position.z = -20;
@@ -89,12 +109,15 @@ const init = () => {
 	scene.add(cube);
 	camera.position.z = 0;
 
+	//skybox
+    scene.add(loadSkybox());
+
 	//make a room
 	const roomSize = 60;
 	const roomGeometry = new THREE.BoxGeometry(roomSize, roomSize, roomSize);
 	const roomMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.BackSide });
 	const room = new THREE.Mesh(roomGeometry, roomMaterial);
-	scene.add(room);
+	// scene.add(room);
 
 	//add lighting
 	const light = new THREE.PointLight(0xffffff, 100, 0, 2);

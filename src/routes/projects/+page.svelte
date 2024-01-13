@@ -34,7 +34,7 @@
 <section class="flex flex-col gap-4">
 	<section class="flex items-center justify-center">
 		<section id="project-heroes">
-			<a class="w-full" href="/projects/Iconoclasm/">
+			<a id="iconoclasm-hero-link" class="w-full" href="/projects/Iconoclasm/">
 				<div id="iconoclasm-hero" class="border-radius-large">
 					<img src="/images/iconoclasm/iconoclasm-logo.jpg" alt="Iconoclasm Logo">
 				</div>
@@ -116,6 +116,11 @@
 		padding: 1rem 0rem;
 	}
 
+	#iconoclasm-hero-link {
+		border: 1px solid white;
+		border-radius: 16px;
+	}
+
 	#iconoclasm-hero {
 		width: 100%;
 		height: fit-content;
@@ -125,12 +130,12 @@
 		align-items: center;
 
 		background-color: #000;
-		transition: transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1), filter 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+		transition: transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1), filter 1s cubic-bezier(0.075, 0.82, 0.165, 1), border 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
 	}
 
 	#iconoclasm-hero:hover {
 		transform: scale(1.05);
-		filter: drop-shadow(0 0 0.5rem #ff5511);
+		filter: drop-shadow(0 0 0.5rem #ffffff);
 	}
 
 	.w-full {

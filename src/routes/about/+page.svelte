@@ -3,7 +3,7 @@
 	<meta name="description" content="About this app" />
 </svelte:head>
 
-<div class="text-column">
+<section class="text-column">
 	<h1>About Me</h1>
 
 	<p>
@@ -17,4 +17,4 @@
 	<p>
 		I love technology, video games, and building software, as well as an interest in artificial intelligence and virtual reality.
 	</p>
-</div>
+</section>

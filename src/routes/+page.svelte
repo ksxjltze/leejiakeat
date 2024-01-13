@@ -152,7 +152,7 @@
 		flex-direction: column;
 		/* gap: 1rem; */
 
-		filter: drop-shadow(0 0 0.075rem #ff5511);
+		/* filter: drop-shadow(0 0 0.075rem #ff5511); */
 	}
 
 	.list-no-style {

@@ -2,11 +2,13 @@ import * as THREE from 'three';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
 const cube = new THREE.Mesh(geometry, material);
 const clock = new THREE.Clock();
+const modelLoader = new GLTFLoader();
 
 let renderer;
 let scene;
@@ -102,6 +104,17 @@ const init = () => {
 	scene = new THREE.Scene();
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 
+	modelLoader.load('/models/room.glb', (gltf ) => {
+		console.log("Added model: ", gltf);
+		gltf.scene.position.set(0, -5, 0);
+		gltf.scene.rotation.set(0, Math.PI, 0);
+		scene.add(gltf.scene);
+	},
+	undefined,
+	(err) => {
+		console.error(err);
+	});
+
 	//scene setup
 	cube.position.z = -20;
 	cube.scale.setScalar(10);
@@ -133,9 +146,9 @@ const init = () => {
 	ceilingLight.position.set(0, 20, 0);
 	scene.add(ceilingLight);
 
-	const loader = new FontLoader();
-	loader.load('/fonts/helvetiker_regular.typeface.json', function (font) {
-		const geometry = new TextGeometry('Hello World!', {
+	const fontLoader = new FontLoader();
+	fontLoader.load('/fonts/helvetiker_regular.typeface.json', function (font) {
+		const geometry = new TextGeometry('Hello!', {
 			font: font,
 			size: 1,
 			height: 0.25,

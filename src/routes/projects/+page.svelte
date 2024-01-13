@@ -48,6 +48,7 @@
 			>
 		</p>
 
+		<h2>This is highly recommended to be experienced in fullscreen.</h2>
 		<p>
 			<strong>Double click</strong> anywhere to enter full screen mode.
 		</p>

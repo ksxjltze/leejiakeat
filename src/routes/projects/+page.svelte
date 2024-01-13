@@ -125,6 +125,12 @@
 		align-items: center;
 
 		background-color: #000;
+		transition: transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1), filter 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+	}
+
+	#iconoclasm-hero:hover {
+		transform: scale(1.05);
+		filter: drop-shadow(0 0 0.5rem #ff5511);
 	}
 
 	.w-full {

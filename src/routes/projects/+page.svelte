@@ -32,8 +32,16 @@
 </script>
 
 <section class="flex flex-col gap-4">
-	<h1>Projects</h1>
 	<section class="flex items-center justify-center">
+		<section id="project-heroes">
+			<a class="w-full" href="/projects/Iconoclasm/">
+				<div id="iconoclasm-hero" class="border-radius-large">
+					<img src="/images/iconoclasm/iconoclasm-logo.jpg" alt="Iconoclasm Logo">
+				</div>
+			</a>
+		</section>
+
+		<h3>Portfolio (WIP)</h3>
 		<p>
 			You can find my old portfolio website here: <a href="https://ksxjltze.github.io"
 				>ksxjltze.github.io</a
@@ -58,7 +66,8 @@
 	</div>
 
 	<section>
-		<h2>The following project files are ported from my old portfolio website:</h2>
+		<h1>Archive</h1>
+		<h2>The following project files were ported from my old portfolio website:</h2>
 		<ul>
 			{#each data.posts as post}
 				<li class="mb-1">
@@ -97,5 +106,40 @@
 		font-weight: 400;
 		color: #fff;
 		background-color: #ff5511;
+	}
+
+	#project-heroes {
+		display: flex;
+		flex-direction: column;
+
+		align-items: center;
+		padding: 1rem 0rem;
+	}
+
+	#iconoclasm-hero {
+		width: 100%;
+		height: fit-content;
+		
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+
+		background-color: #000;
+	}
+
+	.w-full {
+		width: 100%;
+	}
+
+	.border-radius-small {
+		border-radius: 4px;
+	}
+
+	.border-radius-medium {
+		border-radius: 8px;
+	}
+
+	.border-radius-large {
+		border-radius: 16px;
 	}
 </style>

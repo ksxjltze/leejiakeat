@@ -14,9 +14,9 @@
 
 <section class="home-content">
 	<section style="line-height: normal; text-align: center; margin-bottom: 1rem;">
-		<p>Welcome to my website.</p>
+		<p>Welcome.</p>
 		<p>
-			My name is Lee Jia Keat, an aspiring software engineer based in Singapore. I'm a graduating
+			My name is Jia Keat, an aspiring software engineer based in Singapore. I'm a graduating
 			student from the DigiPen Institute of Technology Singapore, and specialize in building
 			real-time interactive software.
 		</p>

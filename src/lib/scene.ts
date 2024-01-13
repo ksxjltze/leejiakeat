@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 const boxGeom = new THREE.BoxGeometry();
 const sphereGeom = new THREE.SphereGeometry();

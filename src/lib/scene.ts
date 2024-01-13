@@ -5,8 +5,8 @@ import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockCont
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 const boxGeom = new THREE.BoxGeometry();
-const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-const cube = new THREE.Mesh(boxGeom, material);
+const sphereGeom = new THREE.SphereGeometry();
+const standardMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
 const clock = new THREE.Clock();
 const modelLoader = new GLTFLoader();
 
@@ -20,18 +20,11 @@ let initialized = false;
 let keys = [];
 const moveSpeed = 15;
 
-const spinCube = () => {
-	cube.rotation.x += 0.01;
-	cube.rotation.y += 0.01;
-};
-
 const animate = () => {
 	const dt = clock.getDelta();
 	if (!renderer || !camera || !scene) return;
 
 	requestAnimationFrame(animate);
-	spinCube();
-
 	moveWASD(keys, dt);
 
 	renderer.render(scene, camera);
@@ -116,10 +109,11 @@ const init = () => {
 	});
 
 	//scene setup
-	cube.position.z = -20;
-	cube.scale.setScalar(10);
+	const sphere = new THREE.Mesh(sphereGeom, standardMat)
+	sphere.position.z = -30;
+	sphere.scale.setScalar(5);
 
-	scene.add(cube);
+	scene.add(sphere);
 	camera.position.z = 0;
 
 	//skybox

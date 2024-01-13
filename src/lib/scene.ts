@@ -4,9 +4,9 @@ import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
-const geometry = new THREE.BoxGeometry();
+const boxGeom = new THREE.BoxGeometry();
 const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-const cube = new THREE.Mesh(geometry, material);
+const cube = new THREE.Mesh(boxGeom, material);
 const clock = new THREE.Clock();
 const modelLoader = new GLTFLoader();
 
@@ -125,26 +125,24 @@ const init = () => {
 	//skybox
     scene.add(loadSkybox());
 
-	//make a room
-	const roomSize = 60;
-	const roomGeometry = new THREE.BoxGeometry(roomSize, roomSize, roomSize);
-	const roomMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.BackSide });
-	const room = new THREE.Mesh(roomGeometry, roomMaterial);
-	// scene.add(room);
-
 	//add lighting
-	const light = new THREE.PointLight(0xffffff, 100, 0, 2);
-	light.position.set(0, 0, 0);
+	const light = new THREE.PointLight(0xffffff, 30, 0, 1);
+	const lightPosition = new THREE.Vector3(0, 10, 0);
+	light.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
+
+	const lightMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+	lightMaterial.emissive = new THREE.Color(0xffffff);
+
+	const lightMesh = new THREE.Mesh(boxGeom, lightMaterial);
+	lightMesh.scale.y = 2;
+	lightMesh.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
+	
 	scene.add(light);
+	scene.add(lightMesh);
 
 	//global light
-	const globalLight = new THREE.AmbientLight(0xffffff, 1);
-	scene.add(globalLight);
-
-	//ceiling light
-	const ceilingLight = new THREE.PointLight(0xffffff, 100, 0, 0.25);
-	ceilingLight.position.set(0, 20, 0);
-	scene.add(ceilingLight);
+	// const globalLight = new THREE.AmbientLight(0xffffff, 1);
+	// scene.add(globalLight);
 
 	const fontLoader = new FontLoader();
 	fontLoader.load('/fonts/helvetiker_regular.typeface.json', function (font) {

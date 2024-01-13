@@ -71,6 +71,15 @@
 		</div>
 	</section>
 
+	<section id="certifications-and-badges-section">
+		<h3>Certifications and Badges</h3>
+		<div>
+			<div data-iframe-width="150" data-iframe-height="270" data-share-badge-id="73b16c98-cbe5-49ec-abdf-5525e8fd4dd5" data-share-badge-host="https://www.credly.com">
+			</div>
+			<script type="text/javascript" async src="//cdn.credly.com/assets/utilities/embed.js"></script>
+		</div>
+	</section>
+
 	<p>Find me on:</p>
 	<section>
 		<a href="https://www.linkedin.com/in/leejiakeat/" target="_blank">
@@ -149,5 +158,13 @@
 	.list-no-style {
 		padding: 0;
 		list-style: none;
+	}
+
+	#certifications-and-badges-section {
+		margin-top: 3rem;
+		display: flex;
+		flex-direction: column;
+
+		align-items: center;
 	}
 </style>

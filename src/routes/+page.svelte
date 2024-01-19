@@ -97,6 +97,10 @@
 			/></a
 		>
 	</section>
+
+	<section>
+		<p><a href="mailto:leejiakeat@gmail.com">leejiakeat@gmail.com</a></p>
+	</section>
 </section>
 
 <style lang="postcss">

@@ -73,34 +73,46 @@
 	</section>
 
 	<section id="certifications-and-badges-section">
-		<h3>Certifications and Badges</h3>
+		<h3>Badges</h3>
 		<p>View my credly profile <a href="https://www.credly.com/users/jia-keat-lee">here</a></p>
-		<div id="certification-and-badges">
+		<div id="badges">
 			<div data-iframe-width="150" data-iframe-height="270" data-share-badge-id="73b16c98-cbe5-49ec-abdf-5525e8fd4dd5" data-share-badge-host="https://www.credly.com">
 			</div>
 			<div data-iframe-width="150" data-iframe-height="270" data-share-badge-id="16aa2158-2525-469b-8c2a-70711ea79c5a" data-share-badge-host="https://www.credly.com">
 			</div>
 		</div>
+
+		<h3>Certifications</h3>
+		<div id="certifications">
+			<ul>
+				<li>
+					<a href="https://cp.certmetrics.com/amazon/en/public/verify/credential/bcec2818b9804b5b8aa41033fa66426e">
+						AWS Certified Cloud Practitioner
+					</a>
+				</li>
+			</ul>
+		</div>
 	</section>
 
-	<p>Find me on:</p>
-	<section>
-		<a href="https://www.linkedin.com/in/leejiakeat/" target="_blank">
-			<img
-				src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white"
-				alt="Lee Jia Keat's LinkedIn Profile"
-			/>
-		</a>
-		<a href="https://github.com/ksxjltze" target="_blank">
-			<img
-				src="https://img.shields.io/badge/GitHub-333333?style=for-the-badge&logo=github&logoColor=white"
-				alt="Lee Jia Keat's GitHub Profile"
-			/></a
-		>
-	</section>
-
-	<section>
-		<p><a href="mailto:leejiakeat@gmail.com">leejiakeat@gmail.com</a></p>
+	<h3>Contact</h3>
+	<section id="contact">
+		<div>
+			<a href="https://www.linkedin.com/in/leejiakeat/" target="_blank">
+				<img
+					src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white"
+					alt="Lee Jia Keat's LinkedIn Profile"
+				/>
+			</a>
+			<a href="https://github.com/ksxjltze" target="_blank">
+				<img
+					src="https://img.shields.io/badge/GitHub-333333?style=for-the-badge&logo=github&logoColor=white"
+					alt="Lee Jia Keat's GitHub Profile"
+				/></a
+			>
+		</div>
+		<section style="display: flex; align-items: center;">
+			<p style="margin: auto; margin-top: 0.25rem;"><a href="mailto:leejiakeat@gmail.com">leejiakeat@gmail.com</a></p>
+		</section>
 	</section>
 </section>
 
@@ -114,6 +126,12 @@
 		margin-top: 1rem;
 	}
 
+	#contact {
+		background-color: #555;
+		padding: 1rem;
+		border-radius: 8px;
+	}
+
 	#leejiakeat-photo {
 		width: 50%;
 		height: fit-content;
@@ -122,7 +140,7 @@
 		border-radius: 8px;
 	}
 
-	#certification-and-badges {
+	#badges {
 		display: flex;
 		gap: 1rem;
 	}

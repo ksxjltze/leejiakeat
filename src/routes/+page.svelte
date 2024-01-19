@@ -73,8 +73,10 @@
 
 	<section id="certifications-and-badges-section">
 		<h3>Certifications and Badges</h3>
-		<div>
+		<div id="certification-and-badges">
 			<div data-iframe-width="150" data-iframe-height="270" data-share-badge-id="73b16c98-cbe5-49ec-abdf-5525e8fd4dd5" data-share-badge-host="https://www.credly.com">
+			</div>
+			<div data-iframe-width="150" data-iframe-height="270" data-share-badge-id="16aa2158-2525-469b-8c2a-70711ea79c5a" data-share-badge-host="https://www.credly.com">
 			</div>
 			<script type="text/javascript" async src="//cdn.credly.com/assets/utilities/embed.js"></script>
 		</div>
@@ -113,6 +115,11 @@
 		
 		margin: auto;
 		border-radius: 8px;
+	}
+
+	#certification-and-badges {
+		display: flex;
+		gap: 1rem;
 	}
 
 	#overview-panel {

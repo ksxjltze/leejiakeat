@@ -1,12 +1,16 @@
 <script>
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcome_fallback from '$lib/images/svelte-welcome.png';
+	import { onMount } from 'svelte';
+
+	onMount(async () => {
+		const script = document.createElement('script');
+		script.src = '//cdn.credly.com/assets/utilities/embed.js';
+		document.head.appendChild(script);
+	});
 </script>
 
 <svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
-	<script type="text/javascript" src="//cdn.credly.com/assets/utilities/embed.js"></script>
+	<title>Lee Jia Keat</title>
+	<meta name="description" content="Lee Jia Keat" />
 </svelte:head>
 
 <section>

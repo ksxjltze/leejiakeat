@@ -6,6 +6,7 @@
 <svelte:head>
 	<title>Home</title>
 	<meta name="description" content="Svelte demo app" />
+	<script type="text/javascript" src="//cdn.credly.com/assets/utilities/embed.js"></script>
 </svelte:head>
 
 <section>
@@ -73,12 +74,12 @@
 
 	<section id="certifications-and-badges-section">
 		<h3>Certifications and Badges</h3>
+		<p>View my credly profile <a href="https://www.credly.com/users/jia-keat-lee">here</a></p>
 		<div id="certification-and-badges">
 			<div data-iframe-width="150" data-iframe-height="270" data-share-badge-id="73b16c98-cbe5-49ec-abdf-5525e8fd4dd5" data-share-badge-host="https://www.credly.com">
 			</div>
 			<div data-iframe-width="150" data-iframe-height="270" data-share-badge-id="16aa2158-2525-469b-8c2a-70711ea79c5a" data-share-badge-host="https://www.credly.com">
 			</div>
-			<script type="text/javascript" async src="//cdn.credly.com/assets/utilities/embed.js"></script>
 		</div>
 	</section>
 

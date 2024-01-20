@@ -118,6 +118,9 @@
 			<p style="margin: auto; margin-top: 0.25rem;"><a href="mailto:leejiakeat@gmail.com">leejiakeat@gmail.com</a></p>
 		</section>
 	</section>
+
+	<h3>Resume</h3>
+	<a href="/resume/LeeJiaKeatResume.pdf" download>LeeJiaKeatResume.pdf</a>
 </section>
 
 <style lang="postcss">

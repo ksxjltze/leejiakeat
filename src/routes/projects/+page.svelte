@@ -31,12 +31,12 @@
 	};
 </script>
 
-<section class="flex flex-col gap-4">
-	<section class="flex items-center justify-center">
+<section>
+	<section>
 		<section id="project-heroes">
 			<a id="iconoclasm-hero-link" class="w-full" href="/projects/Iconoclasm/">
 				<div id="iconoclasm-hero" class="border-radius-large">
-					<img src="/images/iconoclasm/iconoclasm-logo.jpg" alt="Iconoclasm Logo">
+					<img id="iconoclasm-hero-image" src="/images/iconoclasm/iconoclasm-logo.jpg" alt="Iconoclasm Logo">
 				</div>
 			</a>
 		</section>
@@ -110,6 +110,9 @@
 	}
 
 	#project-heroes {
+		margin: auto;
+		width: 100%;
+
 		display: flex;
 		flex-direction: column;
 
@@ -123,9 +126,7 @@
 	}
 
 	#iconoclasm-hero {
-		width: 100%;
-		height: fit-content;
-		
+		margin: auto;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -137,6 +138,10 @@
 	#iconoclasm-hero:hover {
 		transform: scale(1.05);
 		filter: drop-shadow(0 0 0.5rem #ffffff);
+	}
+
+	#iconoclasm-hero-image {
+		max-width: 50%;
 	}
 
 	.w-full {

@@ -152,6 +152,14 @@
 		gap: 1rem;
 	}
 
+	#overview-section {
+		margin: auto;
+		width: 100%;
+
+		display: flex;
+		align-items: center;
+	}
+
 	#overview-panel {
 		width: 100%;
 		border: 1px solid #fff;

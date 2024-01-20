@@ -32,7 +32,7 @@
 	</h2>
 
 	<section id="overview-section">
-		<div id="overview-panel" class="panel-darken">
+		<div id="overview-panel" class="panel-darken mobile-flex-col">
 			<img id="leejiakeat-photo" src="/images/lee-jia-keat.png" alt="Lee Jia Keat">
 			<section id="panel-info">
 				<div id="panel-info-skills">
@@ -164,9 +164,10 @@
 		width: 100%;
 		border: 1px solid #fff;
 		border-radius: 8px;
-		padding: 1rem 2rem;
 
 		display: flex;
+		align-items: center;
+
 		column-gap: 2rem;
 		position: relative;
 
@@ -211,5 +212,16 @@
 		flex-direction: column;
 
 		align-items: center;
+	}
+
+	@media only screen and (max-width: 600px) {
+		#leejiakeat-photo {
+			/* display: none; */
+			width: 100%;
+		}
+
+		.mobile-flex-col {
+			flex-direction: column;
+		}
 	}
 </style>

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import * as THREE from 'three';
 	import { onMount } from 'svelte';
 	import { createSceneWithContainer, resize, lockControls } from '$lib/scene';
 

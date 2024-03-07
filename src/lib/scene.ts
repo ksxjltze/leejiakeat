@@ -40,7 +40,7 @@ const pointer = new THREE.Vector2(0, 0);
 
 let keys = [];
 
-function onPointerMove( event ) {
+function onPointerMove(event) {
 
 }
 
@@ -55,8 +55,8 @@ const animate = () => {
 	render();
 };
 
-const render = () => { 
-	raycaster.setFromCamera( pointer, camera );
+const render = () => {
+	raycaster.setFromCamera(pointer, camera);
 
 	//lazy highlighting
 	// calculate objects intersecting the picking ray
@@ -70,7 +70,7 @@ const render = () => {
 		}
 	}
 
-	for ( let i = 0; i < intersects.length; i ++ ) {
+	for (let i = 0; i < intersects.length; i++) {
 		const object: any = intersects[i].object;
 
 		if (object.name != "Interactable")
@@ -80,7 +80,7 @@ const render = () => {
 		isSelected = true;
 
 		if (object.material) {
-			object.material.emissive.setHex( 0x3355ff );
+			object.material.emissive.setHex(0x3355ff);
 		}
 	}
 
@@ -90,9 +90,9 @@ const render = () => {
 const updateController = (keys: any[], dt: number) => {
 	//fake gravity
 	player.velocity.y += (1.5 * -9.82 * dt);
-	
+
 	moveWASD(keys, dt);
-	
+
 	camera.position.x += player.velocity.x * dt;
 	camera.position.y += player.velocity.y * dt;
 	camera.position.z += player.velocity.z * dt;
@@ -179,7 +179,7 @@ const loadSkyboxTextures = () => {
 	const dn = new THREE.TextureLoader().load("/images/skybox/purple-nebula_bottom4.png");
 	const rt = new THREE.TextureLoader().load("/images/skybox/purple-nebula_right1.png");
 	const lf = new THREE.TextureLoader().load("/images/skybox/purple-nebula_left2.png");
-	
+
 	return [rt, lf, up, dn, ft, bk];
 }
 
@@ -206,7 +206,7 @@ const createInteractableTexturePlane = (width, height, texture) => {
 	const planeMaterial = new THREE.MeshStandardMaterial({ map: texture });
 	const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
 	planeMesh.name = "Interactable";
-	
+
 	return planeMesh;
 }
 
@@ -255,9 +255,9 @@ const constructLobbyRoom = () => {
 	room.add(leftWallRight);
 
 	const leftWallTop = new THREE.Mesh(wallGeometry, wallMaterial);
-	leftWallTop.position.set(-wallLength / 2, 7/8 * wallHeight, 0);
+	leftWallTop.position.set(-wallLength / 2, 7 / 8 * wallHeight, 0);
 	leftWallTop.rotation.y = Math.PI / 2;
-	leftWallTop.scale.set(0.34, 1/4, 1.0);
+	leftWallTop.scale.set(0.34, 1 / 4, 1.0);
 	room.add(leftWallTop);
 
 	const rightWallLeft = new THREE.Mesh(wallGeometry, wallMaterial);
@@ -273,9 +273,9 @@ const constructLobbyRoom = () => {
 	room.add(rightWallRight);
 
 	const rightWallTop = new THREE.Mesh(wallGeometry, wallMaterial);
-	rightWallTop.position.set(wallLength / 2, 7/8 * wallHeight, 0);
+	rightWallTop.position.set(wallLength / 2, 7 / 8 * wallHeight, 0);
 	rightWallTop.rotation.y = -Math.PI / 2;
-	rightWallTop.scale.set(0.34, 1/4, 1.0);
+	rightWallTop.scale.set(0.34, 1 / 4, 1.0);
 	room.add(rightWallTop);
 
 	// Create floor
@@ -295,6 +295,15 @@ const constructLobbyRoom = () => {
 	floorMesh2.position.x -= wallLength;
 	floorMesh2.scale.set(1.025, 1.025, 1.0);
 	room.add(floorMesh2);
+
+	const floorGeometry3 = new THREE.PlaneGeometry(wallLength, wallLength);
+	const floorMaterial3 = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
+	const floorMesh3 = new THREE.Mesh(floorGeometry3, floorMaterial3);
+	floorMesh3.rotation.x = -Math.PI / 2;
+	floorMesh3.position.y = wallThickness / 2;
+	floorMesh3.position.x += wallLength;
+	floorMesh3.scale.set(1.025, 1.025, 1.0);
+	room.add(floorMesh3);
 
 	const skylightGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
 	const skylightMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA, transparent: true, opacity: 0.8 });
@@ -367,17 +376,33 @@ const init = () => {
 	// 	console.error(err);
 	// });
 
-	modelLoader.load('/models/boi2.glb', (gltf ) => {
-	console.log("Added model: ", gltf);
-	gltf.scene.position.set(-20, 2.5, 0);
-	gltf.scene.rotation.set(0, Math.PI, 0);
-	gltf.scene.scale.set(0.5, 0.5, 0.5);
-	scene.add(gltf.scene);
+	modelLoader.load('/models/boi2.glb', (gltf) => {
+		console.log("Added model: ", gltf);
+		gltf.scene.position.set(-20, 2.5, 0);
+		gltf.scene.rotation.set(0, Math.PI, 0);
+		gltf.scene.scale.set(0.5, 0.5, 0.5);
+		scene.add(gltf.scene);
 	},
-	undefined,
-	(err) => {
-		console.error(err);
-	});
+		undefined,
+		(err) => {
+			console.error(err);
+		});
+
+	modelLoader.load('/models/table.glb', (gltf) => {
+		console.log("Added model: ", gltf);
+		gltf.scene.position.set(20, -4, 0);
+		gltf.scene.scale.set(2, 2, 2);
+
+		const light = new THREE.PointLight(0xffffff, 30, 0, 1);
+		light.position.set(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
+	
+		scene.add(light);
+		scene.add(gltf.scene);
+	},
+		undefined,
+		(err) => {
+			console.error(err);
+		});
 
 	//scene setup
 	const sphere = new THREE.Mesh(sphereGeom, standardMat)
@@ -389,7 +414,7 @@ const init = () => {
 	camera.rotation.y = Math.PI;
 
 	//skybox
-    scene.add(loadSkybox());
+	scene.add(loadSkybox());
 
 	//add lighting
 	const light = new THREE.PointLight(0xffffff, 30, 0, 1);
@@ -402,7 +427,7 @@ const init = () => {
 	const lightMesh = new THREE.Mesh(boxGeom, lightMaterial);
 	lightMesh.scale.y = 2;
 	lightMesh.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
-	
+
 	scene.add(light);
 	// scene.add(lightMesh);
 
@@ -436,7 +461,7 @@ const init = () => {
 	world = setupPhysics();
 
 	window.addEventListener('resize', resize);
-	window.addEventListener( 'pointermove', onPointerMove );
+	window.addEventListener('pointermove', onPointerMove);
 };
 
 export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement) => {
@@ -454,16 +479,16 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 
 	//wasd
 	const onKeyDown = (event: KeyboardEvent) => {
-    const key = event.key.toLowerCase();
-    if (!keys.includes(key)) {
-      keys.push(key);
-    }
+		const key = event.key.toLowerCase();
+		if (!keys.includes(key)) {
+			keys.push(key);
+		}
 	};
 	const onKeyUp = (event: KeyboardEvent) => {
-    const key = event.key.toLowerCase();
-    if (keys.includes(key)) {
-      keys = keys.filter((k) => k !== key);
-    }
+		const key = event.key.toLowerCase();
+		if (keys.includes(key)) {
+			keys = keys.filter((k) => k !== key);
+		}
 	};
 	document.addEventListener('keydown', onKeyDown);
 	document.addEventListener('keyup', onKeyUp);

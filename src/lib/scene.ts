@@ -25,6 +25,7 @@ let playerBody;
 let floorBody;
 
 let selectedObject = undefined;
+let isSelected = false;
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2(0, 0);
@@ -56,8 +57,10 @@ const render = () => {
 	if (selectedObject) {
 		const intersected = raycaster.intersectObject(selectedObject)
 
-		if (intersected.length == 0)
+		if (intersected.length == 0) {
+			isSelected = false;
 			selectedObject.material.emissive.setHex(0);
+		}
 	}
 
 	for ( let i = 0; i < intersects.length; i ++ ) {
@@ -67,6 +70,7 @@ const render = () => {
 			continue;
 
 		selectedObject = object;
+		isSelected = true;
 
 		if (object.material) {
 			object.material.emissive.setHex( 0x3355ff );
@@ -84,6 +88,17 @@ const updateController = (keys: any[], dt: number) => {
 
 	if (camera.position.y < 0)
 		camera.position.y = 0;
+
+	if (!isSelected || !selectedObject)
+		return;
+
+	for (let i = 0; i < keys.length; i++) {
+		const key = keys[i];
+		switch (key) {
+			case 'f':
+				selectedObject.rotation.z -= 2 * dt;
+		}
+	}
 }
 
 const moveWASD = (keys: any[], dt: number) => {
@@ -360,22 +375,23 @@ const init = () => {
 
 	const fontLoader = new FontLoader();
 	fontLoader.load('/fonts/helvetiker_regular.typeface.json', function (font) {
-		const geometry = new TextGeometry('Hello!', {
+		const geometry = new TextGeometry('Press F to interact!', {
 			font: font,
-			size: 1,
-			height: 0.25,
+			size: 0.5,
+			height: 0.1,
 			curveSegments: 8,
 			bevelEnabled: false,
 			bevelThickness: 0.125,
 			bevelSize: 0.025,
 			bevelOffset: 0,
-			bevelSegments: 1
+			bevelSegments: 1,
 		});
 		geometry.center();
 
 		const material = new THREE.MeshBasicMaterial();
+		material.color = new THREE.Color(0, 0, 0);
 		const text = new THREE.Mesh(geometry, material);
-		text.position.z = -25;
+		text.position.z = -8;
 		scene.add(text);
 	});
 

@@ -27,11 +27,15 @@ let floorBody;
 let selectedObject = undefined;
 let isSelected = false;
 
+let velocity = new THREE.Vector3(0, 0, 0);
+let grounded = true;
+
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2(0, 0);
 
 let keys = [];
-const moveSpeed = 15;
+const moveSpeed = 12;
+const jumpAmount = 8;
 
 function onPointerMove( event ) {
 
@@ -81,13 +85,21 @@ const render = () => {
 }
 
 const updateController = (keys: any[], dt: number) => {
-	moveWASD(keys, dt);
-
 	//fake gravity
-	camera.position.y += -9.82;
+	velocity.y += (1.1 * -9.82 * dt);
+	
+	moveWASD(keys, dt);
+	
+	camera.position.x += velocity.x * dt;
+	camera.position.y += velocity.y * dt;
+	camera.position.z += velocity.z * dt;
 
-	if (camera.position.y < 0)
+	if (camera.position.y < 0) {
 		camera.position.y = 0;
+		velocity.y = 0;
+
+		grounded = true;
+	}
 
 	if (!isSelected || !selectedObject)
 		return;
@@ -118,7 +130,12 @@ const moveWASD = (keys: any[], dt: number) => {
 				controls.moveRight(moveSpeed * dt);
 				break;
 			case ' ':
-				camera.position.y += moveSpeed * dt;
+				// camera.position.y += moveSpeed * dt;
+				if (grounded) {
+					velocity.y += jumpAmount;
+					grounded = false;
+				}
+
 				break;
 			case 'shift':
 				camera.position.y -= moveSpeed * dt;

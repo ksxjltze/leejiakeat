@@ -27,15 +27,18 @@ let floorBody;
 let selectedObject = undefined;
 let isSelected = false;
 
-let velocity = new THREE.Vector3(0, 0, 0);
-let grounded = true;
+const player = {
+	velocity: new THREE.Vector3(0, 0, 0),
+	grounded: true,
+
+	moveSpeed: 12,
+	jumpAmount: 8
+};
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2(0, 0);
 
 let keys = [];
-const moveSpeed = 12;
-const jumpAmount = 8;
 
 function onPointerMove( event ) {
 
@@ -86,19 +89,19 @@ const render = () => {
 
 const updateController = (keys: any[], dt: number) => {
 	//fake gravity
-	velocity.y += (1.1 * -9.82 * dt);
+	player.velocity.y += (1.5 * -9.82 * dt);
 	
 	moveWASD(keys, dt);
 	
-	camera.position.x += velocity.x * dt;
-	camera.position.y += velocity.y * dt;
-	camera.position.z += velocity.z * dt;
+	camera.position.x += player.velocity.x * dt;
+	camera.position.y += player.velocity.y * dt;
+	camera.position.z += player.velocity.z * dt;
 
 	if (camera.position.y < 0) {
 		camera.position.y = 0;
-		velocity.y = 0;
+		player.velocity.y = 0;
 
-		grounded = true;
+		player.grounded = true;
 	}
 
 	if (!isSelected || !selectedObject)
@@ -118,27 +121,23 @@ const moveWASD = (keys: any[], dt: number) => {
 		const key = keys[i];
 		switch (key) {
 			case 'w':
-				controls.moveForward(moveSpeed * dt);
+				controls.moveForward(player.moveSpeed * dt);
 				break;
 			case 'a':
-				controls.moveRight(-moveSpeed * dt);
+				controls.moveRight(-player.moveSpeed * dt);
 				break;
 			case 's':
-				controls.moveForward(-moveSpeed * dt);
+				controls.moveForward(-player.moveSpeed * dt);
 				break;
 			case 'd':
-				controls.moveRight(moveSpeed * dt);
+				controls.moveRight(player.moveSpeed * dt);
 				break;
-			case ' ':
-				// camera.position.y += moveSpeed * dt;
-				if (grounded) {
-					velocity.y += jumpAmount;
-					grounded = false;
+			case ' ': //jump
+				if (player.grounded) {
+					player.velocity.y += player.jumpAmount;
+					player.grounded = false;
 				}
 
-				break;
-			case 'shift':
-				camera.position.y -= moveSpeed * dt;
 				break;
 		}
 	}

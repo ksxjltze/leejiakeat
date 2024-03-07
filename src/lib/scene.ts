@@ -335,4 +335,6 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 export const lockControls = () => {
 	if (!controls) return;
 	controls.lock();
+
+	keys = [];
 };

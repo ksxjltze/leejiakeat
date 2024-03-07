@@ -12,6 +12,8 @@
 
 		createSceneWithContainer(surface, container);
 		window.addEventListener('dblclick', onRequestFullScreen);
+
+		onRequestFullScreen();
 	});
 
 	let onRequestFullScreen = () => {

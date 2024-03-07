@@ -93,20 +93,90 @@ const loadSkybox = () => {
 	return skybox;
 }
 
+const constructLobbyRoom = () => {
+	const room = new THREE.Group();
+
+	// Create walls
+	const wallHeight = 10;
+	const wallThickness = 0.5;
+	const wallLength = 20;
+
+	const wallGeometry = new THREE.BoxGeometry(wallLength, wallHeight, wallThickness);
+	const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xCCCCCC });
+
+	const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
+	frontWall.position.set(0, wallHeight / 2, wallLength / 2);
+	room.add(frontWall);
+
+	const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
+	backWall.position.set(0, wallHeight / 2, -wallLength / 2);
+	room.add(backWall);
+
+	const leftWallLeft = new THREE.Mesh(wallGeometry, wallMaterial);
+	leftWallLeft.position.set(-wallLength / 2, wallHeight / 2, -wallLength / 3);
+	leftWallLeft.rotation.y = Math.PI / 2;
+	leftWallLeft.scale.set(0.333, 1.0, 1.0);
+	room.add(leftWallLeft);
+
+	const leftWallRight = new THREE.Mesh(wallGeometry, wallMaterial);
+	leftWallRight.position.set(-wallLength / 2, wallHeight / 2, wallLength / 3);
+	leftWallRight.rotation.y = Math.PI / 2;
+	leftWallRight.scale.set(0.333, 1.0, 1.0);
+	room.add(leftWallRight);
+
+	const leftWallTop = new THREE.Mesh(wallGeometry, wallMaterial);
+	leftWallTop.position.set(-wallLength / 2, 7/8 * wallHeight, 0);
+	leftWallTop.rotation.y = Math.PI / 2;
+	leftWallTop.scale.set(0.34, 1/4, 1.0);
+	room.add(leftWallTop);
+
+	const rightWallLeft = new THREE.Mesh(wallGeometry, wallMaterial);
+	rightWallLeft.position.set(wallLength / 2, wallHeight / 2, -wallLength / 3);
+	rightWallLeft.rotation.y = -Math.PI / 2;
+	rightWallLeft.scale.set(0.333, 1.0, 1.0);
+	room.add(rightWallLeft);
+
+	const rightWallRight = new THREE.Mesh(wallGeometry, wallMaterial);
+	rightWallRight.position.set(wallLength / 2, wallHeight / 2, wallLength / 3);
+	rightWallRight.rotation.y = -Math.PI / 2;
+	rightWallRight.scale.set(0.333, 1.0, 1.0);
+	room.add(rightWallRight);
+
+	const rightWallTop = new THREE.Mesh(wallGeometry, wallMaterial);
+	rightWallTop.position.set(wallLength / 2, 7/8 * wallHeight, 0);
+	rightWallTop.rotation.y = -Math.PI / 2;
+	rightWallTop.scale.set(0.34, 1/4, 1.0);
+	room.add(rightWallTop);
+
+	// Create floor
+	const floorGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
+	const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
+	const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.rotation.x = -Math.PI / 2;
+	floor.position.y = wallThickness / 2;
+	room.add(floor);
+
+	return room;
+};
+
 const init = () => {
 	scene = new THREE.Scene();
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 
-	modelLoader.load('/models/room.glb', (gltf ) => {
-		console.log("Added model: ", gltf);
-		gltf.scene.position.set(0, -5, 0);
-		gltf.scene.rotation.set(0, Math.PI, 0);
-		scene.add(gltf.scene);
-	},
-	undefined,
-	(err) => {
-		console.error(err);
-	});
+	let lobby = constructLobbyRoom();
+	lobby.position.setY(lobby.position.y - 5);
+	scene.add(lobby);
+
+	// modelLoader.load('/models/room.glb', (gltf ) => {
+	// 	console.log("Added model: ", gltf);
+	// 	gltf.scene.position.set(0, -5, 0);
+	// 	gltf.scene.rotation.set(0, Math.PI, 0);
+	// 	scene.add(gltf.scene);
+	// },
+	// undefined,
+	// (err) => {
+	// 	console.error(err);
+	// });
 
 	//scene setup
 	const sphere = new THREE.Mesh(sphereGeom, standardMat)
@@ -132,7 +202,7 @@ const init = () => {
 	lightMesh.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
 	
 	scene.add(light);
-	scene.add(lightMesh);
+	// scene.add(lightMesh);
 
 	//global light
 	// const globalLight = new THREE.AmbientLight(0xffffff, 1);

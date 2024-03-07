@@ -8,7 +8,6 @@
 	// import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit"
 
 	/** @type {import('./$types').LayoutServerData} */
-	export let data;
 
 	// injectSpeedInsights();
 

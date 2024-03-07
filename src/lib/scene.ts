@@ -25,12 +25,16 @@ const animate = () => {
 	if (!renderer || !camera || !scene) return;
 
 	requestAnimationFrame(animate);
-	moveWASD(keys, dt);
+	updateController(keys, dt);
 
 	renderer.render(scene, camera);
 };
 
-const moveWASD = (keys, dt: number) => {
+const updateController = (keys: any[], dt: number) => {
+	moveWASD(keys, dt);
+}
+
+const moveWASD = (keys: any[], dt: number) => {
 	for (let i = 0; i < keys.length; i++) {
 		const key = keys[i];
 		switch (key) {
@@ -112,6 +116,14 @@ const constructLobbyRoom = () => {
 	backWall.position.set(0, wallHeight / 2, -wallLength / 2);
 	room.add(backWall);
 
+	const texture = new THREE.TextureLoader().load("/images/stronk.jpg");
+	const planeGeometry = new THREE.PlaneGeometry(wallLength, wallHeight);
+	const planeMaterial = new THREE.MeshStandardMaterial({ map: texture });
+	const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+	plane.position.set(0, wallHeight / 2, -wallLength / 2 + wallThickness);
+	plane.scale.set(0.8, 0.8, 1.0);
+	room.add(plane);
+
 	const leftWallLeft = new THREE.Mesh(wallGeometry, wallMaterial);
 	leftWallLeft.position.set(-wallLength / 2, wallHeight / 2, -wallLength / 3);
 	leftWallLeft.rotation.y = Math.PI / 2;
@@ -154,7 +166,57 @@ const constructLobbyRoom = () => {
 	const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 	floor.rotation.x = -Math.PI / 2;
 	floor.position.y = wallThickness / 2;
+	floor.scale.set(1.025, 1.025, 1.0);
 	room.add(floor);
+
+	const skylightGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
+	const skylightMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA, transparent: true, opacity: 0.5 });
+	const skylight = new THREE.Mesh(skylightGeometry, skylightMaterial);
+	skylight.rotation.x = Math.PI / 2;
+	skylight.position.y = wallHeight;
+	skylight.scale.set(0.8, 0.8, 1.0);
+	room.add(skylight);
+
+	const fakeLightGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
+	const fakeLightMaterial = new THREE.MeshStandardMaterial({ color: 0xCCCCCC });
+	const fakeLight = new THREE.Mesh(fakeLightGeometry, fakeLightMaterial);
+	fakeLight.rotation.x = Math.PI / 2;
+	fakeLight.position.y = wallHeight - 0.1;
+	fakeLight.scale.set(0.2, 0.2, 1.0);
+	room.add(fakeLight);
+
+	const ceilingGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
+	const ceilingMaterial = new THREE.MeshStandardMaterial({ color: 0xCCCCCC });
+
+	const ceilingLeft = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+	ceilingLeft.rotation.x = Math.PI / 2;
+	ceilingLeft.position.y = wallHeight;
+	ceilingLeft.position.x = 0.9 * -wallHeight;
+	ceilingLeft.scale.set(0.1, 1.0, 1.0);
+	room.add(ceilingLeft);
+
+	const ceilingRight = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+	ceilingRight.rotation.x = Math.PI / 2;
+	ceilingRight.position.y = wallHeight;
+	ceilingRight.position.x = 0.9 * wallHeight;
+	ceilingRight.scale.set(0.1, 1.0, 1.0);
+	room.add(ceilingRight);
+
+	const ceilingFront = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+	ceilingFront.rotation.x = Math.PI / 2;
+	ceilingFront.rotation.z = Math.PI / 2;
+	ceilingFront.position.y = wallHeight;
+	ceilingFront.position.z = 0.9 * wallLength / 2;
+	ceilingFront.scale.set(0.1, 1.0, 1.0);
+	room.add(ceilingFront);
+
+	const ceilingBack = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+	ceilingBack.rotation.x = Math.PI / 2;
+	ceilingBack.rotation.z = Math.PI / 2;
+	ceilingBack.position.y = wallHeight;
+	ceilingBack.position.z = 0.9 * -wallLength / 2;
+	ceilingBack.scale.set(0.1, 1.0, 1.0);
+	room.add(ceilingBack);
 
 	return room;
 };
@@ -191,7 +253,7 @@ const init = () => {
 
 	//add lighting
 	const light = new THREE.PointLight(0xffffff, 30, 0, 1);
-	const lightPosition = new THREE.Vector3(0, 10, 0);
+	const lightPosition = new THREE.Vector3(0, 3.75, 0);
 	light.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
 
 	const lightMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
@@ -225,7 +287,7 @@ const init = () => {
 
 		const material = new THREE.MeshBasicMaterial();
 		const text = new THREE.Mesh(geometry, material);
-		text.position.z = -10;
+		text.position.z = -25;
 		scene.add(text);
 	});
 

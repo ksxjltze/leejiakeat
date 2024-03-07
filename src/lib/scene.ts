@@ -271,6 +271,15 @@ const constructLobbyRoom = () => {
 	floorMesh.scale.set(1.025, 1.025, 1.0);
 	room.add(floorMesh);
 
+	const floorGeometry2 = new THREE.PlaneGeometry(wallLength, wallLength);
+	const floorMaterial2 = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
+	const floorMesh2 = new THREE.Mesh(floorGeometry2, floorMaterial2);
+	floorMesh2.rotation.x = -Math.PI / 2;
+	floorMesh2.position.y = wallThickness / 2;
+	floorMesh2.position.x -= wallLength;
+	floorMesh2.scale.set(1.025, 1.025, 1.0);
+	room.add(floorMesh2);
+
 	const skylightGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
 	const skylightMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA, transparent: true, opacity: 0.8 });
 	const skylight = new THREE.Mesh(skylightGeometry, skylightMaterial);
@@ -341,6 +350,18 @@ const init = () => {
 	// (err) => {
 	// 	console.error(err);
 	// });
+
+	modelLoader.load('/models/boi2.glb', (gltf ) => {
+	console.log("Added model: ", gltf);
+	gltf.scene.position.set(-20, 2.5, 0);
+	gltf.scene.rotation.set(0, Math.PI, 0);
+	gltf.scene.scale.set(0.5, 0.5, 0.5);
+	scene.add(gltf.scene);
+	},
+	undefined,
+	(err) => {
+		console.error(err);
+	});
 
 	//scene setup
 	const sphere = new THREE.Mesh(sphereGeom, standardMat)

@@ -394,7 +394,9 @@ const init = () => {
 		gltf.scene.scale.set(2, 2, 2);
 
 		const light = new THREE.PointLight(0xffffff, 30, 0, 1);
+		const light2 = new THREE.PointLight(0xffffff, 30, 0, 1);
 		light.position.set(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
+		light.position.set(gltf.scene.position.x, gltf.scene.position.y + 3, gltf.scene.position.z);
 	
 		scene.add(light);
 		scene.add(gltf.scene);

@@ -3,6 +3,7 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
+import * as CANNON from 'cannon';
 
 const boxGeom = new THREE.BoxGeometry();
 const sphereGeom = new THREE.SphereGeometry();
@@ -17,6 +18,12 @@ let controls;
 let surfaceContainer: HTMLElement;
 let initialized = false;
 
+let world;
+let floorMesh;
+
+let playerBody;
+let floorBody;
+
 let keys = [];
 const moveSpeed = 15;
 
@@ -25,6 +32,7 @@ const animate = () => {
 	if (!renderer || !camera || !scene) return;
 
 	requestAnimationFrame(animate);
+	updatePhysics(dt);
 	updateController(keys, dt);
 
 	renderer.render(scene, camera);
@@ -32,6 +40,12 @@ const animate = () => {
 
 const updateController = (keys: any[], dt: number) => {
 	moveWASD(keys, dt);
+
+	//fake gravity
+	camera.position.y += -9.82;
+
+	if (camera.position.y < 0)
+		camera.position.y = 0;
 }
 
 const moveWASD = (keys: any[], dt: number) => {
@@ -59,6 +73,18 @@ const moveWASD = (keys: any[], dt: number) => {
 		}
 	}
 };
+
+function updatePhysics(dt) {
+	// Step the physics world
+	world.step(dt);
+
+	if (!playerBody)
+		return;
+
+	// Copy coordinates from Cannon.js to Three.js
+	camera.position.copy(playerBody.position);
+	camera.quaternion.copy(playerBody.quaternion);
+}
 
 export const resize = () => {
 	if (!renderer || !camera || !window) return;
@@ -95,6 +121,15 @@ const loadSkybox = () => {
 	const skyboxGeom = new THREE.BoxGeometry(10000, 10000, 10000);
 	const skybox = new THREE.Mesh(skyboxGeom, materialArray);
 	return skybox;
+}
+
+const setupPhysics = () => {
+	const world = new CANNON.World();
+	world.gravity.set(0, -9.82, 0); // m/s²
+
+	//TODO: actually do something
+
+	return world;
 }
 
 const constructLobbyRoom = () => {
@@ -163,14 +198,14 @@ const constructLobbyRoom = () => {
 	// Create floor
 	const floorGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
 	const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
-	const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-	floor.rotation.x = -Math.PI / 2;
-	floor.position.y = wallThickness / 2;
-	floor.scale.set(1.025, 1.025, 1.0);
-	room.add(floor);
+	floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
+	floorMesh.rotation.x = -Math.PI / 2;
+	floorMesh.position.y = wallThickness / 2;
+	floorMesh.scale.set(1.025, 1.025, 1.0);
+	room.add(floorMesh);
 
 	const skylightGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
-	const skylightMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA, transparent: true, opacity: 0.5 });
+	const skylightMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA, transparent: true, opacity: 0.8 });
 	const skylight = new THREE.Mesh(skylightGeometry, skylightMaterial);
 	skylight.rotation.x = Math.PI / 2;
 	skylight.position.y = wallHeight;
@@ -290,6 +325,9 @@ const init = () => {
 		text.position.z = -25;
 		scene.add(text);
 	});
+
+	//physics
+	world = setupPhysics();
 
 	window.addEventListener('resize', resize);
 };

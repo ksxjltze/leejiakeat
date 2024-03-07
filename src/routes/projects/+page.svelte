@@ -20,6 +20,14 @@
 				>ksxjltze.github.io</a
 			>
 		</p>
+
+		<p>
+			Click 
+			<a href="/interactive">
+				here
+			</a>
+			to view my projects in an interactive mode (WIP).
+		</p>
 	</section>
 
 	<section>
@@ -78,14 +86,6 @@
 
 	.w-full {
 		width: 100%;
-	}
-
-	.border-radius-small {
-		border-radius: 4px;
-	}
-
-	.border-radius-medium {
-		border-radius: 8px;
 	}
 
 	.border-radius-large {

@@ -24,8 +24,17 @@ let floorMesh;
 let playerBody;
 let floorBody;
 
+let selectedObject = undefined;
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2(0, 0);
+
 let keys = [];
 const moveSpeed = 15;
+
+function onPointerMove( event ) {
+
+}
 
 const animate = () => {
 	const dt = clock.getDelta();
@@ -35,8 +44,37 @@ const animate = () => {
 	updatePhysics(dt);
 	updateController(keys, dt);
 
-	renderer.render(scene, camera);
+	render();
 };
+
+const render = () => { 
+	raycaster.setFromCamera( pointer, camera );
+
+	//lazy highlighting
+	// calculate objects intersecting the picking ray
+	const intersects = raycaster.intersectObjects(scene.children);
+	if (selectedObject) {
+		const intersected = raycaster.intersectObject(selectedObject)
+
+		if (intersected.length == 0)
+			selectedObject.material.emissive.setHex(0);
+	}
+
+	for ( let i = 0; i < intersects.length; i ++ ) {
+		const object: any = intersects[i].object;
+
+		if (object.name != "Interactable")
+			continue;
+
+		selectedObject = object;
+
+		if (object.material) {
+			object.material.emissive.setHex( 0x3355ff );
+		}
+	}
+
+	renderer.render(scene, camera);
+}
 
 const updateController = (keys: any[], dt: number) => {
 	moveWASD(keys, dt);
@@ -132,6 +170,15 @@ const setupPhysics = () => {
 	return world;
 }
 
+const createInteractableTexturePlane = (width, height, texture) => {
+	const planeGeometry = new THREE.PlaneGeometry(width, height);
+	const planeMaterial = new THREE.MeshStandardMaterial({ map: texture });
+	const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+	planeMesh.name = "Interactable";
+	
+	return planeMesh;
+}
+
 const constructLobbyRoom = () => {
 	const room = new THREE.Group();
 
@@ -147,17 +194,22 @@ const constructLobbyRoom = () => {
 	frontWall.position.set(0, wallHeight / 2, wallLength / 2);
 	room.add(frontWall);
 
+	const iconoclasmLogoTexture = new THREE.TextureLoader().load("/images/iconoclasm/iconoclasm-logo.jpg");
+	const iconoclasmBanner = createInteractableTexturePlane(wallLength, wallHeight, iconoclasmLogoTexture);
+	iconoclasmBanner.position.set(0, wallHeight / 2, wallLength / 2 - wallThickness);
+	iconoclasmBanner.scale.set(0.75, 0.8, 1.0);
+	iconoclasmBanner.rotation.y = Math.PI;
+	room.add(iconoclasmBanner);
+
 	const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
 	backWall.position.set(0, wallHeight / 2, -wallLength / 2);
 	room.add(backWall);
 
-	const texture = new THREE.TextureLoader().load("/images/stronk.jpg");
-	const planeGeometry = new THREE.PlaneGeometry(wallLength, wallHeight);
-	const planeMaterial = new THREE.MeshStandardMaterial({ map: texture });
-	const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-	plane.position.set(0, wallHeight / 2, -wallLength / 2 + wallThickness);
-	plane.scale.set(0.8, 0.8, 1.0);
-	room.add(plane);
+	const stronkBoiTexture = new THREE.TextureLoader().load("/images/stronk.jpg");
+	const stronkBoiPlane = createInteractableTexturePlane(wallLength, wallHeight, stronkBoiTexture);
+	stronkBoiPlane.position.set(0, wallHeight / 2, -wallLength / 2 + wallThickness);
+	stronkBoiPlane.scale.set(0.75, 0.8, 1.0);
+	room.add(stronkBoiPlane);
 
 	const leftWallLeft = new THREE.Mesh(wallGeometry, wallMaterial);
 	leftWallLeft.position.set(-wallLength / 2, wallHeight / 2, -wallLength / 3);
@@ -282,6 +334,7 @@ const init = () => {
 
 	scene.add(sphere);
 	camera.position.z = 0;
+	camera.rotation.y = Math.PI;
 
 	//skybox
     scene.add(loadSkybox());
@@ -330,6 +383,7 @@ const init = () => {
 	world = setupPhysics();
 
 	window.addEventListener('resize', resize);
+	window.addEventListener( 'pointermove', onPointerMove );
 };
 
 export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement) => {

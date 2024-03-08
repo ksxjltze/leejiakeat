@@ -441,18 +441,6 @@ const init = () => {
 	scene.add(lobby);
 
 	cannonDebugRenderer = new CannonDebugRenderer(scene, world);
-
-	// modelLoader.load('/models/room.glb', (gltf ) => {
-	// 	console.log("Added model: ", gltf);
-	// 	gltf.scene.position.set(0, -5, 0);
-	// 	gltf.scene.rotation.set(0, Math.PI, 0);
-	// 	scene.add(gltf.scene);
-	// },
-	// undefined,
-	// (err) => {
-	// 	console.error(err);
-	// });
-
 	modelLoader.load('/models/boi2.glb', (gltf) => {
 		console.log("Added model: ", gltf);
 		gltf.scene.position.set(-20, 2.5, -8);
@@ -492,12 +480,21 @@ const init = () => {
 	modelLoader.load('/models/table.glb', (gltf) => {
 		console.log("Added model: ", gltf);
 		gltf.scene.position.set(20, -4, -5);
-		gltf.scene.scale.set(2, 2, 2);
 
 		const light = new THREE.PointLight(0xffffff, 10, 0, 1);
 		const light2 = new THREE.PointLight(0xffffff, 30, 0, 1);
 		light.position.set(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
 		light2.position.set(gltf.scene.position.x, gltf.scene.position.y + 5, gltf.scene.position.z);
+
+		const mesh = gltf.scene.children[0] as THREE.Mesh;
+		mesh.geometry.scale(2, 2, 2);
+		const shape = CannonUtils.CreateTrimesh(mesh.geometry);
+		const body = new CANNON.Body({
+			mass: 0
+		})
+		body.addShape(shape);
+		body.position = new CANNON.Vec3(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
+		world.addBody(body);
 
 		scene.add(light2);
 		scene.add(light);

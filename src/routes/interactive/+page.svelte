@@ -39,7 +39,7 @@
     <p>Instructions:</p>
     <ul>
         <li>WASD to move</li>
-        <li>Space to ascend, shift to descend</li>
+        <li>Space to jump.</li>
         <li>Mouse to look around (fullscreen)</li>
     </ul>
 </section>

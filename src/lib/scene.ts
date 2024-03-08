@@ -390,15 +390,35 @@ const init = () => {
 
 	modelLoader.load('/models/table.glb', (gltf) => {
 		console.log("Added model: ", gltf);
-		gltf.scene.position.set(20, -4, 0);
+		gltf.scene.position.set(20, -4, -5);
 		gltf.scene.scale.set(2, 2, 2);
 
-		const light = new THREE.PointLight(0xffffff, 30, 0, 1);
+		const light = new THREE.PointLight(0xffffff, 10, 0, 1);
 		const light2 = new THREE.PointLight(0xffffff, 30, 0, 1);
 		light.position.set(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
-		light.position.set(gltf.scene.position.x, gltf.scene.position.y + 3, gltf.scene.position.z);
-	
+		light2.position.set(gltf.scene.position.x, gltf.scene.position.y + 5, gltf.scene.position.z);
+
+		scene.add(light2);
 		scene.add(light);
+		scene.add(gltf.scene);
+	},
+		undefined,
+		(err) => {
+			console.error(err);
+		});
+
+	modelLoader.load('/models/table2.glb', (gltf) => {
+		console.log("Added model: ", gltf);
+		gltf.scene.position.set(20, -4, 5);
+		gltf.scene.scale.set(2, 2, 2);
+
+		const light = new THREE.PointLight(0xffffff, 10, 0, 1);
+		const light2 = new THREE.PointLight(0xffffff, 30, 0, 1);
+		light.position.set(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
+		light2.position.set(gltf.scene.position.x, gltf.scene.position.y + 5, gltf.scene.position.z);
+
+		scene.add(light);
+		scene.add(light2);
 		scene.add(gltf.scene);
 	},
 		undefined,

@@ -38,7 +38,7 @@ const player = {
 	grounded: true,
 
 	moveSpeed: 12,
-	jumpAmount: 10,
+	jumpAmount: 5,
 	body: undefined
 };
 
@@ -67,7 +67,7 @@ function createPhysicsObject(mesh: THREE.Mesh, body: CANNON.Body) {
 
 function createPhysicsObjectFromMesh(mesh: THREE.Mesh, shape: CANNON.Shape, mass: number) {
 	const body = new CANNON.Body({
-		mass: mass, 
+		mass: mass,
 		position: new CANNON.Vec3(mesh.position.x, mesh.position.y, mesh.position.z),
 		quaternion: new CANNON.Quaternion(mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z, mesh.quaternion.w),
 	});
@@ -141,6 +141,7 @@ const updateController = (keys: any[], dt: number) => {
 	if (!isSelected || !selectedObject)
 		return;
 
+	//temp interact
 	for (let i = 0; i < keys.length; i++) {
 		const key = keys[i];
 		switch (key) {
@@ -156,7 +157,7 @@ const updatePlayerController = (keys: any[], dt: number) => {
 	//scuffed but works
 	const cameraForward = FORWARD.clone().applyEuler(camera.rotation);
 	const cameraRight = RIGHT.clone().applyEuler(camera.rotation);
-	
+
 	const forward = new CANNON.Vec3(cameraForward.x, cameraForward.y, cameraForward.z);
 	const right = new CANNON.Vec3(cameraRight.x, cameraRight.y, cameraRight.z);
 
@@ -180,14 +181,14 @@ const updatePlayerController = (keys: any[], dt: number) => {
 				body.position = body.position.addScaledVector(player.moveSpeed * dt, right);
 				break;
 			case ' ': //jump
-				if (player.grounded && body.velocity.y < 1) { //scuffed
+				if (player.grounded) { //scuffed
 					body.velocity.y += player.jumpAmount;
 					player.grounded = false;
 				}
 				break;
 		}
 	}
-	
+
 };
 
 function updatePhysics(dt) {
@@ -251,18 +252,29 @@ const setupPhysics = () => {
 	const world = new CANNON.World();
 	world.gravity.set(0, -9.82, 0); // m/s²
 
-	world.addEventListener('postStep', function() {
+	//temp
+	var upVector = new CANNON.Vec3(0, 1, 0);
+	var contactNormal = new CANNON.Vec3(0, 0, 0);
+
+	world.addEventListener('postStep', function () {
 		// Get all contact pairs in the world
 		const contacts = world.contacts;
-	
+
+		if (player.grounded)
+			return;
+
 		// Check if the dynamic body is in contact with the ground plane
-		contacts.forEach(function(contact) {
-		if (
-			(contact.bi === player.body && contact.bj === ground) ||
-			(contact.bi === ground && contact.bj === player.body)
-		) {
-			player.grounded = true;
-		}
+		contacts.forEach(function (contact) {
+			if (contact.bi === player.body) {
+				//copy pasta
+				if (contact.bi == player.body) {
+					contact.ni.negate(contactNormal);
+				} else {
+					contact.ni.copy(contactNormal);
+				}
+
+				player.grounded = contactNormal.dot(upVector) > 0.5;
+			}
 		});
 	});
 
@@ -283,7 +295,7 @@ const createGround = (length, wallThickness) => {
 	const floorGeometry = new THREE.PlaneGeometry(length, length);
 	const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
 	const floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
-	
+
 	//??? why do I need to do this
 	floorGeometry.translate(0, 0, length / 4);
 	floorMesh.lookAt(new THREE.Vector3(0, 1, 0));
@@ -381,8 +393,8 @@ const constructLobbyRoom = () => {
 	const ballMaterial = new CANNON.Material();
 	const defaultMaterial = new CANNON.Material();
 	const ballGroundContactMaterial = new CANNON.ContactMaterial(ballMaterial, defaultMaterial, {
-	friction: 0.5, // Adjust friction as needed
-	restitution: 0.2 // Adjust restitution (bounciness) as needed
+		friction: 0.5, // Adjust friction as needed
+		restitution: 0.2 // Adjust restitution (bounciness) as needed
 	});
 	world.addContactMaterial(ballGroundContactMaterial);
 
@@ -468,7 +480,7 @@ const init = () => {
 	world = setupPhysics();
 
 	//player physics settings
-	player.body = new CANNON.Body({mass: 60});
+	player.body = new CANNON.Body({ mass: 60 });
 	player.body.addShape(new CANNON.Sphere(3.5));
 	player.body.angularFactor = new CANNON.Vec3(0, 1, 0);
 	// player.body.addShape(new CANNON.Box(new CANNON.Vec3(2, 3, 2)));

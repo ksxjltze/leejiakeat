@@ -18,6 +18,8 @@ let controls;
 let surfaceContainer: HTMLElement;
 let initialized = false;
 
+let mixer;
+
 let world;
 let floorMesh;
 
@@ -51,9 +53,17 @@ const animate = () => {
 	requestAnimationFrame(animate);
 	updatePhysics(dt);
 	updateController(keys, dt);
+	updateAnimations(dt);
 
 	render();
 };
+
+const updateAnimations = (dt) => {
+	if (!mixer)
+		return;
+
+	mixer.update(dt);
+}
 
 const render = () => {
 	raycaster.setFromCamera(pointer, camera);
@@ -378,10 +388,33 @@ const init = () => {
 
 	modelLoader.load('/models/boi2.glb', (gltf) => {
 		console.log("Added model: ", gltf);
-		gltf.scene.position.set(-20, 2.5, 0);
-		gltf.scene.rotation.set(0, Math.PI, 0);
+		gltf.scene.position.set(-20, 2.5, -8);
+		gltf.scene.rotation.set(0, 0.75 * Math.PI, 0);
 		gltf.scene.scale.set(0.5, 0.5, 0.5);
 		scene.add(gltf.scene);
+	},
+		undefined,
+		(err) => {
+			console.error(err);
+		});
+
+	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
+		console.log("Testing skinned model: ", gltf);
+		gltf.scene.position.set(-20, 2.5, 8);
+		gltf.scene.rotation.set(0, 1.25 * Math.PI, 0);
+		gltf.scene.scale.set(0.5, 0.5, 0.5);
+		scene.add(gltf.scene);
+
+		mixer = new THREE.AnimationMixer(gltf.scene);
+		console.log(mixer);
+		console.log(gltf.animations);
+
+		const clips = gltf.animations;
+
+		// Play a specific animation
+		const clip = THREE.AnimationClip.findByName(clips, "SkinnedBoiAction.001");
+		const action = mixer.clipAction(clip);
+		action.play();
 	},
 		undefined,
 		(err) => {

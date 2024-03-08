@@ -3,7 +3,10 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
-import * as CANNON from 'cannon';
+
+import * as CANNON from 'cannon-es';
+import CannonUtils from './utils/cannonUtils';
+import CannonDebugRenderer from './utils/cannonDebugRenderer';
 
 const boxGeom = new THREE.BoxGeometry();
 const sphereGeom = new THREE.SphereGeometry();
@@ -21,10 +24,8 @@ let initialized = false;
 let mixer;
 
 let world;
+let cannonDebugRenderer;
 let floorMesh;
-
-let playerBody;
-let floorBody;
 
 let selectedObject = undefined;
 let isSelected = false;
@@ -41,6 +42,32 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2(0, 0);
 
 let keys = [];
+let physicsObjects = [];
+
+interface PhysicsObject {
+	mesh: THREE.Mesh,
+	body: CANNON.Body
+};
+
+function createPhysicsObject(mesh: THREE.Mesh, body: CANNON.Body) {
+	const object: PhysicsObject = {
+		mesh: mesh,
+		body: body
+	};
+
+	physicsObjects.push(object);
+	return object;
+}
+
+function createPhysicsObjectFromMesh(mesh: THREE.Mesh, shape: CANNON.Shape, mass: number) {
+	const body = new CANNON.Body({
+		mass: mass, 
+		position: new CANNON.Vec3(mesh.position.x, mesh.position.y, mesh.position.z),
+		quaternion: new CANNON.Quaternion(mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z, mesh.quaternion.w),
+	});
+	body.addShape(shape);
+	return createPhysicsObject(mesh, body);
+}
 
 function onPointerMove(event) {
 
@@ -56,6 +83,8 @@ const animate = () => {
 	updateAnimations(dt);
 
 	render();
+
+	cannonDebugRenderer.update();
 };
 
 const updateAnimations = (dt) => {
@@ -157,12 +186,13 @@ function updatePhysics(dt) {
 	// Step the physics world
 	world.step(dt);
 
-	if (!playerBody)
-		return;
+	physicsObjects.forEach((object: PhysicsObject) => {
+		if (object.body.mass == 0)
+			return;
 
-	// Copy coordinates from Cannon.js to Three.js
-	camera.position.copy(playerBody.position);
-	camera.quaternion.copy(playerBody.quaternion);
+		object.mesh.position.copy(object.body.position);
+		object.mesh.quaternion.copy(object.body.quaternion);
+	});
 }
 
 export const resize = () => {
@@ -206,8 +236,6 @@ const setupPhysics = () => {
 	const world = new CANNON.World();
 	world.gravity.set(0, -9.82, 0); // m/s²
 
-	//TODO: actually do something
-
 	return world;
 }
 
@@ -218,6 +246,22 @@ const createInteractableTexturePlane = (width, height, texture) => {
 	planeMesh.name = "Interactable";
 
 	return planeMesh;
+}
+
+//lol
+const createStandardFloor = (length, wallThickness) => {
+	const floorGeometry = new THREE.PlaneGeometry(length, length);
+	const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
+	const floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
+	
+	//??? why do I need to do this
+	floorGeometry.translate(0, 0, length / 4);
+	floorMesh.lookAt(new THREE.Vector3(0, 1, 0));
+	floorMesh.position.y -= length / 4 - wallThickness / 2;
+	floorMesh.position.x -= length;
+	floorMesh.scale.set(1.025, 1.025, 1.0);
+
+	return floorMesh;
 }
 
 const constructLobbyRoom = () => {
@@ -297,14 +341,32 @@ const constructLobbyRoom = () => {
 	floorMesh.scale.set(1.025, 1.025, 1.0);
 	room.add(floorMesh);
 
-	const floorGeometry2 = new THREE.PlaneGeometry(wallLength, wallLength);
-	const floorMaterial2 = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
-	const floorMesh2 = new THREE.Mesh(floorGeometry2, floorMaterial2);
-	floorMesh2.rotation.x = -Math.PI / 2;
-	floorMesh2.position.y = wallThickness / 2;
-	floorMesh2.position.x -= wallLength;
-	floorMesh2.scale.set(1.025, 1.025, 1.0);
-	room.add(floorMesh2);
+	//scuffed
+	const floorObject = createPhysicsObjectFromMesh(createStandardFloor(wallLength, wallThickness), new CANNON.Plane(), 0);
+	world.addBody(floorObject.body);
+	room.add(floorObject.mesh);
+
+	//ball
+	const ballMaterial = new CANNON.Material();
+	const defaultMaterial = new CANNON.Material();
+	const ballGroundContactMaterial = new CANNON.ContactMaterial(ballMaterial, defaultMaterial, {
+	friction: 0.5, // Adjust friction as needed
+	restitution: 0.2 // Adjust restitution (bounciness) as needed
+	});
+	world.addContactMaterial(ballGroundContactMaterial);
+
+	const ballRadius = 0.5;
+	const ballGeometry = new THREE.SphereGeometry(ballRadius, 32, 32);
+	const ballMeshMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+	const ballMesh = new THREE.Mesh(ballGeometry, ballMeshMaterial);
+
+	ballMesh.position.copy(floorObject.mesh.position);
+	ballMesh.position.y = 1;
+
+	const ballObject = createPhysicsObjectFromMesh(ballMesh, new CANNON.Sphere(ballRadius), 1);
+	// ballObject.body.material = ballMaterial;
+	scene.add(ballMesh);
+	world.addBody(ballObject.body);
 
 	const floorGeometry3 = new THREE.PlaneGeometry(wallLength, wallLength);
 	const floorMaterial3 = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
@@ -371,9 +433,14 @@ const init = () => {
 	scene = new THREE.Scene();
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 
+	//physics
+	world = setupPhysics();
+
 	let lobby = constructLobbyRoom();
 	lobby.position.setY(lobby.position.y - 5);
 	scene.add(lobby);
+
+	cannonDebugRenderer = new CannonDebugRenderer(scene, world);
 
 	// modelLoader.load('/models/room.glb', (gltf ) => {
 	// 	console.log("Added model: ", gltf);
@@ -391,6 +458,7 @@ const init = () => {
 		gltf.scene.position.set(-20, 2.5, -8);
 		gltf.scene.rotation.set(0, 0.75 * Math.PI, 0);
 		gltf.scene.scale.set(0.5, 0.5, 0.5);
+
 		scene.add(gltf.scene);
 	},
 		undefined,
@@ -511,9 +579,6 @@ const init = () => {
 		text.position.z = -8;
 		scene.add(text);
 	});
-
-	//physics
-	world = setupPhysics();
 
 	window.addEventListener('resize', resize);
 	window.addEventListener('pointermove', onPointerMove);

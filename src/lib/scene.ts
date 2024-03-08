@@ -14,6 +14,9 @@ const standardMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
 const clock = new THREE.Clock();
 const modelLoader = new GLTFLoader();
 
+const FORWARD = new THREE.Vector3(0, 0, -1);
+const RIGHT = new THREE.Vector3(1, 0, 0);
+
 let renderer;
 let scene;
 let camera;
@@ -35,8 +38,11 @@ const player = {
 	grounded: true,
 
 	moveSpeed: 12,
-	jumpAmount: 8
+	jumpAmount: 10,
+	body: undefined
 };
+
+let ground;
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2(0, 0);
@@ -84,6 +90,9 @@ const animate = () => {
 
 	render();
 
+	if (!cannonDebugRenderer)
+		return;
+
 	cannonDebugRenderer.update();
 };
 
@@ -127,21 +136,7 @@ const render = () => {
 }
 
 const updateController = (keys: any[], dt: number) => {
-	//fake gravity
-	player.velocity.y += (1.5 * -9.82 * dt);
-
-	moveWASD(keys, dt);
-
-	camera.position.x += player.velocity.x * dt;
-	camera.position.y += player.velocity.y * dt;
-	camera.position.z += player.velocity.z * dt;
-
-	if (camera.position.y < 0) {
-		camera.position.y = 0;
-		player.velocity.y = 0;
-
-		player.grounded = true;
-	}
+	updatePlayerController(keys, dt);
 
 	if (!isSelected || !selectedObject)
 		return;
@@ -155,31 +150,44 @@ const updateController = (keys: any[], dt: number) => {
 	}
 }
 
-const moveWASD = (keys: any[], dt: number) => {
+const updatePlayerController = (keys: any[], dt: number) => {
+	const body: CANNON.Body = player.body;
+
+	//scuffed but works
+	const cameraForward = FORWARD.clone().applyEuler(camera.rotation);
+	const cameraRight = RIGHT.clone().applyEuler(camera.rotation);
+	
+	const forward = new CANNON.Vec3(cameraForward.x, cameraForward.y, cameraForward.z);
+	const right = new CANNON.Vec3(cameraRight.x, cameraRight.y, cameraRight.z);
+
+	const left = right.negate();
+	const backwards = forward.negate();
+
 	for (let i = 0; i < keys.length; i++) {
 		const key = keys[i];
+
 		switch (key) {
 			case 'w':
-				controls.moveForward(player.moveSpeed * dt);
+				body.position = body.position.addScaledVector(player.moveSpeed * dt, forward);
 				break;
 			case 'a':
-				controls.moveRight(-player.moveSpeed * dt);
+				body.position = body.position.addScaledVector(player.moveSpeed * dt, left);
 				break;
 			case 's':
-				controls.moveForward(-player.moveSpeed * dt);
+				body.position = body.position.addScaledVector(player.moveSpeed * dt, backwards);
 				break;
 			case 'd':
-				controls.moveRight(player.moveSpeed * dt);
+				body.position = body.position.addScaledVector(player.moveSpeed * dt, right);
 				break;
 			case ' ': //jump
-				if (player.grounded) {
-					player.velocity.y += player.jumpAmount;
+				if (player.grounded && body.velocity.y < 1) { //scuffed
+					body.velocity.y += player.jumpAmount;
 					player.grounded = false;
 				}
-
 				break;
 		}
 	}
+	
 };
 
 function updatePhysics(dt) {
@@ -193,6 +201,13 @@ function updatePhysics(dt) {
 		object.mesh.position.copy(object.body.position);
 		object.mesh.quaternion.copy(object.body.quaternion);
 	});
+
+	if (!player.body)
+		return;
+
+	//temp
+	camera.position.copy(player.body.position);
+	// player.body.quaternion.copy(camera.quaternion);
 }
 
 export const resize = () => {
@@ -236,6 +251,21 @@ const setupPhysics = () => {
 	const world = new CANNON.World();
 	world.gravity.set(0, -9.82, 0); // m/s²
 
+	world.addEventListener('postStep', function() {
+		// Get all contact pairs in the world
+		const contacts = world.contacts;
+	
+		// Check if the dynamic body is in contact with the ground plane
+		contacts.forEach(function(contact) {
+		if (
+			(contact.bi === player.body && contact.bj === ground) ||
+			(contact.bi === ground && contact.bj === player.body)
+		) {
+			player.grounded = true;
+		}
+		});
+	});
+
 	return world;
 }
 
@@ -248,8 +278,8 @@ const createInteractableTexturePlane = (width, height, texture) => {
 	return planeMesh;
 }
 
-//lol
-const createStandardFloor = (length, wallThickness) => {
+//TODO: rework
+const createGround = (length, wallThickness) => {
 	const floorGeometry = new THREE.PlaneGeometry(length, length);
 	const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
 	const floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
@@ -342,7 +372,8 @@ const constructLobbyRoom = () => {
 	room.add(floorMesh);
 
 	//scuffed
-	const floorObject = createPhysicsObjectFromMesh(createStandardFloor(wallLength, wallThickness), new CANNON.Plane(), 0);
+	const floorObject = createPhysicsObjectFromMesh(createGround(wallLength, wallThickness), new CANNON.Plane(), 0);
+	ground = floorObject.body;
 	world.addBody(floorObject.body);
 	room.add(floorObject.mesh);
 
@@ -436,11 +467,18 @@ const init = () => {
 	//physics
 	world = setupPhysics();
 
+	//player physics settings
+	player.body = new CANNON.Body({mass: 60});
+	player.body.addShape(new CANNON.Sphere(3.5));
+	player.body.angularFactor = new CANNON.Vec3(0, 1, 0);
+	// player.body.addShape(new CANNON.Box(new CANNON.Vec3(2, 3, 2)));
+	world.addBody(player.body);
+
 	let lobby = constructLobbyRoom();
 	lobby.position.setY(lobby.position.y - 5);
 	scene.add(lobby);
 
-	cannonDebugRenderer = new CannonDebugRenderer(scene, world);
+	// cannonDebugRenderer = new CannonDebugRenderer(scene, world);
 	modelLoader.load('/models/boi2.glb', (gltf) => {
 		console.log("Added model: ", gltf);
 		gltf.scene.position.set(-20, 2.5, -8);

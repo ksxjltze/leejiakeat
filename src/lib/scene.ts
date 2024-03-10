@@ -29,6 +29,11 @@ let mixer;
 let world;
 let cannonDebugRenderer;
 let floorMesh;
+let ground;
+
+const settings = {
+	debugDraw: false
+};
 
 let selectedObject = undefined;
 let isSelected = false;
@@ -42,18 +47,21 @@ const player = {
 	body: undefined
 };
 
-let ground;
-
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2(0, 0);
 
 let keys = [];
+let keysPressed = {};
 let physicsObjects = [];
 
 interface PhysicsObject {
 	mesh: THREE.Mesh,
 	body: CANNON.Body
 };
+
+function ToCannonVec3(vector) {
+	return new CANNON.Vec3(vector.x, vector.y, vector.z);
+}
 
 function createPhysicsObject(mesh: THREE.Mesh, body: CANNON.Body) {
 	const object: PhysicsObject = {
@@ -84,7 +92,7 @@ const animate = () => {
 	if (!renderer || !camera || !scene) return;
 
 	requestAnimationFrame(animate);
-	updatePhysics(dt);
+	updatePhysics(1 / 60); //hax
 	updateController(keys, dt);
 	updateAnimations(dt);
 
@@ -93,7 +101,9 @@ const animate = () => {
 	if (!cannonDebugRenderer)
 		return;
 
-	cannonDebugRenderer.update();
+	if (settings.debugDraw) { //todo: actually make it toggle
+		cannonDebugRenderer.update();
+	}
 };
 
 const updateAnimations = (dt) => {
@@ -137,16 +147,28 @@ const render = () => {
 
 const updateController = (keys: any[], dt: number) => {
 	updatePlayerController(keys, dt);
-
-	if (!isSelected || !selectedObject)
-		return;
-
-	//temp interact
+	
 	for (let i = 0; i < keys.length; i++) {
 		const key = keys[i];
 		switch (key) {
 			case 'f':
+				if (!isSelected || !selectedObject)
+					continue;
+	
 				selectedObject.rotation.z -= 2 * dt;
+				break;
+			case 'f2':
+				//lazy
+				if (!keysPressed['f2']) {
+					settings.debugDraw = !settings.debugDraw;
+					cannonDebugRenderer.setVisible(settings.debugDraw); //I'll make this better later
+					keysPressed['f2'] = true;
+				}
+				break;
+			case 'g':
+				player.body.position.set(0, 0, 0);
+				player.body.velocity.set(0, 0, 0);
+				break;
 		}
 	}
 }
@@ -493,7 +515,7 @@ const init = () => {
 	lobby.position.setY(lobby.position.y - 5);
 	scene.add(lobby);
 
-	// cannonDebugRenderer = new CannonDebugRenderer(scene, world);
+	cannonDebugRenderer = new CannonDebugRenderer(scene, world);
 	modelLoader.load('/models/boi2.glb', (gltf) => {
 		console.log("Added model: ", gltf);
 		gltf.scene.position.set(-20, 2.5, -8);
@@ -571,6 +593,13 @@ const init = () => {
 		scene.add(light);
 		scene.add(light2);
 		scene.add(gltf.scene);
+
+		const body = new CANNON.Body({
+			mass: 0
+		});
+		body.addShape(new CANNON.Box(ToCannonVec3(gltf.scene.scale)));
+		body.position = ToCannonVec3(gltf.scene.position);
+		world.addBody(body)
 	},
 		undefined,
 		(err) => {
@@ -659,6 +688,8 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 		if (keys.includes(key)) {
 			keys = keys.filter((k) => k !== key);
 		}
+
+		keysPressed[key] = false;
 	};
 	document.addEventListener('keydown', onKeyDown);
 	document.addEventListener('keyup', onKeyUp);

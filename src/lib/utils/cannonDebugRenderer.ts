@@ -54,6 +54,10 @@ export default class CannonDebugRenderer {
         this._particleGeometry.setFromPoints([new THREE.Vector3(0, 0, 0)])
     }
 
+    public setVisible(visible: boolean) {
+        this._material.visible = visible;
+    }
+
     public update() {
         const bodies: CANNON.Body[] = this.world.bodies
         const meshes: THREE.Mesh[] | THREE.Points[] = this._meshes

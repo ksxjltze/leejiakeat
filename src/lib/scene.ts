@@ -38,7 +38,7 @@ const player = {
 	grounded: true,
 
 	moveSpeed: 12,
-	jumpAmount: 5,
+	jumpAmount: 4,
 	body: undefined
 };
 
@@ -158,8 +158,11 @@ const updatePlayerController = (keys: any[], dt: number) => {
 	const cameraForward = FORWARD.clone().applyEuler(camera.rotation);
 	const cameraRight = RIGHT.clone().applyEuler(camera.rotation);
 
-	const forward = new CANNON.Vec3(cameraForward.x, cameraForward.y, cameraForward.z);
+	const forward = new CANNON.Vec3(cameraForward.x, 0, cameraForward.z); //let's just remove y movement for now
 	const right = new CANNON.Vec3(cameraRight.x, cameraRight.y, cameraRight.z);
+
+	forward.normalize();
+	right.normalize();
 
 	const left = right.negate();
 	const backwards = forward.negate();
@@ -406,7 +409,7 @@ const constructLobbyRoom = () => {
 	ballMesh.position.copy(floorObject.mesh.position);
 	ballMesh.position.y = 1;
 
-	const ballObject = createPhysicsObjectFromMesh(ballMesh, new CANNON.Sphere(ballRadius), 1);
+	const ballObject = createPhysicsObjectFromMesh(ballMesh, new CANNON.Sphere(ballRadius), 0.2);
 	// ballObject.body.material = ballMaterial;
 	scene.add(ballMesh);
 	world.addBody(ballObject.body);

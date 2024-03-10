@@ -25,7 +25,7 @@
 			<li aria-current={$page.url.pathname === '/projects' ? 'page' : undefined}>
 				<a href="/projects">Projects</a>
 			</li>
-			<li aria-current={$page.url.pathname === '/interactive' ? 'page' : undefined}>
+			<li id="interactive-link" aria-current={$page.url.pathname === '/interactive' ? 'page' : undefined}>
 				<a href="/interactive">Interactive</a>
 			</li>
 		</ul>
@@ -129,4 +129,11 @@
 	a:hover {
 		color: var(--color-theme-1);
 	}
+
+	@media only screen and (max-width: 600px) {
+		#interactive-link {
+			display: none;
+		}
+	}
+
 </style>

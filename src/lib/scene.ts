@@ -107,6 +107,9 @@ const update = (dt) => {
 	const boiSpeed = 5;
 	const boundsLength = 20;
 
+	if (!boi)
+		return;
+
 	switch (boiState) {
 		case 1:
 			boi.position.x += boiSpeed * dt;

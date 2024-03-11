@@ -31,6 +31,14 @@ let cannonDebugRenderer;
 let floorMesh;
 let ground;
 
+let boi: THREE.Object3D;
+let boiState;
+const BoiState = {
+	NONE: 0,
+	WALK1: 1,
+	WALK2: 2
+} as const;
+
 const settings = {
 	debugDraw: false
 };
@@ -63,6 +71,11 @@ function ToCannonVec3(vector) {
 	return new CANNON.Vec3(vector.x, vector.y, vector.z);
 }
 
+function ToCannonVec3Scaled(vector, scale) {
+	return new CANNON.Vec3(vector.x * scale, vector.y * scale, vector.z * scale);
+}
+
+
 function createPhysicsObject(mesh: THREE.Mesh, body: CANNON.Body) {
 	const object: PhysicsObject = {
 		mesh: mesh,
@@ -87,11 +100,37 @@ function onPointerMove(event) {
 
 }
 
+const update = (dt) => {
+	if (!boiState) //TODO: stuff
+		boiState = BoiState.WALK1;
+
+	const boiSpeed = 5;
+	const boundsLength = 20;
+
+	switch (boiState) {
+		case 1:
+			boi.position.x += boiSpeed * dt;
+			if (boi.position.x > boundsLength) {
+				boiState = BoiState.WALK2;
+				boi.rotateY(Math.PI);
+			}
+			break;
+		case 2:
+			boi.position.x -= boiSpeed * dt;
+			if (boi.position.x < -boundsLength) {
+				boiState = BoiState.WALK1;
+				boi.rotateY(Math.PI);
+			}
+			break;
+	}
+}
+
 const animate = () => {
 	const dt = clock.getDelta();
 	if (!renderer || !camera || !scene) return;
 
 	requestAnimationFrame(animate);
+	update(dt);
 	updatePhysics(1 / 60); //hax
 	updateController(keys, dt);
 	updateAnimations(dt);
@@ -147,14 +186,14 @@ const render = () => {
 
 const updateController = (keys: any[], dt: number) => {
 	updatePlayerController(keys, dt);
-	
+
 	for (let i = 0; i < keys.length; i++) {
 		const key = keys[i];
 		switch (key) {
 			case 'f':
 				if (!isSelected || !selectedObject)
 					continue;
-	
+
 				selectedObject.rotation.z -= 2 * dt;
 				break;
 			case 'f2':
@@ -516,36 +555,34 @@ const init = () => {
 	scene.add(lobby);
 
 	cannonDebugRenderer = new CannonDebugRenderer(scene, world);
-	modelLoader.load('/models/boi2.glb', (gltf) => {
-		console.log("Added model: ", gltf);
-		gltf.scene.position.set(-20, 2.5, -8);
-		gltf.scene.rotation.set(0, 0.75 * Math.PI, 0);
-		gltf.scene.scale.set(0.5, 0.5, 0.5);
 
+	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
+		console.log("Loaded Skinned model: ", gltf);
+		gltf.scene.position.set(-20, 0, 0);
+		gltf.scene.rotation.set(0, 1 * Math.PI, 0);
+		gltf.scene.scale.set(5, 5, 5);
 		scene.add(gltf.scene);
+
+		boi = gltf.scene;
+
+		mixer = new THREE.AnimationMixer(gltf.scene);
+		const clips = gltf.animations;
+
+		// Play a specific animation
+		const clip = THREE.AnimationClip.findByName(clips, "Walk.001");
+		const action = mixer.clipAction(clip);
+		action.play();
 	},
 		undefined,
 		(err) => {
 			console.error(err);
 		});
 
+	//laziness
 	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
-		console.log("Testing skinned model: ", gltf);
-		gltf.scene.position.set(-20, 2.5, 8);
-		gltf.scene.rotation.set(0, 1.25 * Math.PI, 0);
-		gltf.scene.scale.set(0.5, 0.5, 0.5);
+		console.log("Loaded Skinned model: ", gltf);
+		gltf.scene.position.set(20, -1.65, 5);
 		scene.add(gltf.scene);
-
-		mixer = new THREE.AnimationMixer(gltf.scene);
-		console.log(mixer);
-		console.log(gltf.animations);
-
-		const clips = gltf.animations;
-
-		// Play a specific animation
-		const clip = THREE.AnimationClip.findByName(clips, "SkinnedBoiAction.001");
-		const action = mixer.clipAction(clip);
-		action.play();
 	},
 		undefined,
 		(err) => {

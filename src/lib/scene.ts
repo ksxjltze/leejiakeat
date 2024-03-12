@@ -575,6 +575,36 @@ const init = () => {
 		const clip = THREE.AnimationClip.findByName(clips, "Walk.001");
 		const action = mixer.clipAction(clip);
 		action.play();
+
+		let hand = null;
+		const findHand = (child) => {
+			if (hand)
+				return;
+
+			if (child.name == "LeftHand") {
+				hand = child;
+				return;
+			}
+
+			if (child.children) {
+				child.children.forEach(findHand);
+			}
+		};
+
+		gltf.scene.children.forEach(findHand);
+
+		if (hand) {
+			modelLoader.load('/models/sword2.glb', (swordGLTF) => {
+				swordGLTF.scene.position.set(0.15, 0.15, 0.02);
+				swordGLTF.scene.rotation.set(0, Math.PI, 0);
+				swordGLTF.scene.scale.set(0.1, 0.1, 0.1);
+				hand.add(swordGLTF.scene);
+			},
+				undefined,
+				(err) => {
+					console.error(err);
+				});
+		}
 	},
 		undefined,
 		(err) => {

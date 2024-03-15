@@ -4,6 +4,16 @@ import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 
+import Stats from 'three/examples/jsm/libs/stats.module.js';
+import { GUI } from 'three/examples/jsm//libs/lil-gui.module.min.js';
+
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
+
 import * as CANNON from 'cannon-es';
 import CannonUtils from './utils/cannonUtils';
 import CannonDebugRenderer from './utils/cannonDebugRenderer';
@@ -17,10 +27,14 @@ const modelLoader = new GLTFLoader();
 const FORWARD = new THREE.Vector3(0, 0, -1);
 const RIGHT = new THREE.Vector3(1, 0, 0);
 
+let composer, effectFXAA, outlinePass;
+let stats;
 let renderer;
 let scene;
+
 let camera;
 let controls;
+
 let surfaceContainer: HTMLElement;
 let initialized = false;
 
@@ -28,10 +42,11 @@ let mixer;
 
 let world;
 let cannonDebugRenderer;
+
 let floorMesh;
 let ground;
 
-let boi: THREE.Object3D;
+let boiObject: PhysicsObject;
 let boiState;
 const BoiState = {
 	NONE: 0,
@@ -43,8 +58,7 @@ const settings = {
 	debugDraw: false
 };
 
-let selectedObject = undefined;
-let isSelected = false;
+let selectedObjects = [];
 
 const player = {
 	velocity: new THREE.Vector3(0, 0, 0),
@@ -63,7 +77,7 @@ let keysTriggered = {};
 let physicsObjects = [];
 
 interface PhysicsObject {
-	mesh: THREE.Mesh,
+	mesh: THREE.Object3D,
 	body: CANNON.Body
 };
 
@@ -71,12 +85,16 @@ function ToCannonVec3(vector) {
 	return new CANNON.Vec3(vector.x, vector.y, vector.z);
 }
 
+function ToCannonQuat(quaternion) {
+	return new CANNON.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+}
+
 function ToCannonVec3Scaled(vector, scale) {
 	return new CANNON.Vec3(vector.x * scale, vector.y * scale, vector.z * scale);
 }
 
 
-function createPhysicsObject(mesh: THREE.Mesh, body: CANNON.Body) {
+function createPhysicsObject(mesh: THREE.Object3D, body: CANNON.Body) {
 	const object: PhysicsObject = {
 		mesh: mesh,
 		body: body
@@ -107,22 +125,34 @@ const update = (dt) => {
 	const boiSpeed = 5;
 	const boundsLength = 20;
 
-	if (!boi)
+	if (!boiObject)
 		return;
+
+	const body = boiObject.body;
+
+	const flip = (body) => {
+		const quat = new THREE.Quaternion();
+		quat.copy(body.quaternion);
+
+		quat.multiply(new THREE.Quaternion(0, 1, 0, 0));
+		body.quaternion.set(quat.x, quat.y, quat.z, quat.w);
+
+		console.log(quat);
+	};
 
 	switch (boiState) {
 		case 1:
-			boi.position.x += boiSpeed * dt;
-			if (boi.position.x > boundsLength) {
+			body.position.x += boiSpeed * dt;
+			if (body.position.x > boundsLength) {
 				boiState = BoiState.WALK2;
-				boi.rotateY(Math.PI);
+				flip(body);
 			}
 			break;
 		case 2:
-			boi.position.x -= boiSpeed * dt;
-			if (boi.position.x < -boundsLength) {
+			body.position.x -= boiSpeed * dt;
+			if (body.position.x < -boundsLength) {
 				boiState = BoiState.WALK1;
-				boi.rotateY(Math.PI);
+				flip(body);
 			}
 			break;
 	}
@@ -133,6 +163,8 @@ const animate = () => {
 	if (!renderer || !camera || !scene) return;
 
 	requestAnimationFrame(animate);
+	stats.begin();
+
 	update(dt);
 	updatePhysics(1 / 60); //hax
 	updateController(keys, dt);
@@ -140,12 +172,10 @@ const animate = () => {
 
 	render();
 
-	if (!cannonDebugRenderer)
-		return;
-
-	if (settings.debugDraw) { //todo: actually make it toggle
+	if (settings.debugDraw)
 		cannonDebugRenderer.update();
-	}
+
+	stats.end();
 };
 
 const updateAnimations = (dt) => {
@@ -155,36 +185,32 @@ const updateAnimations = (dt) => {
 	mixer.update(dt);
 }
 
+const setSelectedObject = ( object ) => {
+	selectedObjects = [];
+	selectedObjects.push( object );
+};
+
 const render = () => {
 	raycaster.setFromCamera(pointer, camera);
 
-	//lazy highlighting
 	// calculate objects intersecting the picking ray
 	const intersects = raycaster.intersectObjects(scene.children);
-	if (selectedObject) {
-		const intersected = raycaster.intersectObject(selectedObject)
 
-		if (intersected.length == 0) {
-			isSelected = false;
-			selectedObject.material.emissive.setHex(0);
+	if (intersects.length > 0) {
+		const selectedObject = intersects[0].object;
+
+		setSelectedObject(selectedObject);
+
+		//temp
+		if (selectedObject.name != "selectable") {
+			selectedObjects = [];
 		}
+
+		outlinePass.selectedObjects = selectedObjects;
 	}
 
-	for (let i = 0; i < intersects.length; i++) {
-		const object: any = intersects[i].object;
-
-		if (object.name != "Interactable")
-			continue;
-
-		selectedObject = object;
-		isSelected = true;
-
-		if (object.material) {
-			object.material.emissive.setHex(0x3355ff);
-		}
-	}
-
-	renderer.render(scene, camera);
+	// renderer.render(scene, camera);
+	composer.render();
 }
 
 const updateController = (keys: any[], dt: number) => {
@@ -202,11 +228,11 @@ const updateController = (keys: any[], dt: number) => {
 		const key = keys[i];
 		switch (key) {
 			case 'f':
-				if (!isSelected || !selectedObject)
-					continue;
+				if (selectedObjects.length == 0)
+					return;
 
 				onKeyTriggered('f', () => {
-					selectedObject.material.color.setHex(Math.random() * 0xFFFFFF);
+					selectedObjects[0].material.color.setHex(Math.random() * 0xFFFFFF);
 				})
 				break;
 			case 'f2':
@@ -289,17 +315,30 @@ function updatePhysics(dt) {
 export const resize = () => {
 	if (!renderer || !camera || !window) return;
 
-	if (document.fullscreenElement) {
-		renderer.setSize(window.innerWidth, window.innerHeight);
-		camera.aspect = window.innerWidth / window.innerHeight;
+	const updateSizes = (width, height) => {
+		renderer.setSize(width, height);
+		composer.setSize(width, height);
+
+		effectFXAA.uniforms['resolution'].value.set( 1 / width, 1 / height );
+
+		camera.aspect = width / height;
 		camera.updateProjectionMatrix();
+	};
+
+	if (document.fullscreenElement) {
+		const width = window.innerWidth;
+		const height = window.innerHeight;
+
+		updateSizes(width, height);
 		return;
 	}
 
 	if (surfaceContainer) {
-		renderer.setSize(surfaceContainer.clientWidth, surfaceContainer.clientHeight);
-		camera.aspect = surfaceContainer.clientWidth / surfaceContainer.clientHeight;
-		camera.updateProjectionMatrix();
+		const width = surfaceContainer.clientWidth;
+		const height = surfaceContainer.clientHeight;
+
+		updateSizes(width, height);
+		return;
 	}
 };
 
@@ -400,27 +439,37 @@ const init = () => {
 	});
 	const planeShape = new CANNON.Plane();
 	const quaternion = new THREE.Quaternion();
-	quaternion.setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 );
+	quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
 
 	//GROUND
 	floorBody.addShape(planeShape);
 	floorBody.quaternion = new CANNON.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 
 	ground = floorBody;
-	world.addBody(floorBody);
+	// world.addBody(floorBody);
 
 	cannonDebugRenderer = new CannonDebugRenderer(scene, world);
 
 	//lobby
 	modelLoader.load('/models/room.glb', (gltf) => {
 		gltf.scene.position.setY(-5);
-		gltf.scene.scale.set(5, 5, 5);
 		scene.add(gltf.scene);
 
+		const mesh = gltf.scene.children[0] as THREE.Mesh;
+		mesh.geometry.scale(5, 5, 5);
+
+		const shape = CannonUtils.CreateTrimesh(mesh.geometry);
+		const body = new CANNON.Body({
+			mass: 0
+		})
+		body.addShape(shape);
+		body.position = new CANNON.Vec3(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
+		world.addBody(body);
+
 	}, undefined,
-	(err) => {
-		console.error(err);
-	});
+		(err) => {
+			console.error(err);
+		});
 
 	const length = 24;
 	const height = 12;
@@ -429,11 +478,13 @@ const init = () => {
 	const iconoclasmBanner = createInteractableTexturePlane(length, height, iconoclasmLogoTexture);
 	iconoclasmBanner.position.set(0, 2.5, 20);
 	iconoclasmBanner.rotateY(Math.PI);
+	iconoclasmBanner.name = "selectable" //temp;
 	scene.add(iconoclasmBanner);
 
 	const stronkBoiTexture = new THREE.TextureLoader().load("/images/stronk.jpg");
 	const stronkBoiPlane = createInteractableTexturePlane(length, height, stronkBoiTexture);
 	stronkBoiPlane.position.set(0, 2.5, -20);
+	stronkBoiPlane.name = "selectable" //temp;
 	scene.add(stronkBoiPlane);
 
 	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
@@ -443,8 +494,6 @@ const init = () => {
 		gltf.scene.scale.set(5, 5, 5);
 		scene.add(gltf.scene);
 
-		boi = gltf.scene;
-
 		mixer = new THREE.AnimationMixer(gltf.scene);
 		const clips = gltf.animations;
 
@@ -452,6 +501,19 @@ const init = () => {
 		const clip = THREE.AnimationClip.findByName(clips, "Walk.001");
 		const action = mixer.clipAction(clip);
 		action.play();
+
+		const shape = new CANNON.Sphere(4.5);
+		const body = new CANNON.Body({
+			mass: 100
+		});
+
+		body.addShape(shape);
+		body.position = ToCannonVec3(gltf.scene.position);
+		body.quaternion = ToCannonQuat(gltf.scene.quaternion);
+
+		boiObject = createPhysicsObject(gltf.scene, body);
+		boiObject.body.angularFactor = new CANNON.Vec3(0, 1, 0);
+		world.addBody(body);
 
 		let hand = null;
 		const findHand = (child) => {
@@ -503,13 +565,9 @@ const init = () => {
 		console.log("Added model: ", gltf);
 		gltf.scene.position.set(10, -4, -5);
 
-		const light = new THREE.PointLight(0xffffff, 10, 0, 1);
-		const light2 = new THREE.PointLight(0xffffff, 30, 0, 1);
-		light.position.set(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
-		light2.position.set(gltf.scene.position.x, gltf.scene.position.y + 5, gltf.scene.position.z);
-
 		const mesh = gltf.scene.children[0] as THREE.Mesh;
 		mesh.geometry.scale(2, 2, 2);
+
 		const shape = CannonUtils.CreateTrimesh(mesh.geometry);
 		const body = new CANNON.Body({
 			mass: 0
@@ -518,8 +576,6 @@ const init = () => {
 		body.position = new CANNON.Vec3(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
 		world.addBody(body);
 
-		scene.add(light2);
-		scene.add(light);
 		scene.add(gltf.scene);
 	},
 		undefined,
@@ -532,13 +588,6 @@ const init = () => {
 		gltf.scene.position.set(10, -4, 5);
 		gltf.scene.scale.set(2, 2, 2);
 
-		const light = new THREE.PointLight(0xffffff, 10, 0, 1);
-		const light2 = new THREE.PointLight(0xffffff, 30, 0, 1);
-		light.position.set(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
-		light2.position.set(gltf.scene.position.x, gltf.scene.position.y + 5, gltf.scene.position.z);
-
-		scene.add(light);
-		scene.add(light2);
 		scene.add(gltf.scene);
 
 		const body = new CANNON.Body({
@@ -566,23 +615,15 @@ const init = () => {
 	scene.add(loadSkybox());
 
 	//add lighting
-	const light = new THREE.PointLight(0xffffff, 30, 0, 1);
-	const lightPosition = new THREE.Vector3(0, 3.75, 0);
+	const light = new THREE.PointLight(0xFFECCB, 20, 0, 1);
+	let lightPosition = new THREE.Vector3(0, 3, -15);
 	light.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
-
-	const lightMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-	lightMaterial.emissive = new THREE.Color(0xffffff);
-
-	const lightMesh = new THREE.Mesh(boxGeom, lightMaterial);
-	lightMesh.scale.y = 2;
-	lightMesh.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
-
 	scene.add(light);
-	// scene.add(lightMesh);
 
-	//global light
-	// const globalLight = new THREE.AmbientLight(0xffffff, 1);
-	// scene.add(globalLight);
+	const light2 = new THREE.PointLight(0xFFECCB, 20, 0, 1);
+	lightPosition = new THREE.Vector3(0, 3, 15);
+	light2.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
+	scene.add(light2);
 
 	const fontLoader = new FontLoader();
 	fontLoader.load('/fonts/helvetiker_regular.typeface.json', function (font) {
@@ -606,18 +647,44 @@ const init = () => {
 		scene.add(text);
 	});
 
+	// postprocessing
+	composer = new EffectComposer(renderer);
+
+	const renderPass = new RenderPass(scene, camera);
+	composer.addPass(renderPass);
+
+	outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+	const outline = (outlinePass as OutlinePass);
+	outline.visibleEdgeColor = new THREE.Color(1, 0, 0);
+	outline.hiddenEdgeColor = new THREE.Color(1, 0, 0);
+	outline.edgeStrength = 10;
+	outline.edgeThickness = 2;
+	outline.edgeGlow = 0;
+	composer.addPass(outlinePass);
+
+	const outputPass = new OutputPass();
+	composer.addPass(outputPass);
+
+	effectFXAA = new ShaderPass(FXAAShader);
+	effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
+	composer.addPass(effectFXAA);
+
 	window.addEventListener('resize', resize);
 	window.addEventListener('pointermove', onPointerMove);
 };
 
 export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement) => {
-	init();
-
 	renderer = new THREE.WebGLRenderer({ antialias: true, canvas: surface });
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(surface.width, surface.height);
 
+	init();
+
 	surfaceContainer = container;
+
+	//stats
+	stats = new Stats();
+	container.appendChild( stats.dom );
 
 	//add controls
 	controls = new PointerLockControls(camera, surface);

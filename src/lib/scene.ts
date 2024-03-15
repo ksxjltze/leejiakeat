@@ -59,7 +59,7 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2(0, 0);
 
 let keys = [];
-let keysPressed = {};
+let keysTriggered = {};
 let physicsObjects = [];
 
 interface PhysicsObject {
@@ -190,6 +190,14 @@ const render = () => {
 const updateController = (keys: any[], dt: number) => {
 	updatePlayerController(keys, dt);
 
+	//laziness
+	const onKeyTriggered = (key, callback) => {
+		if (!keysTriggered[key]) {
+			callback();
+			keysTriggered[key] = true;
+		}
+	};
+
 	for (let i = 0; i < keys.length; i++) {
 		const key = keys[i];
 		switch (key) {
@@ -197,15 +205,15 @@ const updateController = (keys: any[], dt: number) => {
 				if (!isSelected || !selectedObject)
 					continue;
 
-				selectedObject.rotation.z -= 2 * dt;
+				onKeyTriggered('f', () => {
+					selectedObject.material.color.setHex(Math.random() * 0xFFFFFF);
+				})
 				break;
 			case 'f2':
-				//lazy
-				if (!keysPressed['f2']) {
+				onKeyTriggered('f2', () => {
 					settings.debugDraw = !settings.debugDraw;
 					cannonDebugRenderer.setVisible(settings.debugDraw); //I'll make this better later
-					keysPressed['f2'] = true;
-				}
+				})
 				break;
 			case 'g':
 				player.body.position.set(0, 0, 0);
@@ -373,172 +381,6 @@ const createGround = (length, wallThickness) => {
 	return floorMesh;
 }
 
-const constructLobbyRoom = () => {
-	const room = new THREE.Group();
-
-	// Create walls
-	const wallHeight = 10;
-	const wallThickness = 0.5;
-	const wallLength = 20;
-
-	const wallGeometry = new THREE.BoxGeometry(wallLength, wallHeight, wallThickness);
-	const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xCCCCCC });
-
-	const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
-	frontWall.position.set(0, wallHeight / 2, wallLength / 2);
-	room.add(frontWall);
-
-	const iconoclasmLogoTexture = new THREE.TextureLoader().load("/images/iconoclasm/iconoclasm-logo.jpg");
-	const iconoclasmBanner = createInteractableTexturePlane(wallLength, wallHeight, iconoclasmLogoTexture);
-	iconoclasmBanner.position.set(0, wallHeight / 2, wallLength / 2 - wallThickness);
-	iconoclasmBanner.scale.set(0.75, 0.8, 1.0);
-	iconoclasmBanner.rotation.y = Math.PI;
-	room.add(iconoclasmBanner);
-
-	const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
-	backWall.position.set(0, wallHeight / 2, -wallLength / 2);
-	room.add(backWall);
-
-	const stronkBoiTexture = new THREE.TextureLoader().load("/images/stronk.jpg");
-	const stronkBoiPlane = createInteractableTexturePlane(wallLength, wallHeight, stronkBoiTexture);
-	stronkBoiPlane.position.set(0, wallHeight / 2, -wallLength / 2 + wallThickness);
-	stronkBoiPlane.scale.set(0.75, 0.8, 1.0);
-	room.add(stronkBoiPlane);
-
-	const leftWallLeft = new THREE.Mesh(wallGeometry, wallMaterial);
-	leftWallLeft.position.set(-wallLength / 2, wallHeight / 2, -wallLength / 3);
-	leftWallLeft.rotation.y = Math.PI / 2;
-	leftWallLeft.scale.set(0.333, 1.0, 1.0);
-	room.add(leftWallLeft);
-
-	const leftWallRight = new THREE.Mesh(wallGeometry, wallMaterial);
-	leftWallRight.position.set(-wallLength / 2, wallHeight / 2, wallLength / 3);
-	leftWallRight.rotation.y = Math.PI / 2;
-	leftWallRight.scale.set(0.333, 1.0, 1.0);
-	room.add(leftWallRight);
-
-	const leftWallTop = new THREE.Mesh(wallGeometry, wallMaterial);
-	leftWallTop.position.set(-wallLength / 2, 7 / 8 * wallHeight, 0);
-	leftWallTop.rotation.y = Math.PI / 2;
-	leftWallTop.scale.set(0.34, 1 / 4, 1.0);
-	room.add(leftWallTop);
-
-	const rightWallLeft = new THREE.Mesh(wallGeometry, wallMaterial);
-	rightWallLeft.position.set(wallLength / 2, wallHeight / 2, -wallLength / 3);
-	rightWallLeft.rotation.y = -Math.PI / 2;
-	rightWallLeft.scale.set(0.333, 1.0, 1.0);
-	room.add(rightWallLeft);
-
-	const rightWallRight = new THREE.Mesh(wallGeometry, wallMaterial);
-	rightWallRight.position.set(wallLength / 2, wallHeight / 2, wallLength / 3);
-	rightWallRight.rotation.y = -Math.PI / 2;
-	rightWallRight.scale.set(0.333, 1.0, 1.0);
-	room.add(rightWallRight);
-
-	const rightWallTop = new THREE.Mesh(wallGeometry, wallMaterial);
-	rightWallTop.position.set(wallLength / 2, 7 / 8 * wallHeight, 0);
-	rightWallTop.rotation.y = -Math.PI / 2;
-	rightWallTop.scale.set(0.34, 1 / 4, 1.0);
-	room.add(rightWallTop);
-
-	// Create floor
-	const floorGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
-	const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
-	floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
-	floorMesh.rotation.x = -Math.PI / 2;
-	floorMesh.position.y = wallThickness / 2;
-	floorMesh.scale.set(1.025, 1.025, 1.0);
-	room.add(floorMesh);
-
-	//scuffed
-	const floorObject = createPhysicsObjectFromMesh(createGround(wallLength, wallThickness), new CANNON.Plane(), 0);
-	ground = floorObject.body;
-	world.addBody(floorObject.body);
-	room.add(floorObject.mesh);
-
-	//ball
-	const ballMaterial = new CANNON.Material();
-	const defaultMaterial = new CANNON.Material();
-	const ballGroundContactMaterial = new CANNON.ContactMaterial(ballMaterial, defaultMaterial, {
-		friction: 0.5, // Adjust friction as needed
-		restitution: 0.2 // Adjust restitution (bounciness) as needed
-	});
-	world.addContactMaterial(ballGroundContactMaterial);
-
-	const ballRadius = 0.5;
-	const ballGeometry = new THREE.SphereGeometry(ballRadius, 32, 32);
-	const ballMeshMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-	const ballMesh = new THREE.Mesh(ballGeometry, ballMeshMaterial);
-
-	ballMesh.position.copy(floorObject.mesh.position);
-	ballMesh.position.y = 1;
-
-	const ballObject = createPhysicsObjectFromMesh(ballMesh, new CANNON.Sphere(ballRadius), 0.2);
-	// ballObject.body.material = ballMaterial;
-	scene.add(ballMesh);
-	world.addBody(ballObject.body);
-
-	const floorGeometry3 = new THREE.PlaneGeometry(wallLength, wallLength);
-	const floorMaterial3 = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
-	const floorMesh3 = new THREE.Mesh(floorGeometry3, floorMaterial3);
-	floorMesh3.rotation.x = -Math.PI / 2;
-	floorMesh3.position.y = wallThickness / 2;
-	floorMesh3.position.x += wallLength;
-	floorMesh3.scale.set(1.025, 1.025, 1.0);
-	room.add(floorMesh3);
-
-	const skylightGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
-	const skylightMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA, transparent: true, opacity: 0.8 });
-	const skylight = new THREE.Mesh(skylightGeometry, skylightMaterial);
-	skylight.rotation.x = Math.PI / 2;
-	skylight.position.y = wallHeight;
-	skylight.scale.set(0.8, 0.8, 1.0);
-	room.add(skylight);
-
-	const fakeLightGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
-	const fakeLightMaterial = new THREE.MeshStandardMaterial({ color: 0xCCCCCC });
-	const fakeLight = new THREE.Mesh(fakeLightGeometry, fakeLightMaterial);
-	fakeLight.rotation.x = Math.PI / 2;
-	fakeLight.position.y = wallHeight - 0.1;
-	fakeLight.scale.set(0.2, 0.2, 1.0);
-	room.add(fakeLight);
-
-	const ceilingGeometry = new THREE.PlaneGeometry(wallLength, wallLength);
-	const ceilingMaterial = new THREE.MeshStandardMaterial({ color: 0xCCCCCC });
-
-	const ceilingLeft = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
-	ceilingLeft.rotation.x = Math.PI / 2;
-	ceilingLeft.position.y = wallHeight;
-	ceilingLeft.position.x = 0.9 * -wallHeight;
-	ceilingLeft.scale.set(0.1, 1.0, 1.0);
-	room.add(ceilingLeft);
-
-	const ceilingRight = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
-	ceilingRight.rotation.x = Math.PI / 2;
-	ceilingRight.position.y = wallHeight;
-	ceilingRight.position.x = 0.9 * wallHeight;
-	ceilingRight.scale.set(0.1, 1.0, 1.0);
-	room.add(ceilingRight);
-
-	const ceilingFront = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
-	ceilingFront.rotation.x = Math.PI / 2;
-	ceilingFront.rotation.z = Math.PI / 2;
-	ceilingFront.position.y = wallHeight;
-	ceilingFront.position.z = 0.9 * wallLength / 2;
-	ceilingFront.scale.set(0.1, 1.0, 1.0);
-	room.add(ceilingFront);
-
-	const ceilingBack = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
-	ceilingBack.rotation.x = Math.PI / 2;
-	ceilingBack.rotation.z = Math.PI / 2;
-	ceilingBack.position.y = wallHeight;
-	ceilingBack.position.z = 0.9 * -wallLength / 2;
-	ceilingBack.scale.set(0.1, 1.0, 1.0);
-	room.add(ceilingBack);
-
-	return room;
-};
-
 const init = () => {
 	scene = new THREE.Scene();
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
@@ -550,14 +392,49 @@ const init = () => {
 	player.body = new CANNON.Body({ mass: 60 });
 	player.body.addShape(new CANNON.Sphere(3.5));
 	player.body.angularFactor = new CANNON.Vec3(0, 1, 0);
-	// player.body.addShape(new CANNON.Box(new CANNON.Vec3(2, 3, 2)));
 	world.addBody(player.body);
 
-	let lobby = constructLobbyRoom();
-	lobby.position.setY(lobby.position.y - 5);
-	scene.add(lobby);
+	const floorBody = new CANNON.Body({
+		mass: 0,
+		position: new CANNON.Vec3(0, -5, 0),
+	});
+	const planeShape = new CANNON.Plane();
+	const quaternion = new THREE.Quaternion();
+	quaternion.setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 );
+
+	//GROUND
+	floorBody.addShape(planeShape);
+	floorBody.quaternion = new CANNON.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+
+	ground = floorBody;
+	world.addBody(floorBody);
 
 	cannonDebugRenderer = new CannonDebugRenderer(scene, world);
+
+	//lobby
+	modelLoader.load('/models/room.glb', (gltf) => {
+		gltf.scene.position.setY(-5);
+		gltf.scene.scale.set(5, 5, 5);
+		scene.add(gltf.scene);
+
+	}, undefined,
+	(err) => {
+		console.error(err);
+	});
+
+	const length = 24;
+	const height = 12;
+
+	const iconoclasmLogoTexture = new THREE.TextureLoader().load("/images/iconoclasm/iconoclasm-logo.jpg");
+	const iconoclasmBanner = createInteractableTexturePlane(length, height, iconoclasmLogoTexture);
+	iconoclasmBanner.position.set(0, 2.5, 20);
+	iconoclasmBanner.rotateY(Math.PI);
+	scene.add(iconoclasmBanner);
+
+	const stronkBoiTexture = new THREE.TextureLoader().load("/images/stronk.jpg");
+	const stronkBoiPlane = createInteractableTexturePlane(length, height, stronkBoiTexture);
+	stronkBoiPlane.position.set(0, 2.5, -20);
+	scene.add(stronkBoiPlane);
 
 	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
 		console.log("Loaded Skinned model: ", gltf);
@@ -614,7 +491,7 @@ const init = () => {
 	//laziness
 	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
 		console.log("Loaded Skinned model: ", gltf);
-		gltf.scene.position.set(20, -1.65, 5);
+		gltf.scene.position.set(10, -1.65, 5);
 		scene.add(gltf.scene);
 	},
 		undefined,
@@ -624,7 +501,7 @@ const init = () => {
 
 	modelLoader.load('/models/table.glb', (gltf) => {
 		console.log("Added model: ", gltf);
-		gltf.scene.position.set(20, -4, -5);
+		gltf.scene.position.set(10, -4, -5);
 
 		const light = new THREE.PointLight(0xffffff, 10, 0, 1);
 		const light2 = new THREE.PointLight(0xffffff, 30, 0, 1);
@@ -652,7 +529,7 @@ const init = () => {
 
 	modelLoader.load('/models/table2.glb', (gltf) => {
 		console.log("Added model: ", gltf);
-		gltf.scene.position.set(20, -4, 5);
+		gltf.scene.position.set(10, -4, 5);
 		gltf.scene.scale.set(2, 2, 2);
 
 		const light = new THREE.PointLight(0xffffff, 10, 0, 1);
@@ -709,7 +586,7 @@ const init = () => {
 
 	const fontLoader = new FontLoader();
 	fontLoader.load('/fonts/helvetiker_regular.typeface.json', function (font) {
-		const geometry = new TextGeometry('Press F to interact!', {
+		const geometry = new TextGeometry('Hello there!', {
 			font: font,
 			size: 0.5,
 			height: 0.1,
@@ -759,7 +636,7 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 			keys = keys.filter((k) => k !== key);
 		}
 
-		keysPressed[key] = false;
+		keysTriggered[key] = false;
 	};
 	document.addEventListener('keydown', onKeyDown);
 	document.addEventListener('keyup', onKeyUp);

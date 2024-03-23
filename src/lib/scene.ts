@@ -284,7 +284,7 @@ const updateController = (keys: any[], dt: number) => {
 					if (selected.userData.onInteract) {
 						selected.userData.onInteract();
 					}
-	
+
 					// selectedObjects[0].material.color.setHex(Math.random() * 0xFFFFFF);
 				})
 				break;
@@ -404,23 +404,22 @@ export const resize = () => {
 };
 
 const loadSkyboxTextures = () => {
-	const ft = new THREE.TextureLoader().load("/images/skybox/purple-nebula_front5.png");
-	const bk = new THREE.TextureLoader().load("/images/skybox/purple-nebula_back6.png");
-	const up = new THREE.TextureLoader().load("/images/skybox/purple-nebula_top3.png");
-	const dn = new THREE.TextureLoader().load("/images/skybox/purple-nebula_bottom4.png");
-	const rt = new THREE.TextureLoader().load("/images/skybox/purple-nebula_right1.png");
-	const lf = new THREE.TextureLoader().load("/images/skybox/purple-nebula_left2.png");
+	const loader = new THREE.CubeTextureLoader();
+	loader.setPath("/images/skybox/");
 
-	return [rt, lf, up, dn, ft, bk];
-}
+	const textureCube = loader.load([
+		'left.png',
+		'right.png',
+		'top.png',
+		'bottom.png',
+		'back.png',
+		'front.png',
+	]);
 
-const loadSkybox = () => {
-	const textures = loadSkyboxTextures();
-	const materialArray = textures.map((texture) => new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide }));
+	// textureCube.mapping = THREE.CubeRefractionMapping;
+	// textureCube.flipY = true;
 
-	const skyboxGeom = new THREE.BoxGeometry(10000, 10000, 10000);
-	const skybox = new THREE.Mesh(skyboxGeom, materialArray);
-	return skybox;
+	return textureCube;
 }
 
 const setupPhysics = () => {
@@ -548,7 +547,7 @@ const init = () => {
 	}, undefined,
 		(err) => {
 			console.error(err);
-		});
+	});
 
 	const length = 24;
 	const height = 12;
@@ -707,7 +706,7 @@ const init = () => {
 	// camera.rotation.y = Math.PI;
 
 	//skybox
-	scene.add(loadSkybox());
+	scene.background = loadSkyboxTextures();
 
 	//add lighting
 	const light = new THREE.PointLight(0xFFECCB, 8, 0, 1);

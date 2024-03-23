@@ -36,6 +36,7 @@ let camera;
 let controls;
 
 let surfaceContainer: HTMLElement;
+let domAttachmentContainer: HTMLElement;
 let initialized = false;
 
 let mixer;
@@ -62,6 +63,10 @@ const settings = {
 
 let selectedObjects = [];
 
+const PlayerSettings = {
+	mass: 60
+} as const;
+
 const player = {
 	velocity: new THREE.Vector3(0, 0, 0),
 	grounded: true,
@@ -70,6 +75,9 @@ const player = {
 	jumpAmount: 4,
 	body: undefined
 };
+
+//temp
+const cameraTurnSpeed = 5;
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2(0, 0);
@@ -142,7 +150,7 @@ const playVideo = (path: string, id: string, loop: boolean) => {
 
 	video.play();
 
-	surfaceContainer.appendChild(video);
+	domAttachmentContainer.appendChild(video);
 	return new THREE.VideoTexture(video);
 }
 
@@ -331,6 +339,14 @@ const updatePlayerController = (keys: any[], dt: number) => {
 					player.grounded = false;
 				}
 				break;
+
+			//keyboard camera controls
+			case 'q':
+				camera.rotation.y += cameraTurnSpeed * dt;
+				break;
+			case 'e':
+				camera.rotation.y -= cameraTurnSpeed * dt;
+				break;
 		}
 	}
 
@@ -476,10 +492,9 @@ const init = () => {
 	world = setupPhysics();
 
 	//player physics settings
-	player.body = new CANNON.Body({ mass: 60 });
+	player.body = new CANNON.Body({ mass: PlayerSettings.mass });
 	player.body.addShape(new CANNON.Sphere(3.5));
 	player.body.angularFactor = new CANNON.Vec3(0, 1, 0);
-	world.addBody(player.body);
 
 	const floorBody = new CANNON.Body({
 		mass: 0,
@@ -494,9 +509,11 @@ const init = () => {
 	floorBody.quaternion = new CANNON.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 
 	ground = floorBody;
-	// world.addBody(floorBody);
-
 	cannonDebugRenderer = new CannonDebugRenderer(scene, world);
+
+	const onFloorLoaded = () => {
+		world.addBody(player.body);
+	};
 
 	//lobby
 	modelLoader.load('/models/room.glb', (gltf) => {
@@ -517,6 +534,8 @@ const init = () => {
 				world.addBody(body);
 			}
 		})
+
+		onFloorLoaded();
 
 	}, undefined,
 		(err) => {
@@ -750,6 +769,14 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 
 	surfaceContainer = container;
 
+	//invisible DOM element to attach HTML stuff I guess
+	const domAttachment = document.createElement("div");
+	domAttachment.hidden = true;
+	domAttachment.setAttribute("id", "attachment");
+
+	domAttachmentContainer = domAttachment;
+	surfaceContainer.appendChild(domAttachment);
+
 	//stats
 	stats = new Stats();
 	container.appendChild(stats.dom);
@@ -758,7 +785,7 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	controls = new PointerLockControls(camera, surface);
 	controls.pointerSpeed = 0.8;
 
-	//wasd
+	//key events
 	const onKeyDown = (event: KeyboardEvent) => {
 		const key = event.key.toLowerCase();
 		if (!keys.includes(key)) {

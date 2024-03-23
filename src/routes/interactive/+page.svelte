@@ -41,6 +41,7 @@
         <li>WASD to move</li>
         <li>Space to jump.</li>
         <li>Mouse to look around (fullscreen)</li>
+		<li>Alternatively, use Q and E to rotate the camera.</li>
     </ul>
 </section>
 

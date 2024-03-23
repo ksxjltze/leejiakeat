@@ -6,6 +6,7 @@ import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockCont
 
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { GUI } from 'three/examples/jsm//libs/lil-gui.module.min.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -488,6 +489,8 @@ const init = () => {
 	scene = new THREE.Scene();
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 
+	const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+
 	//physics
 	world = setupPhysics();
 
@@ -514,6 +517,11 @@ const init = () => {
 	const onFloorLoaded = () => {
 		world.addBody(player.body);
 	};
+
+	const environment = new RoomEnvironment();
+	const pmremGenerator = new THREE.PMREMGenerator(renderer);
+	scene.environment = pmremGenerator.fromScene(environment).texture;
+	environment.dispose();
 
 	//lobby
 	modelLoader.load('/models/room.glb', (gltf) => {
@@ -702,13 +710,13 @@ const init = () => {
 	scene.add(loadSkybox());
 
 	//add lighting
-	const light = new THREE.PointLight(0xFFECCB, 20, 0, 1);
-	let lightPosition = new THREE.Vector3(0, 3, -15);
+	const light = new THREE.PointLight(0xFFECCB, 8, 0, 1);
+	let lightPosition = new THREE.Vector3(0, 3, -10);
 	light.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
 	scene.add(light);
 
-	const light2 = new THREE.PointLight(0xFFECCB, 20, 0, 1);
-	lightPosition = new THREE.Vector3(0, 3, 15);
+	const light2 = new THREE.PointLight(0xFFECCB, 8, 0, 1);
+	lightPosition = new THREE.Vector3(0, 3, 10);
 	light2.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
 	scene.add(light2);
 
@@ -728,7 +736,7 @@ const init = () => {
 		geometry.center();
 
 		const material = new THREE.MeshBasicMaterial();
-		material.color = new THREE.Color(0.7, 0.2, 1.0);
+		material.color = new THREE.Color(1, 0, 0);
 		const text = new THREE.Mesh(geometry, material);
 		text.position.z = -8;
 		scene.add(text);
@@ -742,11 +750,11 @@ const init = () => {
 
 	outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
 	const outline = (outlinePass as OutlinePass);
-	outline.visibleEdgeColor = new THREE.Color(1, 0, 0);
-	outline.hiddenEdgeColor = new THREE.Color(1, 0, 0);
+	outline.visibleEdgeColor = new THREE.Color(1, 0, 1);
+	outline.hiddenEdgeColor = new THREE.Color(1, 0, 1);
 	outline.edgeStrength = 10;
-	outline.edgeThickness = 2;
-	outline.edgeGlow = 0;
+	outline.edgeThickness = 3;
+	outline.edgeGlow = 1;
 	composer.addPass(outlinePass);
 
 	const outputPass = new OutputPass();
@@ -760,11 +768,18 @@ const init = () => {
 	window.addEventListener('pointermove', onPointerMove);
 };
 
-export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement) => {
-	renderer = new THREE.WebGLRenderer({ antialias: true, canvas: surface });
+const rendererSetup = (surface) => {
+	const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: surface });
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(surface.width, surface.height);
+	renderer.toneMapping = THREE.ACESFilmicToneMapping;
+	renderer.toneMappingExposure = 1;
 
+	return renderer;
+};
+
+export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement) => {
+	renderer = rendererSetup(surface);
 	init();
 
 	surfaceContainer = container;

@@ -503,16 +503,20 @@ const init = () => {
 		gltf.scene.position.setY(-5);
 		scene.add(gltf.scene);
 
-		const mesh = gltf.scene.children[0] as THREE.Mesh;
-		mesh.geometry.scale(5, 5, 5);
+		const group = gltf.scene.children[0];
+		group.children.forEach((mesh) => {
+			if (mesh instanceof THREE.Mesh) {
+				mesh.geometry.scale(5, 5, 5);
 
-		const shape = CannonUtils.CreateTrimesh(mesh.geometry);
-		const body = new CANNON.Body({
-			mass: 0
+				const shape = CannonUtils.CreateTrimesh(mesh.geometry);
+				const body = new CANNON.Body({
+					mass: 0
+				})
+				body.addShape(shape);
+				body.position = new CANNON.Vec3(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
+				world.addBody(body);
+			}
 		})
-		body.addShape(shape);
-		body.position = new CANNON.Vec3(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
-		world.addBody(body);
 
 	}, undefined,
 		(err) => {

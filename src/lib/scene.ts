@@ -48,6 +48,8 @@ let ground;
 
 let boiObject: PhysicsObject;
 let boiState;
+let boiEnabled = true;
+
 const BoiState = {
 	NONE: 0,
 	WALK1: 1,
@@ -93,7 +95,6 @@ function ToCannonVec3Scaled(vector, scale) {
 	return new CANNON.Vec3(vector.x * scale, vector.y * scale, vector.z * scale);
 }
 
-
 function createPhysicsObject(mesh: THREE.Object3D, body: CANNON.Body) {
 	const object: PhysicsObject = {
 		mesh: mesh,
@@ -114,11 +115,46 @@ function createPhysicsObjectFromMesh(mesh: THREE.Mesh, shape: CANNON.Shape, mass
 	return createPhysicsObject(mesh, body);
 }
 
+const playVideoById = (id: string): THREE.Texture => {
+	const videoElement = document.getElementById(id);
+
+	if (videoElement instanceof HTMLVideoElement) {
+		const video = videoElement as HTMLVideoElement;
+		video.play();
+
+		return new THREE.VideoTexture(video);
+	}
+
+	return null;
+}
+
+const playVideo = (path: string, id: string, loop: boolean) => {
+	const existingVideo = playVideoById(id);
+	if (existingVideo) {
+		return existingVideo;
+	}
+
+	const video = document.createElement("video");
+
+	video.src = path;
+	video.setAttribute("id", id);
+	video.loop = loop;
+
+	video.play();
+
+	surfaceContainer.appendChild(video);
+	return new THREE.VideoTexture(video);
+}
+
 function onPointerMove(event) {
 
 }
 
-const update = (dt) => {
+//TODO: ECS or something
+const updateBoi = (dt) => {
+	if (!boiEnabled)
+		return;
+
 	if (!boiState) //TODO: stuff
 		boiState = BoiState.WALK1;
 
@@ -136,8 +172,6 @@ const update = (dt) => {
 
 		quat.multiply(new THREE.Quaternion(0, 1, 0, 0));
 		body.quaternion.set(quat.x, quat.y, quat.z, quat.w);
-
-		console.log(quat);
 	};
 
 	switch (boiState) {
@@ -156,6 +190,10 @@ const update = (dt) => {
 			}
 			break;
 	}
+}
+
+const update = (dt) => {
+	updateBoi(dt);
 }
 
 const animate = () => {
@@ -185,12 +223,12 @@ const updateAnimations = (dt) => {
 	mixer.update(dt);
 }
 
-const setSelectedObject = ( object ) => {
+const setSelectedObject = (object) => {
 	selectedObjects = [];
-	selectedObjects.push( object );
+	selectedObjects.push(object);
 };
 
-const render = () => {
+const checkIntersectingObjects = () => {
 	raycaster.setFromCamera(pointer, camera);
 
 	// calculate objects intersecting the picking ray
@@ -201,14 +239,15 @@ const render = () => {
 
 		setSelectedObject(selectedObject);
 
-		//temp
-		if (selectedObject.name != "selectable") {
+		if (!selectedObject.userData.selectable)
 			selectedObjects = [];
-		}
 
 		outlinePass.selectedObjects = selectedObjects;
 	}
+}
 
+const render = () => {
+	checkIntersectingObjects();
 	// renderer.render(scene, camera);
 	composer.render();
 }
@@ -232,7 +271,12 @@ const updateController = (keys: any[], dt: number) => {
 					return;
 
 				onKeyTriggered('f', () => {
-					selectedObjects[0].material.color.setHex(Math.random() * 0xFFFFFF);
+					const selected = selectedObjects[0];
+					if (selected.userData.onInteract) {
+						selected.userData.onInteract();
+					}
+	
+					// selectedObjects[0].material.color.setHex(Math.random() * 0xFFFFFF);
 				})
 				break;
 			case 'f2':
@@ -319,7 +363,7 @@ export const resize = () => {
 		renderer.setSize(width, height);
 		composer.setSize(width, height);
 
-		effectFXAA.uniforms['resolution'].value.set( 1 / width, 1 / height );
+		effectFXAA.uniforms['resolution'].value.set(1 / width, 1 / height);
 
 		camera.aspect = width / height;
 		camera.updateProjectionMatrix();
@@ -395,11 +439,10 @@ const setupPhysics = () => {
 	return world;
 }
 
-const createInteractableTexturePlane = (width, height, texture) => {
+const createTexturePlane = (width, height, texture) => {
 	const planeGeometry = new THREE.PlaneGeometry(width, height);
 	const planeMaterial = new THREE.MeshStandardMaterial({ map: texture });
 	const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
-	planeMesh.name = "Interactable";
 
 	return planeMesh;
 }
@@ -419,6 +462,11 @@ const createGround = (length, wallThickness) => {
 
 	return floorMesh;
 }
+
+const createInteractableObject = (object, onInteract) => {
+	object.userData.selectable = true;
+	object.userData.onInteract = onInteract;
+};
 
 const init = () => {
 	scene = new THREE.Scene();
@@ -475,17 +523,33 @@ const init = () => {
 	const height = 12;
 
 	const iconoclasmLogoTexture = new THREE.TextureLoader().load("/images/iconoclasm/iconoclasm-logo.jpg");
-	const iconoclasmBanner = createInteractableTexturePlane(length, height, iconoclasmLogoTexture);
+	const iconoclasmBanner = createTexturePlane(length, height, iconoclasmLogoTexture);
 	iconoclasmBanner.position.set(0, 2.5, 20);
 	iconoclasmBanner.rotateY(Math.PI);
-	iconoclasmBanner.name = "selectable" //temp;
+
+	createInteractableObject(iconoclasmBanner, () => {
+		iconoclasmBanner.rotation.z += Math.PI * 0.1;
+		//TODO: embed youtube
+		// const texture = playVideoById("iconoclasm");
+		// if (texture) {
+		// 	iconoclasmBanner.material.map = texture;
+		// }
+	});
+
 	scene.add(iconoclasmBanner);
 
 	const stronkBoiTexture = new THREE.TextureLoader().load("/images/stronk.jpg");
-	const stronkBoiPlane = createInteractableTexturePlane(length, height, stronkBoiTexture);
+	const stronkBoiPlane = createTexturePlane(length, height, stronkBoiTexture);
 	stronkBoiPlane.position.set(0, 2.5, -20);
-	stronkBoiPlane.name = "selectable" //temp;
 	scene.add(stronkBoiPlane);
+
+	createInteractableObject(stronkBoiPlane, () => {
+		const videoTexture = playVideo("/videos/boii.mp4", "boiVideo", true);
+
+		if (videoTexture) {
+			stronkBoiPlane.material.map = videoTexture;
+		}
+	});
 
 	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
 		console.log("Loaded Skinned model: ", gltf);
@@ -609,7 +673,7 @@ const init = () => {
 
 	scene.add(sphere);
 	camera.position.z = 0;
-	camera.rotation.y = Math.PI;
+	// camera.rotation.y = Math.PI;
 
 	//skybox
 	scene.add(loadSkybox());
@@ -627,11 +691,11 @@ const init = () => {
 
 	const fontLoader = new FontLoader();
 	fontLoader.load('/fonts/helvetiker_regular.typeface.json', function (font) {
-		const geometry = new TextGeometry('Hello there!', {
+		const geometry = new TextGeometry('Press F to interact with glowy stuff!', {
 			font: font,
 			size: 0.5,
 			height: 0.1,
-			curveSegments: 8,
+			curveSegments: 4,
 			bevelEnabled: false,
 			bevelThickness: 0.125,
 			bevelSize: 0.025,
@@ -641,7 +705,7 @@ const init = () => {
 		geometry.center();
 
 		const material = new THREE.MeshBasicMaterial();
-		material.color = new THREE.Color(0, 0, 0);
+		material.color = new THREE.Color(0.7, 0.2, 1.0);
 		const text = new THREE.Mesh(geometry, material);
 		text.position.z = -8;
 		scene.add(text);
@@ -684,7 +748,7 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 
 	//stats
 	stats = new Stats();
-	container.appendChild( stats.dom );
+	container.appendChild(stats.dom);
 
 	//add controls
 	controls = new PointerLockControls(camera, surface);

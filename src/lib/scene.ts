@@ -21,7 +21,7 @@ import CannonDebugRenderer from './utils/cannonDebugRenderer';
 
 const boxGeom = new THREE.BoxGeometry();
 const sphereGeom = new THREE.SphereGeometry();
-const standardMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+const standardMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
 const clock = new THREE.Clock();
 const modelLoader = new GLTFLoader();
 
@@ -503,14 +503,16 @@ const GLTFGroupToStaticBodies = (gltf, scale?: THREE.Vector3) => {
 	const group = gltf.scene.children[0];
 	const bodies = [];
 
-	group.children.forEach((mesh) => {
-		if (mesh instanceof THREE.Mesh) {
-			mesh.geometry.scale(scale.x, scale.y, scale.z);
-			const body = meshToStaticCollider(mesh, gltf.scene.position);
+	traverseScene(gltf.scene, (object) => {
+		if (object instanceof THREE.Mesh) {
+			object.geometry.scale(scale.x, scale.y, scale.z);
+			const body = meshToStaticCollider(object, gltf.scene.position);
 
 			bodies.push(body);
 			world.addBody(body);
-		}
+		};
+
+		return false;
 	})
 
 	return bodies;
@@ -745,7 +747,7 @@ const init = () => {
 			if (object instanceof THREE.Mesh) {
 				createInteractableObject(object, () => {
 					const videoTexture = playVideo("/videos/boii.mp4", "boiVideo", true);
-		
+
 					if (videoTexture) {
 						stronkBoiPlane.material.map = videoTexture;
 					}
@@ -753,15 +755,10 @@ const init = () => {
 			}
 			return false;
 		});
-		
+
 	});
 
 	//scene setup
-	const sphere = new THREE.Mesh(sphereGeom, standardMat)
-	sphere.position.z = -30;
-	sphere.scale.setScalar(5);
-
-	scene.add(sphere);
 	camera.position.z = 0;
 	// camera.rotation.y = Math.PI;
 
@@ -778,6 +775,16 @@ const init = () => {
 	lightPosition = new THREE.Vector3(0, 3, 10);
 	light2.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
 	scene.add(light2);
+
+	const domeLight = new THREE.PointLight(0xFFFFFF, 100, 0, 1);
+	lightPosition = new THREE.Vector3(-80, 25, 0);
+	domeLight.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
+	scene.add(domeLight);
+
+	const sphere = new THREE.Mesh(sphereGeom, standardMat)
+	sphere.position.copy(lightPosition);
+	sphere.scale.setScalar(5);
+	scene.add(sphere);
 
 	const fontLoader = new FontLoader();
 	fontLoader.load('/fonts/helvetiker_regular.typeface.json', function (font) {

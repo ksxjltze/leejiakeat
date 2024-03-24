@@ -422,6 +422,18 @@ const loadSkyboxTextures = () => {
 	return textureCube;
 }
 
+const meshToStaticCollider = (mesh: THREE.Mesh, position) => {
+	const shape = CannonUtils.CreateTrimesh(mesh.geometry);
+	const body = new CANNON.Body({
+		mass: 0
+	})
+
+	body.addShape(shape);
+	body.position = new CANNON.Vec3(position.x, position.y, position.z);
+
+	return body;
+};
+
 const setupPhysics = () => {
 	const world = new CANNON.World();
 	world.gravity.set(0, -9.82, 0); // m/s²
@@ -484,6 +496,52 @@ const createInteractableObject = (object, onInteract) => {
 	object.userData.onInteract = onInteract;
 };
 
+const GLTFGroupToStaticBodies = (gltf, scale?: THREE.Vector3) => {
+	if (!scale)
+		scale = new THREE.Vector3(1, 1, 1);
+
+	const group = gltf.scene.children[0];
+	const bodies = [];
+
+	group.children.forEach((mesh) => {
+		if (mesh instanceof THREE.Mesh) {
+			mesh.geometry.scale(scale.x, scale.y, scale.z);
+			const body = meshToStaticCollider(mesh, gltf.scene.position);
+
+			bodies.push(body);
+			world.addBody(body);
+		}
+	})
+
+	return bodies;
+};
+
+const traverseScene = (scene, fn: (object: any) => boolean) => {
+	const traverser = (child) => {
+		if (fn(child))
+			return;
+
+		child.children.forEach(traverser);
+	};
+
+	scene.children.forEach(traverser);
+};
+
+const findMeshByMaterialName = (scene, name: string) => {
+	let result = null;
+	const materialNameMatches = (object) => {
+		if (object instanceof THREE.Mesh && object.material.name == name) {
+			result = object;
+			return true;
+		}
+
+		return false;
+	};
+
+	traverseScene(scene, materialNameMatches);
+	return result;
+};
+
 const init = () => {
 	scene = new THREE.Scene();
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
@@ -527,27 +585,13 @@ const init = () => {
 		gltf.scene.position.setY(-5);
 		scene.add(gltf.scene);
 
-		const group = gltf.scene.children[0];
-		group.children.forEach((mesh) => {
-			if (mesh instanceof THREE.Mesh) {
-				mesh.geometry.scale(5, 5, 5);
-
-				const shape = CannonUtils.CreateTrimesh(mesh.geometry);
-				const body = new CANNON.Body({
-					mass: 0
-				})
-				body.addShape(shape);
-				body.position = new CANNON.Vec3(gltf.scene.position.x, gltf.scene.position.y, gltf.scene.position.z);
-				world.addBody(body);
-			}
-		})
-
+		GLTFGroupToStaticBodies(gltf, new THREE.Vector3(5, 5, 5));
 		onFloorLoaded();
 
 	}, undefined,
 		(err) => {
 			console.error(err);
-	});
+		});
 
 	const length = 24;
 	const height = 12;
@@ -574,11 +618,7 @@ const init = () => {
 	scene.add(stronkBoiPlane);
 
 	createInteractableObject(stronkBoiPlane, () => {
-		const videoTexture = playVideo("/videos/boii.mp4", "boiVideo", true);
-
-		if (videoTexture) {
-			stronkBoiPlane.material.map = videoTexture;
-		}
+		stronkBoiPlane.rotation.z += Math.PI * 0.1;
 	});
 
 	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
@@ -596,12 +636,12 @@ const init = () => {
 		const action = mixer.clipAction(clip);
 		action.play();
 
-		const shape = new CANNON.Sphere(4.5);
+		const shape = new CANNON.Sphere(3.4);
 		const body = new CANNON.Body({
-			mass: 100
+			mass: 10
 		});
 
-		body.addShape(shape);
+		body.addShape(shape, new CANNON.Vec3(0, -1.4, 0));
 		body.position = ToCannonVec3(gltf.scene.position);
 		body.quaternion = ToCannonQuat(gltf.scene.quaternion);
 
@@ -695,6 +735,26 @@ const init = () => {
 		(err) => {
 			console.error(err);
 		});
+
+	modelLoader.load('/models/console.glb', (gltf) => {
+		gltf.scene.position.set(0, -5, -12);
+		scene.add(gltf.scene);
+
+		GLTFGroupToStaticBodies(gltf);
+		traverseScene(gltf.scene, (object) => {
+			if (object instanceof THREE.Mesh) {
+				createInteractableObject(object, () => {
+					const videoTexture = playVideo("/videos/boii.mp4", "boiVideo", true);
+		
+					if (videoTexture) {
+						stronkBoiPlane.material.map = videoTexture;
+					}
+				});
+			}
+			return false;
+		});
+		
+	});
 
 	//scene setup
 	const sphere = new THREE.Mesh(sphereGeom, standardMat)

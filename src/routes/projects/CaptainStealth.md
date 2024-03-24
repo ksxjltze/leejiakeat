@@ -15,9 +15,8 @@ src: https://github.com/ksxjltze/StarBangBang
 description: Stealth game where the player has to juggle two characters.
 
 icon: /images/captain-stealth/captain-stealth-player.png
-
-
 background: /images/captain-stealth/captain-stealth-menu.png
+priority: 2
 ---
 
 2D Top-down stealth game developed in C++. Switch between two characters to work together to escape the prison.

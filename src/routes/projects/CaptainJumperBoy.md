@@ -17,9 +17,7 @@ description: Simple Doodle Jump clone.
 icon: /images/captainjumperboy/captainjumperboy-logo.png
 
 background: /images/captainjumperboy/captainjumperboy-gameplay.png
-
-
-
+priority: 2
 ---
 
 CaptainJumperBoy is a simple 2D mobile game inspired by the classic Doodle Jump mobile game.

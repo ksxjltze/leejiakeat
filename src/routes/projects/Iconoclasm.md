@@ -3,7 +3,7 @@ layout: project
 title: "Iconoclasm: Fall of the False God"
 permalink: "projects/iconoclasm/"
 engine: "EngineEngine"
-
+background: /images/iconoclasm/iconoclasm-title.png
 date: '2022-09-01'
 endDate: '2023-03-01'
 
@@ -12,9 +12,8 @@ school: DigiPen Institute of Technology Singapore
 module: Software Engineering Project 5-6
 
 description: 3D hack-n-slash action game.
-
 icon: /images/iconoclasm/godkillers-team-logo.png
-background: /images/iconoclasm-logo.jpeg
+priority: 1
 ---
 
 Iconoclasm is a 3D hack-n-slash action game.<br>

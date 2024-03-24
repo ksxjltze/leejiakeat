@@ -16,6 +16,7 @@ description: A twist on the classic Asteroids arcade game.
 
 icon: /images/asteroids/asteroids-icon.png
 background: /images/asteroids/asteroids-gameplay.png
+priority: 2
 ---
 
 Shooter game inspired by the classic arcade game of the same name.<br>

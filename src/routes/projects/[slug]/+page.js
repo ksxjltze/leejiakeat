@@ -6,17 +6,23 @@ export async function load({params}) {
         title, 
         permalink, 
         engine, 
+        background,
+
         date, 
-        src, 
+        endDate,
+
+        academic,
+        school,
+        module,
+
         description, 
-        iconSrc, 
-        backgroundSrc} = post.metadata;
+        iconSrc
+    } = post.metadata;
     const content = post.default;
 
     return {
         content,
         title,
-        date,
-        src
+        date
     }
 }

@@ -3,8 +3,6 @@
 	export let data;
 
 	let index = 0;
-	const projectsPath = '/projects/';
-
 	const projects = [...data.posts].sort((a, b) => {
 		const pA = a.meta.priority ? a.meta.priority : 999;
 		const pB = b.meta.priority ? b.meta.priority : 999;
@@ -31,7 +29,7 @@
 				<img class="carousel-arrow-image" src="/images/svg/arrow.svg" alt="previous" />
 			</button>
 			<div id="project-heroes">
-				<a class="w-full" href={projectsPath + projects[index].path}>
+				<a class="w-full" href={projects[index].path}>
 					<div id="hero" class="border-radius-large">
 						<img
 							class="hero-image"

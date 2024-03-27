@@ -5,7 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import { GUI } from 'three/examples/jsm//libs/lil-gui.module.min.js';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -31,19 +31,21 @@ const RIGHT = new THREE.Vector3(1, 0, 0);
 let composer, effectFXAA, outlinePass;
 let stats;
 let renderer;
-let scene;
+let scene: THREE.Scene;
 
 let camera;
 let controls;
 
+let surfaceElement: HTMLElement;
 let surfaceContainer: HTMLElement;
 let domAttachmentContainer: HTMLElement;
 let initialized = false;
 
-let mixer;
+let mixer: THREE.AnimationMixer;
 
-let world;
+let world: CANNON.World;
 let cannonDebugRenderer;
+let gui: GUI;
 
 let floorMesh;
 let ground;
@@ -88,7 +90,7 @@ let keysTriggered = {};
 let physicsObjects = [];
 
 interface PhysicsObject {
-	mesh: THREE.Object3D,
+	object3D: THREE.Object3D,
 	body: CANNON.Body
 };
 
@@ -106,7 +108,7 @@ function ToCannonVec3Scaled(vector, scale) {
 
 function createPhysicsObject(mesh: THREE.Object3D, body: CANNON.Body) {
 	const object: PhysicsObject = {
-		mesh: mesh,
+		object3D: mesh,
 		body: body
 	};
 
@@ -175,6 +177,7 @@ const updateBoi = (dt) => {
 
 	const body = boiObject.body;
 
+	//TODO: LOOK AT
 	const flip = (body) => {
 		const quat = new THREE.Quaternion();
 		quat.copy(body.quaternion);
@@ -182,6 +185,15 @@ const updateBoi = (dt) => {
 		quat.multiply(new THREE.Quaternion(0, 1, 0, 0));
 		body.quaternion.set(quat.x, quat.y, quat.z, quat.w);
 	};
+
+	//walk if upright
+	const upVector = new THREE.Vector3(0, 1, 0);
+	const currentVector = upVector.clone().applyQuaternion(body.quaternion);
+
+	if (upVector.dot(currentVector) < 0.2){
+		console.log("TEST");
+		return;
+	}
 
 	switch (boiState) {
 		case 1:
@@ -285,7 +297,6 @@ const updateController = (keys: any[], dt: number) => {
 						selected.userData.onInteract();
 					}
 
-					// selectedObjects[0].material.color.setHex(Math.random() * 0xFFFFFF);
 				})
 				break;
 			case 'f2':
@@ -361,8 +372,8 @@ function updatePhysics(dt) {
 		if (object.body.mass == 0)
 			return;
 
-		object.mesh.position.copy(object.body.position);
-		object.mesh.quaternion.copy(object.body.quaternion);
+		object.object3D.position.copy(object.body.position);
+		object.object3D.quaternion.copy(object.body.quaternion);
 	});
 
 	if (!player.body)
@@ -475,22 +486,6 @@ const createTexturePlane = (width, height, texture) => {
 	return planeMesh;
 }
 
-//TODO: rework
-const createGround = (length, wallThickness) => {
-	const floorGeometry = new THREE.PlaneGeometry(length, length);
-	const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA });
-	const floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
-
-	//??? why do I need to do this
-	floorGeometry.translate(0, 0, length / 4);
-	floorMesh.lookAt(new THREE.Vector3(0, 1, 0));
-	floorMesh.position.y -= length / 4 - wallThickness / 2;
-	floorMesh.position.x -= length;
-	floorMesh.scale.set(1.025, 1.025, 1.0);
-
-	return floorMesh;
-}
-
 const createInteractableObject = (object, onInteract) => {
 	object.userData.selectable = true;
 	object.userData.onInteract = onInteract;
@@ -549,7 +544,7 @@ const init = () => {
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 
 	const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-
+	
 	//physics
 	world = setupPhysics();
 
@@ -574,6 +569,22 @@ const init = () => {
 	cannonDebugRenderer = new CannonDebugRenderer(scene, world);
 
 	const onFloorLoaded = () => {
+		//trigger plane (fall)
+		const fallCollisionTriggerBody = new CANNON.Body({
+			// mass: 0,
+			isTrigger: true,
+		});
+
+		fallCollisionTriggerBody.addShape(new CANNON.Plane(), new CANNON.Vec3(0, -50, 0), new CANNON.Quaternion().setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2));
+		world.addBody(fallCollisionTriggerBody);
+
+		fallCollisionTriggerBody.addEventListener('collide', (event) => {
+			console.log(event);
+			if (event.body === boiObject.body || event.body === player.body) {
+				event.body.position.set(0, 0, 0);
+			}
+		});
+
 		world.addBody(player.body);
 	};
 
@@ -640,7 +651,7 @@ const init = () => {
 
 		const shape = new CANNON.Sphere(3.4);
 		const body = new CANNON.Body({
-			mass: 10
+			mass: 1
 		});
 
 		body.addShape(shape, new CANNON.Vec3(0, -1.4, 0));
@@ -648,7 +659,7 @@ const init = () => {
 		body.quaternion = ToCannonQuat(gltf.scene.quaternion);
 
 		boiObject = createPhysicsObject(gltf.scene, body);
-		boiObject.body.angularFactor = new CANNON.Vec3(0, 1, 0);
+		// boiObject.body.angularFactor = new CANNON.Vec3(0, 1, 0);
 		world.addBody(body);
 
 		let hand = null;
@@ -758,7 +769,6 @@ const init = () => {
 
 	});
 
-	//scene setup
 	camera.position.z = 0;
 	// camera.rotation.y = Math.PI;
 
@@ -848,6 +858,7 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	renderer = rendererSetup(surface);
 	init();
 
+	surfaceElement = surface;
 	surfaceContainer = container;
 
 	//invisible DOM element to attach HTML stuff I guess

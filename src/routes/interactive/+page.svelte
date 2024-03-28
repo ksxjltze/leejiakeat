@@ -10,47 +10,52 @@
 		surface.height = container.clientHeight;
 
 		createSceneWithContainer(surface, container);
-		window.addEventListener('dblclick', onRequestFullScreen);
 
-		onRequestFullScreen();
-	});
-
-	let onRequestFullScreen = () => {
-		surface.requestFullscreen().then(() => {
-			surface.width = window.innerWidth;
-			surface.height = window.innerHeight;
+		window.addEventListener('click', lockControls);
+		window.addEventListener('fullscreenchange', () => {
 			resize();
 			lockControls();
-		});
-	};
-
-	let onFullscreenButtonClick = () => {
-		onRequestFullScreen();
-	};
+		}, false);
+	});
 </script>
 
 <section>
-    <h2>This is highly recommended to be experienced in fullscreen.</h2>
-    <p>
-        <strong>Double click</strong> anywhere to enter full screen mode.
-    </p>
-    <button on:click={onFullscreenButtonClick}>Or click me</button>
-    <p>Press <strong>ESC</strong> to exit full screen mode.</p>
-    <p>Instructions:</p>
-    <ul>
-        <li>WASD to move</li>
-        <li>Space to jump.</li>
-        <li>Mouse to look around (fullscreen)</li>
-		<li>Alternatively, use Q and E to rotate the camera.</li>
-    </ul>
+	<script type="x-shader/x-vertex" id="vertexshader">
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vUv = uv;
+
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+		}
+
+	</script>
+
+	<script type="x-shader/x-fragment" id="fragmentshader">
+
+		uniform sampler2D baseTexture;
+		uniform sampler2D bloomTexture;
+
+		varying vec2 vUv;
+
+		void main() {
+
+			gl_FragColor = ( texture2D( baseTexture, vUv ) + vec4( 1.0 ) * texture2D( bloomTexture, vUv ) );
+
+		}
+
+	</script>
 </section>
 
-<div bind:this={container} class="w-full" style="height: 600px">
-    <canvas bind:this={surface} />
+<div bind:this={container} style="position:fixed; left:0; top:0; width: 100%; height: 100%">
+	<canvas bind:this={surface} />
 </div>
 
 <style lang="postcss">
-    	canvas:fullscreen {
+	canvas {
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -58,20 +63,4 @@
 		width: 100vw;
 		height: 100vh;
 	}
-
-	p {
-		line-height: normal;
-	}
-
-	button {
-		margin: 0 0.5rem;
-		border: 1px solid #000;
-		border-radius: 0.25rem;
-		padding: 0.25rem 0.5rem;
-		font-size: 1rem;
-		font-weight: 400;
-		color: #fff;
-		background-color: #ff5511;
-	}
-
 </style>

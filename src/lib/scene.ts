@@ -13,6 +13,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 
 import * as CANNON from 'cannon-es';
@@ -34,7 +35,7 @@ let renderer;
 let scene: THREE.Scene;
 
 let camera;
-let controls;
+let controls: PointerLockControls;
 
 let surfaceElement: HTMLElement;
 let surfaceContainer: HTMLElement;
@@ -84,8 +85,12 @@ const cameraTurnSpeed = 5;
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2(0, 0);
 
-let keys = [];
-let keysTriggered = {};
+const input = {
+	keys: [],
+	keysTriggered: [],
+	mouseButtons: []
+}
+
 let physicsObjects = [];
 
 interface PhysicsObject {
@@ -189,8 +194,8 @@ const updateBoi = (dt) => {
 	const upVector = new THREE.Vector3(0, 1, 0);
 	const currentVector = upVector.clone().applyQuaternion(body.quaternion);
 
-	if (upVector.dot(currentVector) < 0.2){
-		console.log("TEST");
+	if (upVector.dot(currentVector) < 0.2) {
+		;
 		return;
 	}
 
@@ -225,7 +230,7 @@ const animate = () => {
 
 	update(dt);
 	updatePhysics(1 / 60); //hax
-	updateController(keys, dt);
+	updateController(input.keys, dt);
 	updateAnimations(dt);
 
 	render();
@@ -272,14 +277,24 @@ const render = () => {
 	composer.render();
 }
 
+const interactWithSelected = () => {
+	if (selectedObjects.length == 0)
+		return;
+
+	const selected = selectedObjects[0];
+	if (selected.userData.onInteract) {
+		selected.userData.onInteract();
+	}
+}
+
 const updateController = (keys: any[], dt: number) => {
 	updatePlayerController(keys, dt);
 
 	//laziness
 	const onKeyTriggered = (key, callback) => {
-		if (!keysTriggered[key]) {
+		if (!input.keysTriggered[key]) {
 			callback();
-			keysTriggered[key] = true;
+			input.keysTriggered[key] = true;
 		}
 	};
 
@@ -290,7 +305,7 @@ const updateController = (keys: any[], dt: number) => {
 				if (selectedObjects.length == 0)
 					return;
 
-				onKeyTriggered('f', () => {
+				onKeyTriggered(key, () => {
 					const selected = selectedObjects[0];
 					if (selected.userData.onInteract) {
 						selected.userData.onInteract();
@@ -543,7 +558,7 @@ const init = () => {
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 
 	const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-	
+
 	//physics
 	world = setupPhysics();
 
@@ -797,7 +812,7 @@ const init = () => {
 
 	const fontLoader = new FontLoader();
 	fontLoader.load('/fonts/helvetiker_regular.typeface.json', function (font) {
-		const geometry = new TextGeometry('Press F to interact with glowy stuff!', {
+		const geometry = new TextGeometry('Press F or Click to interact with glowy stuff!', {
 			font: font,
 			size: 0.5,
 			height: 0.1,
@@ -811,7 +826,7 @@ const init = () => {
 		geometry.center();
 
 		const material = new THREE.MeshBasicMaterial();
-		material.color = new THREE.Color(1, 0, 0);
+		material.color = new THREE.Color(1, 0, 1);
 		const text = new THREE.Mesh(geometry, material);
 		text.position.z = -8;
 		scene.add(text);
@@ -838,6 +853,9 @@ const init = () => {
 	effectFXAA = new ShaderPass(FXAAShader);
 	effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
 	composer.addPass(effectFXAA);
+
+	const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.5, 0.4, 0.85 );
+	// composer.addPass(bloomPass);
 
 	window.addEventListener('resize', resize);
 	window.addEventListener('pointermove', onPointerMove);
@@ -879,20 +897,26 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	//key events
 	const onKeyDown = (event: KeyboardEvent) => {
 		const key = event.key.toLowerCase();
-		if (!keys.includes(key)) {
-			keys.push(key);
+		if (!input.keys.includes(key)) {
+			input.keys.push(key);
 		}
 	};
 	const onKeyUp = (event: KeyboardEvent) => {
 		const key = event.key.toLowerCase();
-		if (keys.includes(key)) {
-			keys = keys.filter((k) => k !== key);
+		if (input.keys.includes(key)) {
+			input.keys = input.keys.filter((k) => k !== key);
 		}
 
-		keysTriggered[key] = false;
+		input.keysTriggered[key] = false;
 	};
+
 	document.addEventListener('keydown', onKeyDown);
 	document.addEventListener('keyup', onKeyUp);
+	document.addEventListener('click', (event) => {
+		if (event instanceof PointerEvent) {
+			interactWithSelected();
+		}
+	});
 
 	resize();
 
@@ -905,7 +929,10 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 
 export const lockControls = () => {
 	if (!controls) return;
-	controls.lock();
 
-	keys = [];
+	if (controls.isLocked)
+		return;
+
+	controls.lock();
+	input.keys = [];
 };

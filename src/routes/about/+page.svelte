@@ -7,7 +7,7 @@
 	<h1>About Me</h1>
 
 	<p>
-		Hello there. My name is Lee Jia Keat, I’m a Senior at the DigiPen Institute of Technology
+		Hello there. My name is Lee Jia Keat, I am a Senior at the DigiPen Institute of Technology Singapore (and Singapore Institute of Technology)
 		majoring in Computer Science in Real-Time Interactive Simulation. I have been building software through academic projects
 		for years, including games, game engines, web apps and mobile apps.
 	</p>

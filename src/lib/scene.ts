@@ -699,7 +699,7 @@ const init = () => {
 	//laziness
 	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
 		console.log("Loaded Skinned model: ", gltf);
-		gltf.scene.position.set(10, -1.65, 5);
+		gltf.scene.position.set(10, -1.65, 8);
 		scene.add(gltf.scene);
 	},
 		undefined,
@@ -709,7 +709,7 @@ const init = () => {
 
 	modelLoader.load('/models/table.glb', (gltf) => {
 		console.log("Added model: ", gltf);
-		gltf.scene.position.set(10, -4, -5);
+		gltf.scene.position.set(10, -4, -8);
 
 		const mesh = gltf.scene.children[0] as THREE.Mesh;
 		mesh.geometry.scale(2, 2, 2);
@@ -731,7 +731,7 @@ const init = () => {
 
 	modelLoader.load('/models/table2.glb', (gltf) => {
 		console.log("Added model: ", gltf);
-		gltf.scene.position.set(10, -4, 5);
+		gltf.scene.position.set(10, -4, 8);
 		gltf.scene.scale.set(2, 2, 2);
 
 		scene.add(gltf.scene);

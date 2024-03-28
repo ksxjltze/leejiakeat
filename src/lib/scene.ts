@@ -29,15 +29,19 @@ const modelLoader = new GLTFLoader();
 const FORWARD = new THREE.Vector3(0, 0, -1);
 const RIGHT = new THREE.Vector3(1, 0, 0);
 
-let composer, effectFXAA, outlinePass;
+let composer: EffectComposer;
+let bloomComposer: EffectComposer;
+let effectFXAA, outlinePass;
+
 let stats;
 let renderer;
+
 let scene: THREE.Scene;
+let bloomScene: THREE.Scene;
 
 let camera;
 let controls: PointerLockControls;
 
-let surfaceElement: HTMLElement;
 let surfaceContainer: HTMLElement;
 let domAttachmentContainer: HTMLElement;
 let initialized = false;
@@ -47,18 +51,21 @@ let mixer: THREE.AnimationMixer;
 let world: CANNON.World;
 let cannonDebugRenderer;
 
-let floorMesh;
-let ground;
-
-let boiObject: PhysicsObject;
-let boiState;
-let boiEnabled = true;
+const BLOOM_SCENE = 1;
+const bloomLayer = new THREE.Layers();
+bloomLayer.set( BLOOM_SCENE );
 
 const BoiState = {
 	NONE: 0,
 	WALK1: 1,
 	WALK2: 2
 } as const;
+
+const boi = {
+	object: null,
+	state: new Number(BoiState.NONE),
+	enabled: true
+};
 
 const settings = {
 	debugDraw: false
@@ -167,19 +174,19 @@ function onPointerMove(event) {
 
 //TODO: ECS or something
 const updateBoi = (dt) => {
-	if (!boiEnabled)
+	if (!boi.enabled)
 		return;
 
-	if (!boiState) //TODO: stuff
-		boiState = BoiState.WALK1;
+	if (!boi.state) //TODO: stuff
+		boi.state = BoiState.WALK1;
 
 	const boiSpeed = 5;
 	const boundsLength = 20;
 
-	if (!boiObject)
+	if (!boi.object)
 		return;
 
-	const body = boiObject.body;
+	const body = boi.object.body;
 
 	//TODO: LOOK AT
 	const flip = (body) => {
@@ -199,18 +206,18 @@ const updateBoi = (dt) => {
 		return;
 	}
 
-	switch (boiState) {
+	switch (boi.state) {
 		case 1:
 			body.position.x += boiSpeed * dt;
 			if (body.position.x > boundsLength) {
-				boiState = BoiState.WALK2;
+				boi.state = BoiState.WALK2;
 				flip(body);
 			}
 			break;
 		case 2:
 			body.position.x -= boiSpeed * dt;
 			if (body.position.x < -boundsLength) {
-				boiState = BoiState.WALK1;
+				boi.state = BoiState.WALK1;
 				flip(body);
 			}
 			break;
@@ -273,7 +280,7 @@ const checkIntersectingObjects = () => {
 
 const render = () => {
 	checkIntersectingObjects();
-	// renderer.render(scene, camera);
+	bloomComposer.render();
 	composer.render();
 }
 
@@ -403,6 +410,7 @@ export const resize = () => {
 
 	const updateSizes = (width, height) => {
 		renderer.setSize(width, height);
+		bloomComposer.setSize( width, height );
 		composer.setSize(width, height);
 
 		effectFXAA.uniforms['resolution'].value.set(1 / width, 1 / height);
@@ -512,7 +520,7 @@ const GLTFGroupToStaticBodies = (gltf, scale?: THREE.Vector3) => {
 	const group = gltf.scene.children[0];
 	const bodies = [];
 
-	traverseScene(gltf.scene, (object) => {
+	traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
 		if (object instanceof THREE.Mesh) {
 			object.geometry.scale(scale.x, scale.y, scale.z);
 			const body = meshToStaticCollider(object, gltf.scene.position);
@@ -527,7 +535,7 @@ const GLTFGroupToStaticBodies = (gltf, scale?: THREE.Vector3) => {
 	return bodies;
 };
 
-const traverseScene = (scene, fn: (object: any) => boolean) => {
+const traverseGLTFSceneWithPredicate = (scene, fn: (object: any) => boolean) => {
 	const traverser = (child) => {
 		if (fn(child))
 			return;
@@ -549,14 +557,15 @@ const findMeshByMaterialName = (scene, name: string) => {
 		return false;
 	};
 
-	traverseScene(scene, materialNameMatches);
+	traverseGLTFSceneWithPredicate(scene, materialNameMatches);
 	return result;
 };
 
 const init = () => {
 	scene = new THREE.Scene();
-	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
+	bloomScene = new THREE.Scene();
 
+	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 	const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 
 	//physics
@@ -578,8 +587,6 @@ const init = () => {
 	//GROUND
 	floorBody.addShape(planeShape);
 	floorBody.quaternion = new CANNON.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-
-	ground = floorBody;
 	cannonDebugRenderer = new CannonDebugRenderer(scene, world);
 
 	const onFloorLoaded = () => {
@@ -594,7 +601,7 @@ const init = () => {
 
 		fallCollisionTriggerBody.addEventListener('collide', (event) => {
 			console.log(event);
-			if (event.body === boiObject.body || event.body === player.body) {
+			if (event.body === boi.object.body || event.body === player.body) {
 				event.body.position.set(0, 0, 0);
 			}
 		});
@@ -612,7 +619,20 @@ const init = () => {
 		gltf.scene.position.setY(-5);
 		scene.add(gltf.scene);
 
-		GLTFGroupToStaticBodies(gltf, new THREE.Vector3(5, 5, 5));
+		//lazy hack
+		const magicScale = new THREE.Vector3(5, 5, 5);
+		traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
+			if (object instanceof THREE.Mesh && object.material.name == "CeilingLightMaterial") {
+				object.geometry.scale(magicScale.x, magicScale.y, magicScale.z);
+				object.geometry.translate(0, -5, 0);
+				bloomScene.add(object);
+				return true;
+			}
+
+			return false;
+		})
+
+		GLTFGroupToStaticBodies(gltf, magicScale.clone());
 		onFloorLoaded();
 
 	}, undefined,
@@ -672,8 +692,8 @@ const init = () => {
 		body.position = ToCannonVec3(gltf.scene.position);
 		body.quaternion = ToCannonQuat(gltf.scene.quaternion);
 
-		boiObject = createPhysicsObject(gltf.scene, body);
-		// boiObject.body.angularFactor = new CANNON.Vec3(0, 1, 0);
+		boi.object = createPhysicsObject(gltf.scene, body);
+		// boi.object.body.angularFactor = new CANNON.Vec3(0, 1, 0);
 		world.addBody(body);
 
 		let hand = null;
@@ -768,7 +788,7 @@ const init = () => {
 		scene.add(gltf.scene);
 
 		GLTFGroupToStaticBodies(gltf);
-		traverseScene(gltf.scene, (object) => {
+		traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
 			if (object instanceof THREE.Mesh) {
 				createInteractableObject(object, () => {
 					const videoTexture = playVideo("/videos/boii.mp4", "boiVideo", true);
@@ -836,7 +856,7 @@ const init = () => {
 	composer = new EffectComposer(renderer);
 
 	const renderPass = new RenderPass(scene, camera);
-	composer.addPass(renderPass);
+	const bloomRenderPass = new RenderPass(bloomScene, camera); //there's a good chance this only works because everything is emissive (for now), idk
 
 	outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
 	const outline = (outlinePass as OutlinePass);
@@ -845,17 +865,38 @@ const init = () => {
 	outline.edgeStrength = 10;
 	outline.edgeThickness = 3;
 	outline.edgeGlow = 1;
-	composer.addPass(outlinePass);
 
 	const outputPass = new OutputPass();
-	composer.addPass(outputPass);
 
 	effectFXAA = new ShaderPass(FXAAShader);
 	effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
-	composer.addPass(effectFXAA);
 
-	const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.5, 0.4, 0.85 );
-	// composer.addPass(bloomPass);
+	//selective bloom
+	const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.3, 0.4, 0.85 );
+	bloomComposer = new EffectComposer( renderer );
+	bloomComposer.renderToScreen = false;
+	bloomComposer.addPass( bloomRenderPass );
+	bloomComposer.addPass( bloomPass );
+
+	const mixPass = new ShaderPass(
+		new THREE.ShaderMaterial( {
+			uniforms: {
+				baseTexture: { value: null },
+				bloomTexture: { value: bloomComposer.renderTarget2.texture }
+			},
+			vertexShader: document.getElementById( 'vertexshader' ).textContent,
+			fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+			defines: {}
+		} ), 'baseTexture'
+	);
+	mixPass.needsSwap = true;
+
+	//compose passes
+	composer.addPass(renderPass);
+	composer.addPass(outlinePass);
+	composer.addPass(effectFXAA);
+	composer.addPass(mixPass)
+	composer.addPass(outputPass);
 
 	window.addEventListener('resize', resize);
 	window.addEventListener('pointermove', onPointerMove);
@@ -875,7 +916,6 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	renderer = rendererSetup(surface);
 	init();
 
-	surfaceElement = surface;
 	surfaceContainer = container;
 
 	//invisible DOM element to attach HTML stuff I guess

@@ -7,14 +7,16 @@
 	<h1>About Me</h1>
 
 	<p>
-		Hello there. My name is Jia Keat, I’m a Senior at the DigiPen Institute of Technology majoring
-		in Computer Science in Real-Time Interactive Simulation. I’ve been building software for years, including games, game engines, web apps and mobile apps. 
+		Hello there. My name is Lee Jia Keat, I’m a Senior at the DigiPen Institute of Technology
+		majoring in Computer Science in Real-Time Interactive Simulation. I have been building software through academic projects
+		for years, including games, game engines, web apps and mobile apps.
 	</p>
 	<p>
-		Recently, I've been delving into the realm of full-stack development, and I hope to combine my knowledge of game development with web development to create
-		immersive web experiences.
+		I like to dabble in anything that interests me.<br>As a result, I have some knowledge in a variety of software development fields, which I hope to be able to combine to create beautiful things.
 	</p>
-	<p>
-		I love technology, video games, and building software, as well as an interest in artificial intelligence and virtual reality.
+	<p>I love technology and building software.</p>
+	<p>When it comes to what inspired me to go down this path, I believe it would be video games.<br>
+		I started playing video games from a young age, and my fascination with them led me to their
+		technical side through custom maps, modding, server administration, etc.
 	</p>
 </section>

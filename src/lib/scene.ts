@@ -101,7 +101,8 @@ const pointer = new THREE.Vector2(0, 0);
 const input = {
 	keys: [],
 	keysTriggered: [],
-	mouseButtons: []
+	mouseButtons: [],
+	touches: []
 }
 
 //bloom stuff
@@ -1068,6 +1069,92 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 			interactWithSelected();
 		}
 	});
+
+	let isTouchCameraControllerOn = false;
+	let cameraControllerTouchEvent = null;
+	let initialCameraRotation = null;
+
+	const checkTouchesForCameraController = (touches) => {
+		for (let index = 0; index < touches.length; index++) {
+			const touch = touches[index];
+
+			if (touch.clientX > window.innerWidth / 2) {
+				isTouchCameraControllerOn = true;
+				cameraControllerTouchEvent = touch;
+				initialCameraRotation = camera.rotation.clone();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	//mobile
+	document.addEventListener('touchstart', (e: TouchEvent) => {
+		if (e.changedTouches.length == 0)
+			return;
+
+		input.touches.push(...e.changedTouches);
+		checkTouchesForCameraController(e.changedTouches);
+	});
+
+	document.addEventListener("touchend", (e: TouchEvent) => {
+		for (let index = 0; index < e.changedTouches.length; index++) {
+			const touchEvent = e.changedTouches[index];
+			input.touches = input.touches.filter((t) => t.identifier != touchEvent.identifier);
+
+			if (!checkTouchesForCameraController(input.touches)) {
+				isTouchCameraControllerOn = false;
+				initialCameraRotation = null;
+				cameraControllerTouchEvent = null;
+			}
+		}
+	});
+
+	document.addEventListener("touchcancel", (e) => {
+		console.log(e);
+	});
+
+	document.addEventListener("touchmove", (e) => {
+		for (let index = 0; index < e.changedTouches.length; index++) {
+			const touchEvent = e.changedTouches[index];
+			const initialTouch = input.touches.find((t) => {
+				return t.identifier == touchEvent.identifier;
+			});
+
+			if (!initialTouch || !cameraControllerTouchEvent)
+				continue;
+
+			if (initialTouch.identifier != cameraControllerTouchEvent.identifier)
+				continue;
+
+			const dx = touchEvent.clientX - initialTouch.clientX;
+			const dy = touchEvent.clientY - initialTouch.clientY;
+
+			const offsetY = (dx / window.innerWidth) * Math.PI;
+			const offsetX = (dy / window.innerHeight) * Math.PI; //this causes wonky issues for some reason
+
+			camera.rotation.y = initialCameraRotation.y + offsetY;
+		}
+	});
+
+	document.addEventListener("orientationchange", function (event) {
+		switch (window.screen.orientation.type) {
+			case "landscape-primary":
+				console.log("That looks good.");
+				break;
+			case "landscape-secondary":
+				console.log("Mmmh… the screen is upside down!");
+				break;
+			case "portrait-secondary":
+			case "portrait-primary":
+				console.log("Mmmh… you should rotate your device to landscape");
+				break;
+			default:
+				console.log("The orientation API isn't supported in this browser :(");
+		}
+	});
+
 
 	resize();
 

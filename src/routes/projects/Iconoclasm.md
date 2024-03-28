@@ -19,25 +19,19 @@ priority: 1
 Iconoclasm is a 3D hack-n-slash action game.<br>
 It was developed for the Software Engineering Project 5 and Software Engineering Project 6 modules at the DigiPen Institute of Technology Singapore.
 
-# Table of Contents
-- [Software Engineering Project 5](#gam300)
-    - [Engine Showcase](#gam300showcase)
-    - [Technology](#gam300tech)
-- [Software Engineering Project 6](#gam350)
-    - [Gameplay Showcase](#gam350showcase)
+<img alt="iconoclasm logo" src="/images/iconoclasm-logo.jpeg" width="100%" height="100%">
 
-<img alt="iconoclasm" src="/images/iconoclasm-logo.jpeg" width="100%" height="100%">
-
-## Software Engineering Project 5 (CSD3400/GAM300): <a name="gam300"></a>
+## Software Engineering Project 5 (CSD3400/GAM300):
 This module focuses on the development of the custom game engine, named EngineEngine, which is written from scratch in C++ with the help of third party libraries and APIs.
 My role, as a programmer in a team of 10 students (Team GodKillers), was largely to build serialization systems and the asset pipeline, while playing an assisting role in the development of the graphics engine and visual effects.
 
 The development of this entire project was a long and grueling two trimesters, tight deadlines and milestones pushed me to brainstorm and build the best systems that I could come up with in the shortest possible time. In hindsight, there is much that could be improved for the engine, but the codebase is a mess of spaghetti at this point and I reckon it would be better to start anew if I were to build a new game engine.
 
-### Engine Showcase <a name="gam300showcase"></a>
+### Engine Showcase <span name="gam300showcase"></span>
 <img alt="iconoclasm's game engine" src="/images/iconoclasm/iconoclasm-engine.png" width="100%" height="100%">
-
+<br>
 <iframe width="100%" height="450" src="https://www.youtube.com/embed/90ZM4lTItI8" title="GodKillers - EngineEngine Showcase" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<br>
 <i>Credit: Bryan Koh Yan Wei, Editor Programmer of Team GodKillers</i>
 
 ### Libraries:
@@ -48,7 +42,7 @@ The development of this entire project was a long and grueling two trimesters, t
 - dearImGUI: Used to build the engine's GUI.
 - Mono: C# .NET Framework for gameplay scripting.
 
-## Technology <a name="gam300tech"></a>
+## Technology
 The below technical features were developed by myself, with contributions and suggestions from other teammates.
 Heavy use of the C++ Standard Template Library (STL) was used to speed up development.
 
@@ -188,16 +182,15 @@ u_Material.metallic GL_FLOAT 1
 u_Material.roughness GL_FLOAT 1
 ```
 <i>Example material asset: Bunny.material</i>
+<br>
 
-## Software Engineering Project 6 (CSD3450/GAM350):  <a name="gam350"></a>
+## Software Engineering Project 6 (CSD3450/GAM350): 
 This module, which takes place a trimester after Software Engineer Project 4, focuses on developing a video game using the custom game engine that was built in the previous module.
 The gameplay of Iconoclasm: Fall of the False God, is largely developed by a team of 3 designers, with the rest of the programmer team providing technical support for the engine.
 
 <img alt="iconoclasm's title screen" src="/images/iconoclasm/iconoclasm-title.png" width="100%" height="100%">
 
-### Gameplay Showcase <a name="gam350showcase"></a>
+### Gameplay Showcase
 <iframe width="100%" height="450" src="https://www.youtube.com/embed/BCFzNFtZF_E" title="Iconoclasm GameplayVideo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<br>
 <i>Credit: Gavin Lim, Product Manager of Team GodKillers.</i>
-
-### Particle System
-TBC

@@ -5,7 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+import ThreeMeshUI from 'three-mesh-ui'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -45,7 +45,6 @@ let mixer: THREE.AnimationMixer;
 
 let world: CANNON.World;
 let cannonDebugRenderer;
-let gui: GUI;
 
 let floorMesh;
 let ground;
@@ -575,7 +574,7 @@ const init = () => {
 			isTrigger: true,
 		});
 
-		fallCollisionTriggerBody.addShape(new CANNON.Plane(), new CANNON.Vec3(0, -50, 0), new CANNON.Quaternion().setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2));
+		fallCollisionTriggerBody.addShape(new CANNON.Plane(), new CANNON.Vec3(0, -100, 0), new CANNON.Quaternion().setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2));
 		world.addBody(fallCollisionTriggerBody);
 
 		fallCollisionTriggerBody.addEventListener('collide', (event) => {

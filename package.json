@@ -42,6 +42,7 @@
 		"@vercel/speed-insights": "^1.0.2",
 		"cannon": "^0.6.2",
 		"cannon-es": "^0.20.0",
-		"three": "^0.159.0"
+		"three": "^0.159.0",
+		"three-mesh-ui": "^6.5.4"
 	}
 }

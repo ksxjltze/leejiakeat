@@ -19,11 +19,10 @@
 
 <section class="home-content">
 	<section style="line-height: normal; text-align: center; margin-bottom: 1rem;">
-		<p>Welcome.</p>
+		<p>Welcome to my humble website.</p>
 		<p>
 			My name is Jia Keat, an aspiring software engineer based in Singapore. I'm a graduating
-			student from the DigiPen Institute of Technology Singapore, and specialize in building
-			real-time interactive software.
+			student from the DigiPen Institute of Technology Singapore. I love all things technology.
 		</p>
 	</section>
 
@@ -36,7 +35,7 @@
 			<img id="leejiakeat-photo" src="/images/lee-jia-keat.png" alt="Lee Jia Keat">
 			<section id="panel-info">
 				<div id="panel-info-skills">
-					<h3>Skills</h3>
+					<h3><u>Skills</u></h3>
 					<ul class="list-no-style">
 						<li>Full-stack Web Development</li>
 						<li>Game Programming</li>
@@ -44,7 +43,7 @@
 					</ul>
 				</div>
 				<div>
-					<h3>Tools</h3>
+					<h3><u>Tools</u></h3>
 					<ul class="list-no-style">
 						<li>Git</li>
 						<li>Visual Studio</li>
@@ -53,7 +52,7 @@
 					</ul>
 				</div>
 				<div>
-					<h3>Languages</h3>
+					<h3><u>Languages</u></h3>
 					<ul class="list-no-style">
 						<li>C/C++</li>
 						<li>Java</li>
@@ -65,11 +64,12 @@
 					</ul>
 				</div>
 				<div>
-					<h3>Frameworks</h3>
+					<h3><u>Web Frameworks</u></h3>
 					<ul class="list-no-style">
 						<li>Angular</li>
 						<li>Spring</li>
 						<li>Svelte(kit)</li>
+						<li>ThreeJS</li>
 					</ul>
 				</div>
 			</section>
@@ -114,13 +114,14 @@
 				/></a
 			>
 		</div>
-		<section style="display: flex; align-items: center;">
-			<p style="margin: auto; margin-top: 0.25rem;"><a href="mailto:leejiakeat@gmail.com">leejiakeat@gmail.com</a></p>
+		<section style="display: flex; flex-direction: column; align-items: center;">
+			<p style="margin: auto; margin-top: 0.25rem;"><a style="color:white" href="mailto:leejiakeat@gmail.com">leejiakeat@gmail.com</a></p>
+			<p style="margin: auto; margin-top: 0.25rem;"><a style="color:white" href="sms:+6588935543">+65 8893 5543</a></p>
 		</section>
 	</section>
-
-	<h3>Resume</h3>
-	<a href="/resume/LeeJiaKeatResume.pdf" download>LeeJiaKeatResume.pdf</a>
+	
+	<h3 style="margin-top: 2rem">Resume</h3>
+	<embed style="width: 100%;" src="/resume/LeeJiaKeatResume.pdf" height="950" type="application/pdf"/>
 </section>
 
 <style lang="postcss">

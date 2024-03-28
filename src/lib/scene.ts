@@ -102,7 +102,11 @@ const input = {
 	keys: [],
 	keysTriggered: [],
 	mouseButtons: [],
-	touches: []
+	touches: [],
+	stick: {
+		strength: 0,
+		angle: 0
+	}
 }
 
 //bloom stuff
@@ -384,6 +388,13 @@ const updatePlayerController = (keys: any[], dt: number) => {
 
 	const left = right.negate();
 	const backwards = forward.negate();
+
+	//mobile, or joy stick or whatever
+	if (input.stick.strength > 50) {
+		const rotation = new THREE.Euler(0, -input.stick.angle, 0); //it kinda works, TODO: fix
+		body.velocity = ToCannonVec3(cameraForward.applyEuler(rotation).normalize().multiplyScalar(player.moveSpeed));
+		return;
+	}
 
 	for (let i = 0; i < keys.length; i++) {
 		const key = keys[i];
@@ -1074,6 +1085,10 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	let cameraControllerTouchEvent = null;
 	let initialCameraRotation = null;
 
+	let isTouchMovementControllerOn = false;
+	let movementControllerTouchEvent = null;
+	let initialMovementVector = null;
+
 	const checkTouchesForCameraController = (touches) => {
 		for (let index = 0; index < touches.length; index++) {
 			const touch = touches[index];
@@ -1089,6 +1104,21 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 		return false;
 	}
 
+	const checkTouchesForMovementController = (touches) => {
+		for (let index = 0; index < touches.length; index++) {
+			const touch = touches[index];
+
+			if (touch.clientX < window.innerWidth / 2) {
+				isTouchMovementControllerOn = true;
+				movementControllerTouchEvent = touch;
+				initialMovementVector = player.body.position.clone(); //temp
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	//mobile
 	document.addEventListener('touchstart', (e: TouchEvent) => {
 		if (e.changedTouches.length == 0)
@@ -1096,6 +1126,7 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 
 		input.touches.push(...e.changedTouches);
 		checkTouchesForCameraController(e.changedTouches);
+		checkTouchesForMovementController(e.changedTouches);
 	});
 
 	document.addEventListener("touchend", (e: TouchEvent) => {
@@ -1107,6 +1138,15 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 				isTouchCameraControllerOn = false;
 				initialCameraRotation = null;
 				cameraControllerTouchEvent = null;
+			}
+
+			if (!checkTouchesForMovementController(e.changedTouches)) {
+				isTouchMovementControllerOn = false;
+				movementControllerTouchEvent = null;
+				initialMovementVector = null;
+
+				input.stick.strength = 0;
+				input.stick.angle = 0;
 			}
 		}
 	});
@@ -1122,19 +1162,30 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 				return t.identifier == touchEvent.identifier;
 			});
 
-			if (!initialTouch || !cameraControllerTouchEvent)
-				continue;
-
-			if (initialTouch.identifier != cameraControllerTouchEvent.identifier)
+			if (!initialTouch)
 				continue;
 
 			const dx = touchEvent.clientX - initialTouch.clientX;
 			const dy = touchEvent.clientY - initialTouch.clientY;
 
-			const offsetY = (dx / window.innerWidth) * Math.PI;
-			const offsetX = (dy / window.innerHeight) * Math.PI; //this causes wonky issues for some reason
+			if (cameraControllerTouchEvent && initialTouch.identifier == cameraControllerTouchEvent.identifier) {
+				const rotationOffsetY = (dx / window.innerWidth) * Math.PI;
+				camera.rotation.y = initialCameraRotation.y + rotationOffsetY;
+			}
 
-			camera.rotation.y = initialCameraRotation.y + offsetY;
+			if (movementControllerTouchEvent && initialTouch.identifier == movementControllerTouchEvent.identifier) {
+				const rotation = new THREE.Euler(camera.rotation.x, camera.rotation.y, camera.rotation.z, "XYZ");
+
+				const stickDirection = new THREE.Vector2(dx, dy);
+				const stickUp = new THREE.Vector2(0, -1);
+				const moveAmount = stickDirection.length();
+
+				stickDirection.normalize();
+				const angle = Math.atan2(stickDirection.y, stickDirection.x) - Math.atan2(stickUp.y, stickUp.x);
+
+				input.stick.strength = moveAmount;
+				input.stick.angle = angle;
+			}
 		}
 	});
 

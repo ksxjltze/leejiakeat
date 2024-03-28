@@ -568,6 +568,11 @@ const GLTFGroupToStaticBodies = (gltf, scale?: THREE.Vector3) => {
 	return bodies;
 };
 
+/**
+ * Traverse and apply function until it returns true
+ * @param scene Scene (Group of Object3D)
+ * @param fn Function to invoke
+ */
 const traverseGLTFSceneWithPredicate = (scene, fn: (object: any) => boolean) => {
 	const traverser = (child) => {
 		if (fn(child))
@@ -646,6 +651,10 @@ const init = () => {
 	scene.environment = pmremGenerator.fromScene(environment).texture;
 	environment.dispose();
 
+	//persist
+	let stronkBoiObject;
+	const stronkBoiTexture = new THREE.TextureLoader().load("/images/stronk.jpg");
+
 	//lobby
 	modelLoader.load('/models/room.glb', (gltf) => {
 		gltf.scene.position.setY(-5);
@@ -654,10 +663,17 @@ const init = () => {
 		//lazy hack
 		const magicScale = new THREE.Vector3(5, 5, 5);
 
+		const isMaterialMatch = (object, name) => {
+			return object.material.name == name;
+		};
+
 		//lazy hack 2
 		let lightIndex = 0;
 		traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
-			if (object instanceof THREE.Mesh && object.material.name == "CeilingLightMaterial") {
+			if (!(object instanceof THREE.Mesh))
+				return false;
+
+			if (isMaterialMatch(object, "CeilingLightMaterial")) {
 				const light = new THREE.PointLight(0xCCCCCC, 20, 0, 1);
 
 				light.position.set(lightIndex * 26.75 - 1.5, 10, 0);
@@ -666,10 +682,19 @@ const init = () => {
 				// scene.add(new THREE.PointLightHelper(light, 1));
 				scene.add(light);
 				object.layers.toggle(BLOOM_SCENE);
-			}
+			};
+
+			if (isMaterialMatch(object, "ScreenFaceMaterial")) {
+				object.material.map = stronkBoiTexture;
+				stronkBoiObject = object;
+
+				createInteractableObject(object, () => {
+					object.material.color = new THREE.Color(Math.random() * 0xFFFFFF);
+				});
+			};
 
 			return false;
-		})
+		});
 
 		GLTFGroupToStaticBodies(gltf, magicScale.clone());
 		onFloorLoaded();
@@ -697,15 +722,6 @@ const init = () => {
 	});
 
 	scene.add(iconoclasmBanner);
-
-	const stronkBoiTexture = new THREE.TextureLoader().load("/images/stronk.jpg");
-	const stronkBoiPlane = createTexturePlane(length, height, stronkBoiTexture);
-	stronkBoiPlane.position.set(0, 2.5, -20);
-	scene.add(stronkBoiPlane);
-
-	createInteractableObject(stronkBoiPlane, () => {
-		stronkBoiPlane.rotation.z += Math.PI * 0.1;
-	});
 
 	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
 		console.log("Loaded Skinned model: ", gltf);
@@ -826,15 +842,27 @@ const init = () => {
 		gltf.scene.position.set(0, -5, -12);
 		scene.add(gltf.scene);
 
+		let isPlaying = false;
+
 		GLTFGroupToStaticBodies(gltf);
 		traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
 			if (object instanceof THREE.Mesh) {
 				createInteractableObject(object, () => {
+					stronkBoiObject.material.color = new THREE.Color(1, 1, 1);
+
+					if (isPlaying) {
+						isPlaying = false;
+						stronkBoiObject.material.map = stronkBoiTexture;
+						return;
+					}
+
 					const videoTexture = playVideo("/videos/boii.mp4", "boiVideo", true);
 
 					if (videoTexture) {
-						stronkBoiPlane.material.map = videoTexture;
+						stronkBoiObject.material.map = videoTexture;
 					}
+
+					isPlaying = true;
 				});
 			}
 			return false;

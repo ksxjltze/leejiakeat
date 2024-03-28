@@ -22,7 +22,9 @@ import CannonDebugRenderer from './utils/cannonDebugRenderer';
 
 const boxGeom = new THREE.BoxGeometry();
 const sphereGeom = new THREE.SphereGeometry();
+
 const standardMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+
 const clock = new THREE.Clock();
 const modelLoader = new GLTFLoader();
 
@@ -37,7 +39,6 @@ let stats;
 let renderer;
 
 let scene: THREE.Scene;
-let bloomScene: THREE.Scene;
 
 let camera;
 let controls: PointerLockControls;
@@ -53,7 +54,7 @@ let cannonDebugRenderer;
 
 const BLOOM_SCENE = 1;
 const bloomLayer = new THREE.Layers();
-bloomLayer.set( BLOOM_SCENE );
+bloomLayer.set(BLOOM_SCENE);
 
 const BoiState = {
 	NONE: 0,
@@ -63,12 +64,13 @@ const BoiState = {
 
 const boi = {
 	object: null,
-	state: new Number(BoiState.NONE),
+	state: null,
 	enabled: true
 };
 
 const settings = {
-	debugDraw: false
+	debugDraw: false,
+	enableBloom: true
 };
 
 let selectedObjects = [];
@@ -97,6 +99,12 @@ const input = {
 	keysTriggered: [],
 	mouseButtons: []
 }
+
+//bloom stuff
+const bloom = {
+	materials: [],
+	darkMaterial: new THREE.MeshBasicMaterial({ color: 'black' })
+};
 
 let physicsObjects = [];
 
@@ -135,6 +143,23 @@ function createPhysicsObjectFromMesh(mesh: THREE.Mesh, shape: CANNON.Shape, mass
 	});
 	body.addShape(shape);
 	return createPhysicsObject(mesh, body);
+}
+
+//yoink
+function darkenNonBloomed(obj) {
+	if (obj.isMesh && bloomLayer.test(obj.layers) === false) {
+		bloom.materials[obj.uuid] = obj.material;
+		obj.material = bloom.darkMaterial;
+	}
+
+}
+
+function restoreMaterial(obj) {
+	if (bloom.materials[obj.uuid]) {
+		obj.material = bloom.materials[obj.uuid];
+		delete bloom.materials[obj.uuid];
+	}
+
 }
 
 const playVideoById = (id: string): THREE.Texture => {
@@ -181,7 +206,7 @@ const updateBoi = (dt) => {
 		boi.state = BoiState.WALK1;
 
 	const boiSpeed = 5;
-	const boundsLength = 20;
+	const boundsLength = 50;
 
 	if (!boi.object)
 		return;
@@ -202,7 +227,6 @@ const updateBoi = (dt) => {
 	const currentVector = upVector.clone().applyQuaternion(body.quaternion);
 
 	if (upVector.dot(currentVector) < 0.2) {
-		;
 		return;
 	}
 
@@ -280,7 +304,13 @@ const checkIntersectingObjects = () => {
 
 const render = () => {
 	checkIntersectingObjects();
-	bloomComposer.render();
+
+	if (bloomComposer && settings.enableBloom) {
+		scene.traverse(darkenNonBloomed);
+		bloomComposer.render();
+		scene.traverse(restoreMaterial);
+	}
+
 	composer.render();
 }
 
@@ -410,7 +440,10 @@ export const resize = () => {
 
 	const updateSizes = (width, height) => {
 		renderer.setSize(width, height);
-		bloomComposer.setSize( width, height );
+
+		if (bloomComposer)
+			bloomComposer.setSize(width, height);
+
 		composer.setSize(width, height);
 
 		effectFXAA.uniforms['resolution'].value.set(1 / width, 1 / height);
@@ -563,7 +596,6 @@ const findMeshByMaterialName = (scene, name: string) => {
 
 const init = () => {
 	scene = new THREE.Scene();
-	bloomScene = new THREE.Scene();
 
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 	const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -621,12 +653,19 @@ const init = () => {
 
 		//lazy hack
 		const magicScale = new THREE.Vector3(5, 5, 5);
+
+		//lazy hack 2
+		let lightIndex = 0;
 		traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
 			if (object instanceof THREE.Mesh && object.material.name == "CeilingLightMaterial") {
-				object.geometry.scale(magicScale.x, magicScale.y, magicScale.z);
-				object.geometry.translate(0, -5, 0);
-				bloomScene.add(object);
-				return true;
+				const light = new THREE.PointLight(0xCCCCCC, 20, 0, 1);
+
+				light.position.set(lightIndex * 26.75 - 1.5, 10, 0);
+				lightIndex++;
+
+				// scene.add(new THREE.PointLightHelper(light, 1));
+				scene.add(light);
+				object.layers.toggle(BLOOM_SCENE);
 			}
 
 			return false;
@@ -810,25 +849,20 @@ const init = () => {
 	scene.background = loadSkyboxTextures();
 
 	//add lighting
-	const light = new THREE.PointLight(0xFFECCB, 8, 0, 1);
 	let lightPosition = new THREE.Vector3(0, 3, -10);
-	light.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
-	scene.add(light);
-
-	const light2 = new THREE.PointLight(0xFFECCB, 8, 0, 1);
-	lightPosition = new THREE.Vector3(0, 3, 10);
-	light2.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
-	scene.add(light2);
-
 	const domeLight = new THREE.PointLight(0xFFFFFF, 100, 0, 1);
-	lightPosition = new THREE.Vector3(-80, 25, 0);
+	lightPosition = new THREE.Vector3(-80, 20, 0);
 	domeLight.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
 	scene.add(domeLight);
 
-	const sphere = new THREE.Mesh(sphereGeom, standardMat)
-	sphere.position.copy(lightPosition);
-	sphere.scale.setScalar(5);
-	scene.add(sphere);
+	const domeLightMat = standardMat.clone();
+	domeLightMat.emissive = new THREE.Color(0xFFFFFF);
+	domeLightMat.emissiveIntensity = 1;
+
+	const domeLightMesh = new THREE.Mesh(sphereGeom, domeLightMat);
+	domeLightMesh.position.copy(lightPosition);
+	domeLightMesh.scale.setScalar(5);
+	scene.add(domeLightMesh);
 
 	const fontLoader = new FontLoader();
 	fontLoader.load('/fonts/helvetiker_regular.typeface.json', function (font) {
@@ -854,9 +888,7 @@ const init = () => {
 
 	// postprocessing
 	composer = new EffectComposer(renderer);
-
 	const renderPass = new RenderPass(scene, camera);
-	const bloomRenderPass = new RenderPass(bloomScene, camera); //there's a good chance this only works because everything is emissive (for now), idk
 
 	outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
 	const outline = (outlinePass as OutlinePass);
@@ -872,30 +904,35 @@ const init = () => {
 	effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
 
 	//selective bloom
-	const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 0.3, 0.4, 0.85 );
-	bloomComposer = new EffectComposer( renderer );
-	bloomComposer.renderToScreen = false;
-	bloomComposer.addPass( bloomRenderPass );
-	bloomComposer.addPass( bloomPass );
-
-	const mixPass = new ShaderPass(
-		new THREE.ShaderMaterial( {
-			uniforms: {
-				baseTexture: { value: null },
-				bloomTexture: { value: bloomComposer.renderTarget2.texture }
-			},
-			vertexShader: document.getElementById( 'vertexshader' ).textContent,
-			fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-			defines: {}
-		} ), 'baseTexture'
-	);
-	mixPass.needsSwap = true;
+	const addSelectiveBloomPass = () => {
+		if (settings.enableBloom) {
+			const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.25, 0.5, 0.85);
+			bloomComposer = new EffectComposer(renderer);
+			bloomComposer.renderToScreen = false;
+			bloomComposer.addPass(renderPass);
+			bloomComposer.addPass(bloomPass);
+		
+			const mixPass = new ShaderPass(
+				new THREE.ShaderMaterial({
+					uniforms: {
+						baseTexture: { value: null },
+						bloomTexture: { value: bloomComposer.renderTarget2.texture }
+					},
+					vertexShader: document.getElementById('vertexshader').textContent,
+					fragmentShader: document.getElementById('fragmentshader').textContent,
+					defines: {}
+				}), 'baseTexture'
+			);
+			mixPass.needsSwap = true;
+			composer.addPass(mixPass)
+		}
+	}
 
 	//compose passes
 	composer.addPass(renderPass);
 	composer.addPass(outlinePass);
 	composer.addPass(effectFXAA);
-	composer.addPass(mixPass)
+	addSelectiveBloomPass();
 	composer.addPass(outputPass);
 
 	window.addEventListener('resize', resize);

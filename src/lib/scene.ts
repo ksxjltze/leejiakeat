@@ -65,8 +65,11 @@ const BoiState = {
 const boi = {
 	object: null,
 	state: null,
-	enabled: true
+	enabled: true,
+	fallCount: 0
 };
+
+let debugCanvas;
 
 const settings = {
 	debugDraw: false,
@@ -90,6 +93,7 @@ const player = {
 
 //temp
 const cameraTurnSpeed = 5;
+let fallCountScreen;
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2(0, 0);
@@ -599,9 +603,25 @@ const findMeshByMaterialName = (scene, name: string) => {
 	return result;
 };
 
+const setBoiFallCount = (newFallCount: number) => {
+	boi.fallCount = newFallCount;
+
+	const ctx: CanvasRenderingContext2D = debugCanvas.getContext("2d");
+	ctx.fillStyle = "white";
+	ctx.fillRect(0, 0, 256, 256);
+	ctx.fillStyle = "black";
+	ctx.font = "24px Arial bold";
+	ctx.fillText("Times Kicked out: " + boi.fallCount.toString(), 24, 128);
+
+	if (fallCountScreen) {
+		fallCountScreen.material.map.dispose();
+		const canvasTexture = new THREE.CanvasTexture(debugCanvas);
+		fallCountScreen.material.map = canvasTexture;
+	}
+};
+
 const init = () => {
 	scene = new THREE.Scene();
-
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 	const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 
@@ -638,7 +658,13 @@ const init = () => {
 
 		fallCollisionTriggerBody.addEventListener('collide', (event) => {
 			console.log(event);
-			if (event.body === boi.object.body || event.body === player.body) {
+			if (event.body === boi.object.body) {
+				const ctx: CanvasRenderingContext2D = debugCanvas.getContext("2d");
+				setBoiFallCount(boi.fallCount + 1);
+				event.body.position.set(0, 0, 0);
+			}
+
+			if (event.body === player.body) {
 				event.body.position.set(0, 0, 0);
 			}
 		});
@@ -667,6 +693,10 @@ const init = () => {
 			return object.material.name == name;
 		};
 
+		const isNameMatch = (object, name) => {
+			return object.name == name;
+		};
+
 		//lazy hack 2
 		let lightIndex = 0;
 		traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
@@ -684,7 +714,8 @@ const init = () => {
 				object.layers.toggle(BLOOM_SCENE);
 			};
 
-			if (isMaterialMatch(object, "ScreenFaceMaterial")) {
+			//it works, as dumb as it is
+			if (isNameMatch(object, "ScreenPlane_1")) {
 				object.material.map = stronkBoiTexture;
 				stronkBoiObject = object;
 
@@ -692,6 +723,12 @@ const init = () => {
 					object.material.color = new THREE.Color(Math.random() * 0xFFFFFF);
 				});
 			};
+
+			if (isNameMatch(object, "Screen2Face")) {
+				fallCountScreen = object;
+				const canvasTexture = new THREE.CanvasTexture(debugCanvas);
+				object.material.map = canvasTexture;
+			};	
 
 			return false;
 		});
@@ -939,7 +976,7 @@ const init = () => {
 			bloomComposer.renderToScreen = false;
 			bloomComposer.addPass(renderPass);
 			bloomComposer.addPass(bloomPass);
-		
+
 			const mixPass = new ShaderPass(
 				new THREE.ShaderMaterial({
 					uniforms: {
@@ -987,6 +1024,16 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	const domAttachment = document.createElement("div");
 	domAttachment.hidden = true;
 	domAttachment.setAttribute("id", "attachment");
+
+	//canvas for putting text and stuff
+	debugCanvas = document.createElement("canvas");
+	debugCanvas.setAttribute("id", "debugCanvas");
+	debugCanvas.setAttribute("width", "256");
+	debugCanvas.setAttribute("height", "256");
+
+	setBoiFallCount(0);
+
+	domAttachment.appendChild(debugCanvas);
 
 	domAttachmentContainer = domAttachment;
 	surfaceContainer.appendChild(domAttachment);

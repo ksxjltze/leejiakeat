@@ -714,8 +714,7 @@ const init = () => {
 				object.layers.toggle(BLOOM_SCENE);
 			};
 
-			//it works, as dumb as it is
-			if (isNameMatch(object, "ScreenPlane_1")) {
+			if (isNameMatch(object, "ScreenMesh_1")) {
 				object.material.map = stronkBoiTexture;
 				stronkBoiObject = object;
 
@@ -728,7 +727,25 @@ const init = () => {
 				fallCountScreen = object;
 				const canvasTexture = new THREE.CanvasTexture(debugCanvas);
 				object.material.map = canvasTexture;
-			};	
+			};
+
+			if (isNameMatch(object, "Screen3Mesh_1")) {
+				const iconoclasmLogoTexture = new THREE.TextureLoader().load("/images/iconoclasm/iconoclasm-logo.jpg");
+				iconoclasmLogoTexture.wrapS = THREE.RepeatWrapping;
+				iconoclasmLogoTexture.wrapT = THREE.RepeatWrapping;
+				object.material.map = iconoclasmLogoTexture;
+
+				createInteractableObject(object, () => {
+					object.material.emissive = new THREE.Color(Math.random() * 0xFFFFFF);
+					const coinFlip = Math.round(Math.random());
+					const offset = Math.random() * 0.5;
+
+					if (coinFlip)
+						object.material.map.offset.x += offset;
+					else
+						object.material.map.offset.y += offset;
+				});
+			}
 
 			return false;
 		});
@@ -740,25 +757,6 @@ const init = () => {
 		(err) => {
 			console.error(err);
 		});
-
-	const length = 24;
-	const height = 12;
-
-	const iconoclasmLogoTexture = new THREE.TextureLoader().load("/images/iconoclasm/iconoclasm-logo.jpg");
-	const iconoclasmBanner = createTexturePlane(length, height, iconoclasmLogoTexture);
-	iconoclasmBanner.position.set(0, 2.5, 20);
-	iconoclasmBanner.rotateY(Math.PI);
-
-	createInteractableObject(iconoclasmBanner, () => {
-		iconoclasmBanner.rotation.z += Math.PI * 0.1;
-		//TODO: embed youtube
-		// const texture = playVideoById("iconoclasm");
-		// if (texture) {
-		// 	iconoclasmBanner.material.map = texture;
-		// }
-	});
-
-	scene.add(iconoclasmBanner);
 
 	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
 		console.log("Loaded Skinned model: ", gltf);
@@ -945,9 +943,10 @@ const init = () => {
 		geometry.center();
 
 		const material = new THREE.MeshBasicMaterial();
-		material.color = new THREE.Color(1, 0, 1);
+		material.color = new THREE.Color(0, 0, 1);
 		const text = new THREE.Mesh(geometry, material);
 		text.position.z = -8;
+		text.position.y = -1;
 		scene.add(text);
 	});
 

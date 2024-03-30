@@ -69,6 +69,10 @@ const boi = {
 	fallCount: 0
 };
 
+const boi3 = {
+	object: null
+}
+
 let debugCanvas;
 
 const settings = {
@@ -144,14 +148,14 @@ function createPhysicsObject(mesh: THREE.Object3D, body: CANNON.Body) {
 	return object;
 }
 
-function createPhysicsObjectFromMesh(mesh: THREE.Mesh, shape: CANNON.Shape, mass: number) {
+function createPhysicsObjectFrom3DObject(object: THREE.Object3D, shape: CANNON.Shape, mass: number, offset: CANNON.Vec3) {
 	const body = new CANNON.Body({
 		mass: mass,
-		position: new CANNON.Vec3(mesh.position.x, mesh.position.y, mesh.position.z),
-		quaternion: new CANNON.Quaternion(mesh.quaternion.x, mesh.quaternion.y, mesh.quaternion.z, mesh.quaternion.w),
+		position: new CANNON.Vec3(object.position.x, object.position.y, object.position.z),
+		quaternion: new CANNON.Quaternion(object.quaternion.x, object.quaternion.y, object.quaternion.z, object.quaternion.w),
 	});
-	body.addShape(shape);
-	return createPhysicsObject(mesh, body);
+	body.addShape(shape, offset);
+	return createPhysicsObject(object, body);
 }
 
 //yoink
@@ -396,21 +400,27 @@ const updatePlayerController = (keys: any[], dt: number) => {
 		return;
 	}
 
+	//lol
+	let speed = player.moveSpeed;
+	if (keys.includes("shift")) {
+		speed *= 1.5;
+	}
+
 	for (let i = 0; i < keys.length; i++) {
 		const key = keys[i];
 
 		switch (key) {
 			case 'w':
-				body.position = body.position.addScaledVector(player.moveSpeed * dt, forward);
+				body.position = body.position.addScaledVector(speed * dt, forward);
 				break;
 			case 'a':
-				body.position = body.position.addScaledVector(player.moveSpeed * dt, left);
+				body.position = body.position.addScaledVector(speed * dt, left);
 				break;
 			case 's':
-				body.position = body.position.addScaledVector(player.moveSpeed * dt, backwards);
+				body.position = body.position.addScaledVector(speed * dt, backwards);
 				break;
 			case 'd':
-				body.position = body.position.addScaledVector(player.moveSpeed * dt, right);
+				body.position = body.position.addScaledVector(speed * dt, right);
 				break;
 			case ' ': //jump
 				if (player.grounded) { //scuffed
@@ -555,6 +565,59 @@ const createTexturePlane = (width, height, texture) => {
 	const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
 
 	return planeMesh;
+};
+
+const getNormalsFromObject = (object3d: THREE.Object3D) => {
+	const normals = [];
+
+	const traverse = (node) => {
+		if (node instanceof THREE.Mesh) {
+			const geometry: THREE.BufferGeometry = node.geometry;
+			const normal = geometry.attributes.normal.array;
+			
+			for (let i = 0; i < normal.length; i++) {
+				normals.push(normal[i]);
+			}
+		}
+
+		node.children.forEach((child) => {
+			traverse(child);
+		});
+	}
+
+	traverse(object3d);
+	return new Float32Array(normals);
+};
+
+const getVerticesFromObject = (object3d: THREE.Object3D) => {
+	const vertices = [];
+
+	const traverse = (node) => {
+		if (node instanceof THREE.Mesh) {
+			const geometry: THREE.BufferGeometry = node.geometry;
+			const positions = geometry.attributes.position.array;
+			
+			for (let i = 0; i < positions.length; i++) {
+				vertices.push(positions[i]);
+			}
+		}
+
+		node.children.forEach((child) => {
+			traverse(child);
+		});
+	}
+
+	traverse(object3d);
+	return new Float32Array(vertices);
+};
+
+const computeBoundingSphere = (object: THREE.Object3D) => {
+	const vertices= getVerticesFromObject(object);
+	const geometry = new THREE.BufferGeometry();
+	geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+	geometry.computeBoundingSphere();
+
+	return geometry.boundingSphere;
 }
 
 const createInteractableObject = (object, onInteract) => {
@@ -622,8 +685,8 @@ const setBoiFallCount = (newFallCount: number) => {
 	ctx.fillStyle = "white";
 	ctx.fillRect(0, 0, 256, 256);
 	ctx.fillStyle = "black";
-	ctx.font = "24px Arial bold";
-	ctx.fillText("Times Kicked out: " + boi.fallCount.toString(), 24, 128);
+	ctx.font = "48px Arial bold";
+	ctx.fillText(boi.fallCount.toString(), 128 - 12, 128 + 12);
 
 	if (fallCountScreen) {
 		fallCountScreen.material.map.dispose();
@@ -669,8 +732,7 @@ const init = () => {
 		world.addBody(fallCollisionTriggerBody);
 
 		fallCollisionTriggerBody.addEventListener('collide', (event) => {
-			console.log(event);
-			if (event.body === boi.object.body) {
+			if (event.body === boi.object.body || event.body === boi3.object.body) {
 				const ctx: CanvasRenderingContext2D = debugCanvas.getContext("2d");
 				setBoiFallCount(boi.fallCount + 1);
 				event.body.position.set(0, 0, 0);
@@ -843,6 +905,21 @@ const init = () => {
 		(err) => {
 			console.error(err);
 		});
+
+	modelLoader.load('/models/boi3.glb', (gltf) => {
+		const boundingSphere = computeBoundingSphere(gltf.scene);
+
+		const shape = new CANNON.Sphere(boundingSphere.radius);
+		const object = createPhysicsObjectFrom3DObject(gltf.scene, shape, 1, ToCannonVec3(boundingSphere.center));
+
+		object.body.position.set(20, -1.5, 8);
+		object.body.quaternion.setFromEuler(0, Math.PI, 0, "XYZ");
+
+		world.addBody(object.body);
+		scene.add(object.object3D);
+
+		boi3.object = object;
+	});
 
 	modelLoader.load('/models/table.glb', (gltf) => {
 		console.log("Added model: ", gltf);

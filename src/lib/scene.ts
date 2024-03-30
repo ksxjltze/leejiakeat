@@ -66,7 +66,8 @@ const boi = {
 	object: null,
 	state: null,
 	enabled: true,
-	fallCount: 0
+	fallCount: 0,
+	speed: 5
 };
 
 const boi3 = {
@@ -218,22 +219,13 @@ const updateBoi = (dt) => {
 	if (!boi.state) //TODO: stuff
 		boi.state = BoiState.WALK1;
 
-	const boiSpeed = 5;
-	const boundsLength = 50;
-
 	if (!boi.object)
 		return;
 
-	const body = boi.object.body;
+	const body: CANNON.Body = boi.object.body;
 
-	//TODO: LOOK AT
-	const flip = (body) => {
-		const quat = new THREE.Quaternion();
-		quat.copy(body.quaternion);
-
-		quat.multiply(new THREE.Quaternion(0, 1, 0, 0));
-		body.quaternion.set(quat.x, quat.y, quat.z, quat.w);
-	};
+	const pointA = new CANNON.Vec3(-15, 0, 0);
+	const pointB = new CANNON.Vec3(65, 0, 0);
 
 	//walk if upright
 	const upVector = new THREE.Vector3(0, 1, 0);
@@ -243,21 +235,40 @@ const updateBoi = (dt) => {
 		return;
 	}
 
+	let waypoint: CANNON.Vec3;
+	const triggerDistanceSq = 5;
+
 	switch (boi.state) {
 		case 1:
-			body.position.x += boiSpeed * dt;
-			if (body.position.x > boundsLength) {
-				boi.state = BoiState.WALK2;
-				flip(body);
-			}
+			waypoint = pointA;
 			break;
 		case 2:
-			body.position.x -= boiSpeed * dt;
-			if (body.position.x < -boundsLength) {
-				boi.state = BoiState.WALK1;
-				flip(body);
-			}
+			waypoint = pointB;
 			break;
+	}
+
+	if (!waypoint)
+		return;
+
+	const targetDir = waypoint.vsub(body.position);
+	targetDir.normalize();
+
+	const direction = new THREE.Vector3(0, 5, 0);
+	direction.copy(targetDir);
+
+	const right = RIGHT.clone().applyEuler(new THREE.Euler(0, Math.PI, 0));
+	const dot = direction.dot(right);
+	let angle = Math.acos(dot / (direction.length() * right.length()));
+	
+	if (direction.dot(FORWARD) > 0)
+		angle = -angle;
+
+	//lets just assume he won't fall down
+	body.quaternion = body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), angle);
+	body.position = body.position.vadd(targetDir.scale(boi.speed * dt));
+
+	if (body.position.distanceSquared(waypoint) <= triggerDistanceSq) {
+		boi.state = (boi.state == BoiState.WALK1) ? BoiState.WALK2 : BoiState.WALK1;
 	}
 }
 
@@ -574,7 +585,7 @@ const getNormalsFromObject = (object3d: THREE.Object3D) => {
 		if (node instanceof THREE.Mesh) {
 			const geometry: THREE.BufferGeometry = node.geometry;
 			const normal = geometry.attributes.normal.array;
-			
+
 			for (let i = 0; i < normal.length; i++) {
 				normals.push(normal[i]);
 			}
@@ -596,7 +607,7 @@ const getVerticesFromObject = (object3d: THREE.Object3D) => {
 		if (node instanceof THREE.Mesh) {
 			const geometry: THREE.BufferGeometry = node.geometry;
 			const positions = geometry.attributes.position.array;
-			
+
 			for (let i = 0; i < positions.length; i++) {
 				vertices.push(positions[i]);
 			}
@@ -612,7 +623,7 @@ const getVerticesFromObject = (object3d: THREE.Object3D) => {
 };
 
 const computeBoundingSphere = (object: THREE.Object3D) => {
-	const vertices= getVerticesFromObject(object);
+	const vertices = getVerticesFromObject(object);
 	const geometry = new THREE.BufferGeometry();
 	geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 	geometry.computeBoundingSphere();
@@ -849,7 +860,7 @@ const init = () => {
 
 		const shape = new CANNON.Sphere(3.4);
 		const body = new CANNON.Body({
-			mass: 1
+			mass: 1000
 		});
 
 		body.addShape(shape, new CANNON.Vec3(0, -1.4, 0));
@@ -857,7 +868,7 @@ const init = () => {
 		body.quaternion = ToCannonQuat(gltf.scene.quaternion);
 
 		boi.object = createPhysicsObject(gltf.scene, body);
-		// boi.object.body.angularFactor = new CANNON.Vec3(0, 1, 0);
+		boi.object.body.angularFactor = new CANNON.Vec3(0, 1, 0);
 		world.addBody(body);
 
 		let hand = null;

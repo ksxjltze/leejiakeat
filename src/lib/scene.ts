@@ -149,7 +149,7 @@ function createPhysicsObject(mesh: THREE.Object3D, body: CANNON.Body) {
 	return object;
 }
 
-function createPhysicsObjectFrom3DObject(object: THREE.Object3D, shape: CANNON.Shape, mass: number, offset: CANNON.Vec3) {
+function createPhysicsObjectFrom3DObject(object: THREE.Object3D, shape: CANNON.Shape, mass: number, offset?: CANNON.Vec3) {
 	const body = new CANNON.Body({
 		mass: mass,
 		position: new CANNON.Vec3(object.position.x, object.position.y, object.position.z),
@@ -259,7 +259,7 @@ const updateBoi = (dt) => {
 	const right = RIGHT.clone().applyEuler(new THREE.Euler(0, Math.PI, 0));
 	const dot = direction.dot(right);
 	let angle = Math.acos(dot / (direction.length() * right.length()));
-	
+
 	if (direction.dot(FORWARD) > 0)
 		angle = -angle;
 
@@ -274,10 +274,29 @@ const updateBoi = (dt) => {
 
 const update = (dt) => {
 	updateBoi(dt);
+
+	//scuffed
+	physicsObjects.forEach((physicsObject) => {
+		const object = physicsObject.object3D;
+		if (!object)
+			return;
+
+		if (!object.userData)
+			return;
+		
+		if (object.userData.enabled) {
+			object.userData.update(dt);
+		}
+	})
+
 }
 
+let deltaTime = 0;
+
 const animate = () => {
-	const dt = clock.getDelta();
+	deltaTime = clock.getDelta();
+	const dt = deltaTime;
+
 	if (!renderer || !camera || !scene) return;
 
 	requestAnimationFrame(animate);
@@ -646,6 +665,10 @@ const GLTFGroupToStaticBodies = (gltf, scale?: THREE.Vector3) => {
 	traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
 		if (object instanceof THREE.Mesh) {
 			object.geometry.scale(scale.x, scale.y, scale.z);
+
+			if (object.userData.skipStaticMeshSetup)
+				return false;
+
 			const body = meshToStaticCollider(object, gltf.scene.position);
 
 			bodies.push(body);
@@ -778,7 +801,7 @@ const init = () => {
 			return object.material.name == name;
 		};
 
-		const isNameMatch = (object, name) => {
+		const isObjectNameMatch = (object, name) => {
 			return object.name == name;
 		};
 
@@ -799,22 +822,56 @@ const init = () => {
 				object.layers.toggle(BLOOM_SCENE);
 			};
 
-			if (isNameMatch(object, "ScreenMesh_1")) {
+			if (isObjectNameMatch(object, "LauncherRod")) {
+				const shape = new CANNON.Cylinder(16, 16, 24, 12);
+				const physicsObject = createPhysicsObjectFrom3DObject(object, shape, 0, new CANNON.Vec3(0, 21, 0));
+				world.addBody(physicsObject.body);
+
+				physicsObject.body.position.set(-80, -40, 0);
+				object.userData.skipStaticMeshSetup = true;
+
+				let elevatorTimer = 0;
+				const maxTime = 10;
+
+				object.userData.update = (dt) => {
+					const speed = 5;
+					elevatorTimer += dt;
+
+					if (elevatorTimer > maxTime) {
+						elevatorTimer = 0;
+						object.userData.enabled = false;
+					}
+
+					physicsObject.body.position.y += speed * dt;
+					physicsObject.object3D.position.y += speed * dt;
+				};
+
+				createInteractableObject(object, () => {
+					object.userData.enabled = true;
+				});
+				return false;
+			}
+
+			if (isObjectNameMatch(object, "ScreenMesh_1")) {
 				object.material.map = stronkBoiTexture;
 				stronkBoiObject = object;
 
 				createInteractableObject(object, () => {
 					object.material.color = new THREE.Color(Math.random() * 0xFFFFFF);
 				});
+
+				return false;
 			};
 
-			if (isNameMatch(object, "Screen2Face")) {
+			if (isObjectNameMatch(object, "Screen2Face")) {
 				fallCountScreen = object;
 				const canvasTexture = new THREE.CanvasTexture(debugCanvas);
 				object.material.map = canvasTexture;
+
+				return false;
 			};
 
-			if (isNameMatch(object, "Screen3Mesh_1")) {
+			if (isObjectNameMatch(object, "Screen3Mesh_1")) {
 				const iconoclasmLogoTexture = new THREE.TextureLoader().load("/images/iconoclasm/iconoclasm-logo.jpg");
 				iconoclasmLogoTexture.wrapS = THREE.RepeatWrapping;
 				iconoclasmLogoTexture.wrapT = THREE.RepeatWrapping;
@@ -830,6 +887,8 @@ const init = () => {
 					else
 						object.material.map.offset.y += offset;
 				});
+
+				return false;
 			}
 
 			return false;
@@ -1012,20 +1071,20 @@ const init = () => {
 	scene.background = loadSkyboxTextures();
 
 	//add lighting
-	let lightPosition = new THREE.Vector3(0, 3, -10);
-	const domeLight = new THREE.PointLight(0xFFFFFF, 100, 0, 1);
-	lightPosition = new THREE.Vector3(-80, 20, 0);
-	domeLight.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
-	scene.add(domeLight);
+	// let lightPosition = new THREE.Vector3(0, 3, -10);
+	// const domeLight = new THREE.PointLight(0xFFFFFF, 100, 0, 1);
+	// lightPosition = new THREE.Vector3(-80, 20, 0);
+	// domeLight.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
+	// scene.add(domeLight);
 
-	const domeLightMat = standardMat.clone();
-	domeLightMat.emissive = new THREE.Color(0xFFFFFF);
-	domeLightMat.emissiveIntensity = 1;
+	// const domeLightMat = standardMat.clone();
+	// domeLightMat.emissive = new THREE.Color(0xFFFFFF);
+	// domeLightMat.emissiveIntensity = 1;
 
-	const domeLightMesh = new THREE.Mesh(sphereGeom, domeLightMat);
-	domeLightMesh.position.copy(lightPosition);
-	domeLightMesh.scale.setScalar(5);
-	scene.add(domeLightMesh);
+	// const domeLightMesh = new THREE.Mesh(sphereGeom, domeLightMat);
+	// domeLightMesh.position.copy(lightPosition);
+	// domeLightMesh.scale.setScalar(5);
+	// scene.add(domeLightMesh);
 
 	const fontLoader = new FontLoader();
 	fontLoader.load('/fonts/helvetiker_regular.typeface.json', function (font) {

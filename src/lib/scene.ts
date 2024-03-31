@@ -30,8 +30,8 @@ const Constants = {
 	right: new THREE.Vector3(1, 0, 0)
 };
 
-const PRIMARY_BUTTON = 0 as const;
-const SECONDARY_BUTTON = 2 as const;
+const PRIMARY_BUTTON = 0 as const; //left mouse button
+const SECONDARY_BUTTON = 2 as const; //right mouse button
 
 let composer: EffectComposer;
 let bloomComposer: EffectComposer;
@@ -47,7 +47,8 @@ const Outline = {
 const InteractionType = {
 	Generic: 0,
 	Physics: 1,
-	Movement: 2
+	Movement: 2,
+	Talk: 3
 } as const;
 
 let stats;
@@ -697,7 +698,7 @@ const GLTFGroupToStaticBodies = (gltf, scale?: THREE.Vector3) => {
 	const group = gltf.scene.children[0];
 	const bodies = [];
 
-	traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
+	traverseObjectTreeWithPredicate(gltf.scene, (object) => {
 		if (object instanceof THREE.Mesh) {
 			object.geometry.scale(scale.x, scale.y, scale.z);
 
@@ -721,7 +722,7 @@ const GLTFGroupToStaticBodies = (gltf, scale?: THREE.Vector3) => {
  * @param scene Scene (Group of Object3D)
  * @param fn Function to invoke
  */
-const traverseGLTFSceneWithPredicate = (scene, fn: (object: any) => boolean) => {
+const traverseObjectTreeWithPredicate = (scene, fn: (object: any) => boolean) => {
 	const traverser = (child) => {
 		if (fn(child))
 			return;
@@ -743,7 +744,7 @@ const findMeshByMaterialName = (scene, name: string) => {
 		return false;
 	};
 
-	traverseGLTFSceneWithPredicate(scene, materialNameMatches);
+	traverseObjectTreeWithPredicate(scene, materialNameMatches);
 	return result;
 };
 
@@ -846,7 +847,7 @@ const init = () => {
 
 		//lazy hack 2
 		let lightIndex = 0;
-		traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
+		traverseObjectTreeWithPredicate(gltf.scene, (object) => {
 			if (!(object instanceof THREE.Mesh))
 				return false;
 
@@ -920,6 +921,34 @@ const init = () => {
 				object.layers.toggle(BLOOM_SCENE);
 			}
 
+			if (isObjectNameMatch(object, "ConnectorScreenMesh")) {
+				const root = object.parent;
+				root.userData.interactType = InteractionType.Movement;
+
+				const geometry: THREE.BufferGeometry = object.geometry;
+				geometry.computeBoundingSphere();
+				const position = geometry.boundingSphere.center;
+
+				traverseObjectTreeWithPredicate(root, (object) => {
+					object.userData.root = root;
+					return false;
+				});
+
+				createInteractableObject(root, (pointerEvent: PointerEvent) => {
+					if (pointerEvent.button == SECONDARY_BUTTON) {
+						const pos = ToCannonVec3(position);
+						const dir = pos.vsub(player.body.position);
+						dir.normalize();
+			
+						const force = dir.scale(300000); //it just works
+						console.log(force);
+						player.body.applyForce(force);
+					}
+				});
+
+				root.layers.toggle(BLOOM_SCENE);
+			}
+
 			if (isObjectNameMatch(object, "ScreenMesh_1")) {
 				object.material.map = stronkBoiTexture;
 				stronkBoiObject = object;
@@ -929,7 +958,7 @@ const init = () => {
 				});
 
 				return false;
-			};
+			}
 
 			if (isObjectNameMatch(object, "Screen2Face")) {
 				fallCountScreen = object;
@@ -937,7 +966,7 @@ const init = () => {
 				object.material.map = canvasTexture;
 
 				return false;
-			};
+			}
 
 			if (isObjectNameMatch(object, "Screen3Mesh_1")) {
 				const iconoclasmLogoTexture = new THREE.TextureLoader().load("/images/iconoclasm/iconoclasm-logo.jpg");
@@ -1058,7 +1087,7 @@ const init = () => {
 
 		boi3.object = object;
 
-		traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
+		traverseObjectTreeWithPredicate(gltf.scene, (object) => {
 			object.userData.root = boi3.object.mesh;
 			return false;
 		})
@@ -1127,7 +1156,7 @@ const init = () => {
 		let isPlaying = false;
 
 		GLTFGroupToStaticBodies(gltf);
-		traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
+		traverseObjectTreeWithPredicate(gltf.scene, (object) => {
 			if (object instanceof THREE.Mesh) {
 				createInteractableObject(object, () => {
 					stronkBoiObject.material.color = new THREE.Color(1, 1, 1);

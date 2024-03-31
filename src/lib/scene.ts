@@ -41,7 +41,7 @@ let effectFXAA, outlinePass: OutlinePass;
 const Outline = {
 	Interactable: new THREE.Color(1, 0, 1),
 	PhysicsInteractable: new THREE.Color(1, 0, 0),
-	MovementInteractable: new THREE.Color(0, 0, 1)
+	MovementInteractable: new THREE.Color(0, 1, 0)
 };
 
 const InteractionType = {
@@ -923,8 +923,6 @@ const init = () => {
 
 			if (isObjectNameMatch(object, "ConnectorScreenMesh")) {
 				const root = object.parent;
-				root.userData.interactType = InteractionType.Movement;
-
 				const geometry: THREE.BufferGeometry = object.geometry;
 				geometry.computeBoundingSphere();
 				const position = geometry.boundingSphere.center;
@@ -941,10 +939,9 @@ const init = () => {
 						dir.normalize();
 			
 						const force = dir.scale(300000); //it just works
-						console.log(force);
 						player.body.applyForce(force);
 					}
-				});
+				}, InteractionType.Movement);
 
 				root.layers.toggle(BLOOM_SCENE);
 			}

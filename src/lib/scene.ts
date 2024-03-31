@@ -862,6 +862,12 @@ const init = () => {
 				return false;
 			}
 
+			if (isObjectNameMatch(object, "LauncherIndicator")) {
+				object.material.emissive = new THREE.Color(0x0011FF);
+				object.material.emissiveIntensity = 20;
+				object.layers.toggle(BLOOM_SCENE);
+			}
+
 			if (isObjectNameMatch(object, "ScreenMesh_1")) {
 				object.material.map = stronkBoiTexture;
 				stronkBoiObject = object;

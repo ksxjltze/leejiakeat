@@ -35,7 +35,20 @@ const SECONDARY_BUTTON = 2 as const;
 
 let composer: EffectComposer;
 let bloomComposer: EffectComposer;
-let effectFXAA, outlinePass;
+let effectFXAA, outlinePass: OutlinePass;
+
+//idk what to call these
+const Outline = {
+	Interactable: new THREE.Color(1, 0, 1),
+	PhysicsInteractable: new THREE.Color(1, 0, 0),
+	MovementInteractable: new THREE.Color(0, 0, 1)
+};
+
+const InteractionType = {
+	Generic: 0,
+	Physics: 1,
+	Movement: 2
+} as const;
 
 let stats;
 let renderer;
@@ -315,6 +328,28 @@ const updateAnimations = (dt) => {
 const setSelectedObject = (object) => {
 	selectedObjects = [];
 	selectedObjects.push(object);
+
+	if (object.userData.interactType) {
+		switch (object.userData.interactType) {
+			case InteractionType.Generic:
+				outlinePass.visibleEdgeColor = Outline.Interactable;
+				outlinePass.hiddenEdgeColor = Outline.Interactable;
+				break;
+			case InteractionType.Physics:
+				outlinePass.visibleEdgeColor = Outline.PhysicsInteractable;
+				outlinePass.hiddenEdgeColor = Outline.PhysicsInteractable;
+				break;
+			case InteractionType.Movement:
+				outlinePass.visibleEdgeColor = Outline.MovementInteractable;
+				outlinePass.hiddenEdgeColor = Outline.MovementInteractable;
+				break;
+		}
+
+		return;
+	}
+
+	outlinePass.visibleEdgeColor = Outline.Interactable;
+	outlinePass.hiddenEdgeColor = Outline.Interactable;
 };
 
 const checkIntersectingObjects = () => {
@@ -327,9 +362,11 @@ const checkIntersectingObjects = () => {
 		const selectedObject = intersects[0].object;
 
 		setSelectedObject(selectedObject);
-
-		if (!selectedObject.userData.root && !selectedObject.userData.selectable)
+		if (!selectedObject.userData.selectable)
 			selectedObjects = [];
+
+		if (selectedObject.userData.root)
+			setSelectedObject(selectedObject.userData.root);
 
 		outlinePass.selectedObjects = selectedObjects;
 	}
@@ -647,9 +684,10 @@ const computeBoundingSphere = (object: THREE.Object3D) => {
 	return geometry.boundingSphere;
 }
 
-const createInteractableObject = (object, onInteract) => {
+const createInteractableObject = (object, onInteract, interactType?) => {
 	object.userData.selectable = true;
 	object.userData.onInteract = onInteract;
+	object.userData.interactType = interactType;
 };
 
 const GLTFGroupToStaticBodies = (gltf, scale?: THREE.Vector3) => {
@@ -836,7 +874,6 @@ const init = () => {
 				let goingUp = true;
 
 				object.userData.update = (dt) => {
-					console.log("HMM");
 					const launchSpeed = 200;
 					const retractSpeed = 10;
 
@@ -1039,7 +1076,7 @@ const init = () => {
 				object.body.applyForce(force);
 			}
 
-		});
+		}, InteractionType.Physics);
 	});
 
 	modelLoader.load('/models/table.glb', (gltf) => {
@@ -1158,8 +1195,8 @@ const init = () => {
 
 	outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
 	const outline = (outlinePass as OutlinePass);
-	outline.visibleEdgeColor = new THREE.Color(1, 0, 1);
-	outline.hiddenEdgeColor = new THREE.Color(1, 0, 1);
+	outline.visibleEdgeColor = Outline.Interactable;
+	outline.hiddenEdgeColor = Outline.Interactable;
 	outline.edgeStrength = 10;
 	outline.edgeThickness = 3;
 	outline.edgeGlow = 1;

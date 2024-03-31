@@ -30,6 +30,8 @@ const Constants = {
 	right: new THREE.Vector3(1, 0, 0)
 };
 
+const PRIMARY_BUTTON = 0 as const;
+const SECONDARY_BUTTON = 2 as const;
 
 let composer: EffectComposer;
 let bloomComposer: EffectComposer;
@@ -92,7 +94,8 @@ const player = {
 
 	moveSpeed: 12,
 	jumpAmount: 4,
-	body: undefined
+	body: undefined,
+	strength: 2000
 };
 
 //temp
@@ -122,13 +125,13 @@ const bloom = {
 let physicsObjects = [];
 
 interface PhysicsObject {
-	object3D: THREE.Object3D,
+	mesh: THREE.Object3D,
 	body: CANNON.Body
 };
 
 function createPhysicsObject(mesh: THREE.Object3D, body: CANNON.Body) {
 	const object: PhysicsObject = {
-		object3D: mesh,
+		mesh: mesh,
 		body: body
 	};
 
@@ -263,14 +266,14 @@ const update = (dt) => {
 	updateBoi(dt);
 
 	//scuffed
-	physicsObjects.forEach((physicsObject) => {
-		const object = physicsObject.object3D;
+	physicsObjects.forEach((physicsObject: PhysicsObject) => {
+		const object = physicsObject.mesh;
 		if (!object)
 			return;
 
 		if (!object.userData)
 			return;
-		
+
 		if (object.userData.enabled) {
 			object.userData.update(dt);
 		}
@@ -325,7 +328,7 @@ const checkIntersectingObjects = () => {
 
 		setSelectedObject(selectedObject);
 
-		if (!selectedObject.userData.selectable)
+		if (!selectedObject.userData.root && !selectedObject.userData.selectable)
 			selectedObjects = [];
 
 		outlinePass.selectedObjects = selectedObjects;
@@ -344,13 +347,20 @@ const render = () => {
 	composer.render();
 }
 
-const interactWithSelected = () => {
+const interactWithSelected = (event: PointerEvent) => {
 	if (selectedObjects.length == 0)
 		return;
 
 	const selected = selectedObjects[0];
+
+	const rootObject = selected.userData.root;
+	if (rootObject) {
+		rootObject.userData.onInteract(event);
+		return;
+	}
+
 	if (selected.userData.onInteract) {
-		selected.userData.onInteract();
+		selected.userData.onInteract(event);
 	}
 }
 
@@ -466,8 +476,8 @@ function updatePhysics(dt) {
 		if (object.body.mass == 0)
 			return;
 
-		object.object3D.position.copy(object.body.position);
-		object.object3D.quaternion.copy(object.body.quaternion);
+		object.mesh.position.copy(object.body.position);
+		object.mesh.quaternion.copy(object.body.quaternion);
 	});
 
 	if (!player.body)
@@ -789,7 +799,11 @@ const init = () => {
 		};
 
 		const isObjectNameMatch = (object, name) => {
-			return object.name == name;
+			const match = object.name == name;
+			if (match) {
+				console.log("Found object: " + name);
+			}
+			return match;
 		};
 
 		//lazy hack 2
@@ -822,6 +836,7 @@ const init = () => {
 				let goingUp = true;
 
 				object.userData.update = (dt) => {
+					console.log("HMM");
 					const launchSpeed = 200;
 					const retractSpeed = 10;
 
@@ -836,7 +851,7 @@ const init = () => {
 
 						const offset = physicsObject.body.position.y - maxHeight;
 						physicsObject.body.position.y -= offset;
-						physicsObject.object3D.position.y -= offset;
+						physicsObject.mesh.position.y -= offset;
 						return;
 					}
 					else if (physicsObject.body.position.y < minHeight) {
@@ -845,7 +860,7 @@ const init = () => {
 
 						const offset = physicsObject.body.position.y - minHeight;
 						physicsObject.body.position.y -= offset;
-						physicsObject.object3D.position.y -= offset;
+						physicsObject.mesh.position.y -= offset;
 						return;
 					}
 
@@ -853,7 +868,7 @@ const init = () => {
 						movement = -movement;
 
 					physicsObject.body.position.y += movement;
-					physicsObject.object3D.position.y += movement;
+					physicsObject.mesh.position.y += movement;
 				};
 
 				createInteractableObject(object, () => {
@@ -1002,9 +1017,29 @@ const init = () => {
 		object.body.quaternion.setFromEuler(0, Math.PI, 0, "XYZ");
 
 		world.addBody(object.body);
-		scene.add(object.object3D);
+		scene.add(object.mesh);
 
 		boi3.object = object;
+
+		traverseGLTFSceneWithPredicate(gltf.scene, (object) => {
+			object.userData.root = boi3.object.mesh;
+			return false;
+		})
+
+		createInteractableObject(object.mesh, (pointerEvent: PointerEvent) => {
+			const dir = object.body.position.vsub(player.body.position);
+			dir.normalize();
+
+			if (pointerEvent.button == PRIMARY_BUTTON) {
+				const force = dir.scale(player.strength);
+				object.body.applyForce(force);
+			}
+			else if (pointerEvent.button == SECONDARY_BUTTON) {
+				const force = dir.scale(player.strength).negate();
+				object.body.applyForce(force);
+			}
+
+		});
 	});
 
 	modelLoader.load('/models/table.glb', (gltf) => {
@@ -1088,7 +1123,7 @@ const init = () => {
 
 	//add lighting
 	let lightPosition = new THREE.Vector3(0, 0, 0);
-	
+
 	const domeLight = new THREE.PointLight(0xAACCFF, 100, 60, 0.1);
 	lightPosition = new THREE.Vector3(-80, 20, 0);
 	domeLight.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
@@ -1232,7 +1267,7 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	document.addEventListener('keyup', onKeyUp);
 	document.addEventListener('click', (event) => {
 		if (event instanceof PointerEvent) {
-			interactWithSelected();
+			interactWithSelected(event);
 		}
 	});
 

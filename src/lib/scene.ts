@@ -1076,6 +1076,7 @@ const init = () => {
 		const shape = new CANNON.Sphere(boundingSphere.radius);
 		const object = createPhysicsObjectFrom3DObject(gltf.scene, shape, 1, ToCannonVec3(boundingSphere.center));
 
+		object.body.material = new CANNON.Material({restitution: 10, friction: 0});
 		object.body.position.set(20, -1.5, 8);
 		object.body.quaternion.setFromEuler(0, Math.PI, 0, "XYZ");
 

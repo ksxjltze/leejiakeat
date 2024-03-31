@@ -131,4 +131,18 @@ class CannonUtils {
     }
 }
 
+
+export function ToCannonVec3(vector) {
+	return new CANNON.Vec3(vector.x, vector.y, vector.z);
+}
+
+export function ToCannonQuat(quaternion) {
+	return new CANNON.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+}
+
+export function ToCannonVec3Scaled(vector, scale) {
+	return new CANNON.Vec3(vector.x * scale, vector.y * scale, vector.z * scale);
+}
+
+
 export default CannonUtils

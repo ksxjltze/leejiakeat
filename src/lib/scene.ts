@@ -19,17 +19,17 @@ import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import * as CANNON from 'cannon-es';
 import CannonUtils from './utils/cannonUtils';
 import CannonDebugRenderer from './utils/cannonDebugRenderer';
-
-const boxGeom = new THREE.BoxGeometry();
-const sphereGeom = new THREE.SphereGeometry();
-
-const standardMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+import { ToCannonVec3, ToCannonQuat, ToCannonVec3Scaled } from './utils/cannonUtils';
+import { lerp } from 'three/src/math/MathUtils';
 
 const clock = new THREE.Clock();
 const modelLoader = new GLTFLoader();
 
-const FORWARD = new THREE.Vector3(0, 0, -1);
-const RIGHT = new THREE.Vector3(1, 0, 0);
+const Constants = {
+	forward: new THREE.Vector3(0, 0, -1),
+	right: new THREE.Vector3(1, 0, 0)
+};
+
 
 let composer: EffectComposer;
 let bloomComposer: EffectComposer;
@@ -48,7 +48,6 @@ let domAttachmentContainer: HTMLElement;
 let initialized = false;
 
 let mixer: THREE.AnimationMixer;
-
 let world: CANNON.World;
 let cannonDebugRenderer;
 
@@ -126,18 +125,6 @@ interface PhysicsObject {
 	object3D: THREE.Object3D,
 	body: CANNON.Body
 };
-
-function ToCannonVec3(vector) {
-	return new CANNON.Vec3(vector.x, vector.y, vector.z);
-}
-
-function ToCannonQuat(quaternion) {
-	return new CANNON.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-}
-
-function ToCannonVec3Scaled(vector, scale) {
-	return new CANNON.Vec3(vector.x * scale, vector.y * scale, vector.z * scale);
-}
 
 function createPhysicsObject(mesh: THREE.Object3D, body: CANNON.Body) {
 	const object: PhysicsObject = {
@@ -256,11 +243,11 @@ const updateBoi = (dt) => {
 	const direction = new THREE.Vector3(0, 5, 0);
 	direction.copy(targetDir);
 
-	const right = RIGHT.clone().applyEuler(new THREE.Euler(0, Math.PI, 0));
+	const right = Constants.right.clone().applyEuler(new THREE.Euler(0, Math.PI, 0));
 	const dot = direction.dot(right);
 	let angle = Math.acos(dot / (direction.length() * right.length()));
 
-	if (direction.dot(FORWARD) > 0)
+	if (direction.dot(Constants.forward) > 0)
 		angle = -angle;
 
 	//lets just assume he won't fall down
@@ -411,8 +398,8 @@ const updatePlayerController = (keys: any[], dt: number) => {
 	const body: CANNON.Body = player.body;
 
 	//scuffed but works
-	const cameraForward = FORWARD.clone().applyEuler(camera.rotation);
-	const cameraRight = RIGHT.clone().applyEuler(camera.rotation);
+	const cameraForward = Constants.forward.clone().applyEuler(camera.rotation);
+	const cameraRight = Constants.right.clone().applyEuler(camera.rotation);
 
 	const forward = new CANNON.Vec3(cameraForward.x, 0, cameraForward.z); //let's just remove y movement for now
 	const right = new CANNON.Vec3(cameraRight.x, cameraRight.y, cameraRight.z);
@@ -830,20 +817,43 @@ const init = () => {
 				physicsObject.body.position.set(-80, -40, 0);
 				object.userData.skipStaticMeshSetup = true;
 
-				let elevatorTimer = 0;
-				const maxTime = 10;
+				const maxHeight = -15;
+				const minHeight = -40;
+				let goingUp = true;
 
 				object.userData.update = (dt) => {
-					const speed = 5;
-					elevatorTimer += dt;
+					const launchSpeed = 200;
+					const retractSpeed = 10;
 
-					if (elevatorTimer > maxTime) {
-						elevatorTimer = 0;
+					let speed = launchSpeed;
+					if (!goingUp)
+						speed = retractSpeed;
+
+					let movement = speed * dt;
+
+					if (physicsObject.body.position.y > maxHeight) {
+						goingUp = false;
+
+						const offset = physicsObject.body.position.y - maxHeight;
+						physicsObject.body.position.y -= offset;
+						physicsObject.object3D.position.y -= offset;
+						return;
+					}
+					else if (physicsObject.body.position.y < minHeight) {
 						object.userData.enabled = false;
+						goingUp = true;
+
+						const offset = physicsObject.body.position.y - minHeight;
+						physicsObject.body.position.y -= offset;
+						physicsObject.object3D.position.y -= offset;
+						return;
 					}
 
-					physicsObject.body.position.y += speed * dt;
-					physicsObject.object3D.position.y += speed * dt;
+					if (!goingUp)
+						movement = -movement;
+
+					physicsObject.body.position.y += movement;
+					physicsObject.object3D.position.y += movement;
 				};
 
 				createInteractableObject(object, () => {
@@ -1071,20 +1081,12 @@ const init = () => {
 	scene.background = loadSkyboxTextures();
 
 	//add lighting
-	// let lightPosition = new THREE.Vector3(0, 3, -10);
-	// const domeLight = new THREE.PointLight(0xFFFFFF, 100, 0, 1);
-	// lightPosition = new THREE.Vector3(-80, 20, 0);
-	// domeLight.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
-	// scene.add(domeLight);
-
-	// const domeLightMat = standardMat.clone();
-	// domeLightMat.emissive = new THREE.Color(0xFFFFFF);
-	// domeLightMat.emissiveIntensity = 1;
-
-	// const domeLightMesh = new THREE.Mesh(sphereGeom, domeLightMat);
-	// domeLightMesh.position.copy(lightPosition);
-	// domeLightMesh.scale.setScalar(5);
-	// scene.add(domeLightMesh);
+	let lightPosition = new THREE.Vector3(0, 0, 0);
+	
+	const domeLight = new THREE.PointLight(0xAACCFF, 100, 60, 0.1);
+	lightPosition = new THREE.Vector3(-80, 20, 0);
+	domeLight.position.set(lightPosition.x, lightPosition.y, lightPosition.z);
+	scene.add(domeLight);
 
 	const fontLoader = new FontLoader();
 	fontLoader.load('/fonts/helvetiker_regular.typeface.json', function (font) {

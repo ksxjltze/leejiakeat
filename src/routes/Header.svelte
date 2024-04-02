@@ -5,15 +5,18 @@
 </script>
 
 <header>
-	<div class="corner">
-		<a href="https://kit.svelte.dev">
+	<div style="margin-left: 0.5rem;" class="corner">
+		<!-- <a href="https://kit.svelte.dev">
 			<img src={logo} alt="SvelteKit" />
-		</a>
+		</a> -->
+		<svg viewBox="0 0 24 24" aria-hidden="true" style="fill: white;">
+			<path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z" />
+		</svg>
 	</div>
 
 	<nav>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
-			<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
+			<path d="M0,0 L0.5,2 C1.5,3 1.5,3 2,3 L2,0 Z"/>
 		</svg>
 		<ul>
 			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
@@ -30,7 +33,7 @@
 			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
-			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
+			<path d="M0,0 L0,3 C0.5,3 0.5,3 1.5,2 L2,0 Z"/>
 		</svg>
 	</nav>
 

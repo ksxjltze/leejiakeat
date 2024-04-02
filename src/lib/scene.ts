@@ -55,6 +55,7 @@ let stats;
 let renderer;
 
 let scene: THREE.Scene;
+let crosshair: THREE.Sprite;
 
 let camera;
 let controls: PointerLockControls;
@@ -331,6 +332,11 @@ const setSelectedObject = (object) => {
 	selectedObjects = [];
 	selectedObjects.push(object);
 
+	console.log(object);
+
+	if (!object.userData)
+		return;
+
 	if (object.userData.interactType) {
 		switch (object.userData.interactType) {
 			case InteractionType.Generic:
@@ -361,7 +367,21 @@ const checkIntersectingObjects = () => {
 	const intersects = raycaster.intersectObjects(scene.children);
 
 	if (intersects.length > 0) {
-		const selectedObject = intersects[0].object;
+		let selectedObject;
+
+		intersects.forEach((intersection) => {
+			if (selectedObject)
+				return;
+
+			if (intersection.object.type == 'Sprite')
+				return;
+
+			selectedObject = intersection.object;
+			console.log(selectedObject);
+		});
+
+		if (!selectedObject)
+			return;
 
 		setSelectedObject(selectedObject);
 		if (!selectedObject.userData.selectable)
@@ -375,6 +395,15 @@ const checkIntersectingObjects = () => {
 }
 
 const render = () => {
+	//crosshair (for now)
+	const camPos: THREE.Vector3 = camera.position;
+	const target = new THREE.Vector3(camPos.x, camPos.y, camPos.z - 1);
+
+	const offset = target.sub(camPos);
+	offset.applyEuler(camera.rotation);
+
+	crosshair.position.copy(camPos.clone().add(offset));
+
 	checkIntersectingObjects();
 
 	if (bloomComposer && settings.enableBloom) {
@@ -542,6 +571,8 @@ export const resize = () => {
 
 		camera.aspect = width / height;
 		camera.updateProjectionMatrix();
+
+		updateCrosshair(width, height);
 	};
 
 	if (document.fullscreenElement) {
@@ -748,6 +779,42 @@ const findMeshByMaterialName = (scene, name: string) => {
 	traverseObjectTreeWithPredicate(scene, materialNameMatches);
 	return result;
 };
+
+const updateCrosshair = (width, height) => {
+	const crosshairCanvas = document.createElement("canvas");
+	crosshairCanvas.setAttribute("id", "renderCanvas");
+	crosshairCanvas.setAttribute("width", width.toString());
+	crosshairCanvas.setAttribute("height", height.toString());
+
+	const ctx: CanvasRenderingContext2D = crosshairCanvas.getContext("2d");
+	ctx.fillStyle = "rgba(0, 0, 0, 0)";
+	ctx.fillRect(0, 0, width, height);
+	ctx.fillStyle = "green";
+
+	const crosshairSize = 16;
+
+	ctx.beginPath();
+	ctx.ellipse(width / 2, height / 2, crosshairSize, crosshairSize / 2, 0, 0, 2 * Math.PI);
+	ctx.fill();
+
+	if (!crosshair) {
+		const canvasCrosshairTexture = new THREE.CanvasTexture(crosshairCanvas);
+		const material = new THREE.SpriteMaterial({ map: canvasCrosshairTexture });
+	
+		const sprite = new THREE.Sprite(material);
+		scene.add(sprite);
+		crosshair = sprite;
+
+		crosshairCanvas.remove();
+		return;
+	}
+
+	crosshair.material.map.dispose();
+	const canvasCrosshairTexture = new THREE.CanvasTexture(crosshairCanvas);
+	crosshair.material.map = canvasCrosshairTexture;
+
+	crosshairCanvas.remove();
+}
 
 const setBoiFallCountAndUpdateCanvasTexture = (newFallCount: number) => {
 	boi.fallCount = newFallCount;
@@ -963,46 +1030,46 @@ const init = () => {
 
 				root.layers.toggle(BLOOM_SCENE);
 			}
-			
+
 			//Lobby screens
 			{
 				const setupLobbyScreens = () => {
 					if (isObjectNameMatch(object, "ScreenMesh_1")) {
 						object.material.map = stronkBoiTexture;
 						stronkBoiObject = object;
-	
+
 						createInteractableObject(object, () => {
 							object.material.color = new THREE.Color(Math.random() * 0xFFFFFF);
 						});
-	
+
 						return false;
 					}
-	
+
 					if (isObjectNameMatch(object, "Screen2Face")) {
 						fallCountScreen = object;
 						const canvasTexture = new THREE.CanvasTexture(renderCanvas);
 						object.material.map = canvasTexture;
-	
+
 						return false;
 					}
-	
+
 					if (isObjectNameMatch(object, "Screen3Mesh_1")) {
 						const iconoclasmLogoTexture = new THREE.TextureLoader().load("/images/iconoclasm/iconoclasm-logo.jpg");
 						iconoclasmLogoTexture.wrapS = THREE.RepeatWrapping;
 						iconoclasmLogoTexture.wrapT = THREE.RepeatWrapping;
 						object.material.map = iconoclasmLogoTexture;
-	
+
 						createInteractableObject(object, () => {
 							object.material.emissive = new THREE.Color(Math.random() * 0xFFFFFF);
 							const coinFlip = Math.round(Math.random());
 							const offset = Math.random() * 0.5;
-	
+
 							if (coinFlip)
 								object.material.map.offset.x += offset;
 							else
 								object.material.map.offset.y += offset;
 						});
-	
+
 						return false;
 					}
 				};
@@ -1305,8 +1372,6 @@ const rendererSetup = (surface) => {
 
 export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement) => {
 	renderer = rendererSetup(surface);
-	init();
-
 	surfaceContainer = container;
 
 	//invisible DOM element to attach HTML stuff I guess
@@ -1329,6 +1394,12 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 
 	domAttachmentContainer = domAttachment;
 	surfaceContainer.appendChild(domAttachment);
+
+	//init scene
+	init();
+
+	//crosshair
+	updateCrosshair(window.innerWidth, window.innerHeight);
 
 	//stats
 	stats = new Stats();
@@ -1495,6 +1566,22 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	initialized = true;
 
 	animate();
+};
+
+THREE.DefaultLoadingManager.onStart = function (url, itemsLoaded, itemsTotal) {
+	console.log('Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+};
+
+THREE.DefaultLoadingManager.onLoad = function () {
+	console.log('Loading Complete!');
+};
+
+THREE.DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
+	console.log('Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+};
+
+THREE.DefaultLoadingManager.onError = function (url) {
+	console.log('There was an error loading ' + url);
 };
 
 export const lockControls = () => {

@@ -51,23 +51,22 @@
 			</button>
 		</section>
 
-		<h3>Portfolio (WIP)</h3>
-		<p>
-			You can find my old portfolio website here: <a href="https://ksxjltze.github.io"
-				>ksxjltze.github.io</a
-			>
-		</p>
-
+		<h3>Interactive Portfolio (WIP)</h3>
 		<p>
 			Click
 			<a href="/interactive"> here </a>
 			to view my projects in an interactive mode (WIP).
+			Or just explore the world I've created.
 		</p>
 	</section>
 
 	<section>
 		<h1>Archive</h1>
-		<h2>The following project files were ported from my old portfolio website:</h2>
+		<h2>
+			The following project files were ported from my old portfolio website, which you can find <a
+				href="https://ksxjltze.github.io">here</a
+			>:
+		</h2>
 		<ul>
 			{#each data.posts as post}
 				<li class="mb-1">

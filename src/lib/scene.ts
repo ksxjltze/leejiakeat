@@ -89,7 +89,8 @@ const boi3 = {
 	object: null
 }
 
-let debugCanvas;
+let renderCanvas: HTMLCanvasElement;
+let canvasWidth: number, canvasHeight: number;
 
 const settings = {
 	debugDraw: false,
@@ -748,19 +749,35 @@ const findMeshByMaterialName = (scene, name: string) => {
 	return result;
 };
 
-const setBoiFallCount = (newFallCount: number) => {
+const setBoiFallCountAndUpdateCanvasTexture = (newFallCount: number) => {
 	boi.fallCount = newFallCount;
 
-	const ctx: CanvasRenderingContext2D = debugCanvas.getContext("2d");
+	const width = canvasWidth;
+	const height = canvasHeight;
+
+	const fontSize = 48;
+
+	const ctx: CanvasRenderingContext2D = renderCanvas.getContext("2d");
 	ctx.fillStyle = "white";
-	ctx.fillRect(0, 0, 256, 256);
+	ctx.fillRect(0, 0, width, height);
 	ctx.fillStyle = "black";
-	ctx.font = "48px Arial bold";
-	ctx.fillText(boi.fallCount.toString(), 128 - 12, 128 + 12);
+	ctx.font = fontSize + "px " + "Arial bold";
+
+	const yeetCountText = "Yeet count:";
+	const fallCountText = boi.fallCount.toString();
+
+	const fontWidth = fontSize * 0.9;
+	const fontHeight = fontSize * 0.9;
+
+	const centerOffsetX = (yeetCountText.length / 2 + fallCountText.length / 2) * (fontWidth / 2);
+	const centerOffsetY = fontHeight / 2;
+
+	const textString = yeetCountText + " " + fallCountText;
+	ctx.fillText(textString, width / 2 - centerOffsetX, height / 2 + centerOffsetY);
 
 	if (fallCountScreen) {
 		fallCountScreen.material.map.dispose();
-		const canvasTexture = new THREE.CanvasTexture(debugCanvas);
+		const canvasTexture = new THREE.CanvasTexture(renderCanvas);
 		fallCountScreen.material.map = canvasTexture;
 	}
 };
@@ -803,8 +820,7 @@ const init = () => {
 
 		fallCollisionTriggerBody.addEventListener('collide', (event) => {
 			if (event.body === boi.object.body || event.body === boi3.object.body) {
-				const ctx: CanvasRenderingContext2D = debugCanvas.getContext("2d");
-				setBoiFallCount(boi.fallCount + 1);
+				setBoiFallCountAndUpdateCanvasTexture(boi.fallCount + 1);
 				event.body.position.set(0, 0, 0);
 			}
 
@@ -911,7 +927,7 @@ const init = () => {
 
 				createInteractableObject(object, () => {
 					object.userData.enabled = true;
-				});
+				}, InteractionType.Physics);
 				return false;
 			}
 
@@ -937,52 +953,60 @@ const init = () => {
 						const pos = ToCannonVec3(position);
 						const dir = pos.vsub(player.body.position);
 						dir.normalize();
-			
+
 						const force = dir.scale(300000); //it just works
 						player.body.applyForce(force);
+
+						object.material.color = new THREE.Color(0xFFFFFF * Math.random());
 					}
 				}, InteractionType.Movement);
 
 				root.layers.toggle(BLOOM_SCENE);
 			}
-
-			if (isObjectNameMatch(object, "ScreenMesh_1")) {
-				object.material.map = stronkBoiTexture;
-				stronkBoiObject = object;
-
-				createInteractableObject(object, () => {
-					object.material.color = new THREE.Color(Math.random() * 0xFFFFFF);
-				});
-
-				return false;
-			}
-
-			if (isObjectNameMatch(object, "Screen2Face")) {
-				fallCountScreen = object;
-				const canvasTexture = new THREE.CanvasTexture(debugCanvas);
-				object.material.map = canvasTexture;
-
-				return false;
-			}
-
-			if (isObjectNameMatch(object, "Screen3Mesh_1")) {
-				const iconoclasmLogoTexture = new THREE.TextureLoader().load("/images/iconoclasm/iconoclasm-logo.jpg");
-				iconoclasmLogoTexture.wrapS = THREE.RepeatWrapping;
-				iconoclasmLogoTexture.wrapT = THREE.RepeatWrapping;
-				object.material.map = iconoclasmLogoTexture;
-
-				createInteractableObject(object, () => {
-					object.material.emissive = new THREE.Color(Math.random() * 0xFFFFFF);
-					const coinFlip = Math.round(Math.random());
-					const offset = Math.random() * 0.5;
-
-					if (coinFlip)
-						object.material.map.offset.x += offset;
-					else
-						object.material.map.offset.y += offset;
-				});
-
-				return false;
+			
+			//Lobby screens
+			{
+				const setupLobbyScreens = () => {
+					if (isObjectNameMatch(object, "ScreenMesh_1")) {
+						object.material.map = stronkBoiTexture;
+						stronkBoiObject = object;
+	
+						createInteractableObject(object, () => {
+							object.material.color = new THREE.Color(Math.random() * 0xFFFFFF);
+						});
+	
+						return false;
+					}
+	
+					if (isObjectNameMatch(object, "Screen2Face")) {
+						fallCountScreen = object;
+						const canvasTexture = new THREE.CanvasTexture(renderCanvas);
+						object.material.map = canvasTexture;
+	
+						return false;
+					}
+	
+					if (isObjectNameMatch(object, "Screen3Mesh_1")) {
+						const iconoclasmLogoTexture = new THREE.TextureLoader().load("/images/iconoclasm/iconoclasm-logo.jpg");
+						iconoclasmLogoTexture.wrapS = THREE.RepeatWrapping;
+						iconoclasmLogoTexture.wrapT = THREE.RepeatWrapping;
+						object.material.map = iconoclasmLogoTexture;
+	
+						createInteractableObject(object, () => {
+							object.material.emissive = new THREE.Color(Math.random() * 0xFFFFFF);
+							const coinFlip = Math.round(Math.random());
+							const offset = Math.random() * 0.5;
+	
+							if (coinFlip)
+								object.material.map.offset.x += offset;
+							else
+								object.material.map.offset.y += offset;
+						});
+	
+						return false;
+					}
+				};
+				setupLobbyScreens();
 			}
 
 			return false;
@@ -1076,7 +1100,7 @@ const init = () => {
 		const shape = new CANNON.Sphere(boundingSphere.radius);
 		const object = createPhysicsObjectFrom3DObject(gltf.scene, shape, 1, ToCannonVec3(boundingSphere.center));
 
-		object.body.material = new CANNON.Material({restitution: 10, friction: 0});
+		object.body.material = new CANNON.Material({ restitution: 10, friction: 0 });
 		object.body.position.set(20, -1.5, 8);
 		object.body.quaternion.setFromEuler(0, Math.PI, 0, "XYZ");
 
@@ -1291,14 +1315,17 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	domAttachment.setAttribute("id", "attachment");
 
 	//canvas for putting text and stuff
-	debugCanvas = document.createElement("canvas");
-	debugCanvas.setAttribute("id", "debugCanvas");
-	debugCanvas.setAttribute("width", "256");
-	debugCanvas.setAttribute("height", "256");
+	canvasWidth = 512;
+	canvasHeight = 512;
 
-	setBoiFallCount(0);
+	renderCanvas = document.createElement("canvas");
+	renderCanvas.setAttribute("id", "renderCanvas");
+	renderCanvas.setAttribute("width", canvasWidth.toString());
+	renderCanvas.setAttribute("height", canvasWidth.toString());
 
-	domAttachment.appendChild(debugCanvas);
+	setBoiFallCountAndUpdateCanvasTexture(0);
+
+	domAttachment.appendChild(renderCanvas);
 
 	domAttachmentContainer = domAttachment;
 	surfaceContainer.appendChild(domAttachment);

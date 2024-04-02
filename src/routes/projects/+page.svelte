@@ -51,6 +51,11 @@
 			</button>
 		</section>
 
+		<p>
+			{projects[index].meta.description ? projects[index].meta.description : "No description provided."}
+		</p>
+		<hr/>
+
 		<h3>Interactive Portfolio (WIP)</h3>
 		<p>
 			Click

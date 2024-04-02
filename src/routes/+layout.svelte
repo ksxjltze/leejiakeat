@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { webVitals } from '$lib/vitals';
 	import Header from './Header.svelte';
-	import '../app.css'
+	import '../app.css';
 	import './styles.css';
 	// import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit"
 
@@ -28,7 +28,52 @@
 	</main>
 
 	<footer>
-		<p>visit <a href="https://ksxjltze.github.io">ksxjltze.github.io</a> to see my old website</p>
+		<h1>Lee Jia Keat</h1>
+		<section>
+			<nav>
+				<ul style="display: flex; flex-direction: row; gap: 1rem; padding-left: 0">
+					<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
+						<a href="/">Home</a>
+					</li>
+					<li aria-current={$page.url.pathname === '/about' ? 'page' : undefined}>
+						<a href="/about">About</a>
+					</li>
+					<li aria-current={$page.url.pathname === '/projects' ? 'page' : undefined}>
+						<a href="/projects">Projects</a>
+					</li>
+					<li
+						id="interactive-link"
+						aria-current={$page.url.pathname === '/interactive' ? 'page' : undefined}
+					>
+						<a href="/interactive">Interactive</a>
+					</li>
+				</ul>
+			</nav>
+		</section>
+		<section
+			style="width: 100%; display: flex; flex-direction: row; gap: 1rem; align-items: center; justify-content: center;"
+		>
+			<a href="https://www.linkedin.com/in/leejiakeat/" target="_blank">
+				<img
+					src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white"
+					alt="Lee Jia Keat's LinkedIn Profile"
+				/>
+			</a>
+			<a href="https://github.com/ksxjltze" target="_blank">
+				<img
+					src="https://img.shields.io/badge/GitHub-333333?style=for-the-badge&logo=github&logoColor=white"
+					alt="Lee Jia Keat's GitHub Profile"
+				/></a
+			>
+			<p>
+				<a style="color:white; margin: auto;" href="mailto:leejiakeat@gmail.com"
+					>leejiakeat@gmail.com</a
+				>
+			</p>
+			<p>
+				<a style="color:white; margin: auto;" href="sms:+6588935543">+65 8893 5543</a>
+			</p>
+		</section>
 	</footer>
 </div>
 
@@ -58,8 +103,9 @@
 		padding: 12px;
 	}
 
-	footer a {
-		font-weight: bold;
+	li {
+		padding: 0;
+		list-style: none;
 	}
 
 	@media (min-width: 480px) {

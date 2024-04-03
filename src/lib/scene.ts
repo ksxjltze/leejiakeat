@@ -1134,7 +1134,7 @@ const init = () => {
 						element.style.width = "100vw";
 						element.style.height = "100vh";
 
-						const autoPlayURL = "https://www.youtube.com/embed/BCFzNFtZF_E?autoplay=1&enablejsapi=1";
+						const autoPlayURL = "https://www.youtube.com/embed/BCFzNFtZF_E?autoplay=1&mute=1&enablejsapi=1";
 						const url = "https://www.youtube.com/embed/BCFzNFtZF_E";
 						element.src = url;
 

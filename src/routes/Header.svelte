@@ -2,21 +2,48 @@
 	import { page } from '$app/stores';
 	import logo from '$lib/images/svelte-logo.svg';
 	import github from '$lib/images/github.svg';
+	import { onMount } from 'svelte';
+
+	let showSideNav = false;
+
+	onMount(() => {
+		document.addEventListener("pointerup", (pointerEvent) => {
+			const sideNav = document.getElementById("side-nav-bar");
+
+			if (!sideNav)
+				return;
+
+			if (!sideNav.contains(pointerEvent.target)) {
+				showSideNav = false;
+			}
+		});
+	})
 </script>
 
 <header>
 	<div style="margin-left: 0.5rem;" class="corner">
-		<!-- <a href="https://kit.svelte.dev">
-			<img src={logo} alt="SvelteKit" />
-		</a> -->
-		<svg viewBox="0 0 24 24" aria-hidden="true" style="fill: white;">
-			<path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z" />
-		</svg>
+		<button
+			class="mobile imgButton"
+			on:click={() => {
+				showSideNav = !showSideNav;
+			}}
+		>
+			<svg viewBox="0 0 24 24" aria-hidden="true" style="fill: white;">
+				<path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z" />
+			</svg>
+		</button>
+		<a class="not-mobile" href="https://www.linkedin.com/in/leejiakeat/"
+			><img
+				style="margin-top: 0.5rem;"
+				src="/images/In-Blue-26.png"
+				alt="Lee Jia Keat's LinkedIn profile"
+			/></a
+		>
 	</div>
 
-	<nav>
+	<nav class="navbar">
 		<svg viewBox="0 0 2 3" aria-hidden="true">
-			<path d="M0,0 L0.5,2 C1.5,3 1.5,3 2,3 L2,0 Z"/>
+			<path d="M0,0 L0.5,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
 		</svg>
 		<ul>
 			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
@@ -28,14 +55,36 @@
 			<li aria-current={$page.url.pathname === '/projects' ? 'page' : undefined}>
 				<a href="/projects">Projects</a>
 			</li>
-			<li id="interactive-link" aria-current={$page.url.pathname === '/interactive' ? 'page' : undefined}>
+			<li
+				id="interactive-link"
+				aria-current={$page.url.pathname === '/interactive' ? 'page' : undefined}
+			>
 				<a href="/interactive">Interactive</a>
 			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
-			<path d="M0,0 L0,3 C0.5,3 0.5,3 1.5,2 L2,0 Z"/>
+			<path d="M0,0 L0,3 C0.5,3 0.5,3 1.5,2 L2,0 Z" />
 		</svg>
 	</nav>
+
+	<section class="mobile">
+		<nav id="side-nav-bar" class="side-nav" hidden={!showSideNav}>
+			<ul>
+				<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
+					<a href="/">Home</a>
+				</li>
+				<li aria-current={$page.url.pathname === '/about' ? 'page' : undefined}>
+					<a href="/about">About</a>
+				</li>
+				<li aria-current={$page.url.pathname === '/projects' ? 'page' : undefined}>
+					<a href="/projects">Projects</a>
+				</li>
+				<li aria-current={$page.url.pathname === '/interactive' ? 'page' : undefined}>
+					<a href="/interactive">Interactive</a>
+				</li>
+			</ul>
+		</nav>
+	</section>
 
 	<div class="corner">
 		<a href="https://github.com/ksxjltze">
@@ -69,7 +118,7 @@
 		object-fit: contain;
 	}
 
-	nav {
+	.navbar {
 		display: flex;
 		justify-content: center;
 		--background: rgba(255, 255, 255, 0.7);
@@ -85,7 +134,7 @@
 		fill: var(--background);
 	}
 
-	ul {
+	.navbar > ul {
 		position: relative;
 		padding: 0;
 		margin: 0;
@@ -115,7 +164,7 @@
 		border-top: var(--size) solid var(--color-theme-1);
 	}
 
-	nav a {
+	.navbar a {
 		display: flex;
 		height: 100%;
 		align-items: center;
@@ -133,10 +182,72 @@
 		color: var(--color-theme-1);
 	}
 
-	@media only screen and (max-width: 600px) {
+	.mobile {
+		display: none;
+	}
+
+	.imgButton {
+		border: none;
+		background: none;
+	}
+
+	@media only screen and (max-width: 600px) and (orientation: portrait) {
 		#interactive-link {
 			display: none;
 		}
-	}
 
+		.mobile {
+			display: inherit !important;
+		}
+
+		.not-mobile {
+			display: none !important;
+		}
+
+		.side-nav {
+			position: fixed;
+
+			z-index: 1;
+			left: 0;
+			top: 0;
+
+			height: 100%;
+			width: 33%;
+
+			background-color: white;
+		}
+
+		.side-nav > ul {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+
+			margin-left: -1rem;
+		}
+
+		.side-nav > ul > li {
+			transform: scale(1);
+			transition: transform 0.2s ease;
+			padding-left: 1rem;
+		}
+
+		.side-nav > ul > li:hover {
+			transform: scale(1.1);
+			transition: transform 0.2s ease;
+		}
+
+		.mobile li[aria-current='page']::before {
+			--size: 6px;
+			content: '';
+			width: 0;
+			height: 0;
+			position: absolute;
+
+			top: 0.1rem;
+			left: 0;
+
+			border: var(--size) solid transparent;
+			border-left: var(--size) solid var(--color-theme-1);
+		}
+	}
 </style>

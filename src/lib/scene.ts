@@ -332,8 +332,6 @@ const setSelectedObject = (object) => {
 	selectedObjects = [];
 	selectedObjects.push(object);
 
-	console.log(object);
-
 	if (!object.userData)
 		return;
 
@@ -377,7 +375,6 @@ const checkIntersectingObjects = () => {
 				return;
 
 			selectedObject = intersection.object;
-			console.log(selectedObject);
 		});
 
 		if (!selectedObject)
@@ -1088,7 +1085,6 @@ const init = () => {
 		});
 
 	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
-		console.log("Loaded Skinned model: ", gltf);
 		gltf.scene.position.set(-20, 0, 0);
 		gltf.scene.rotation.set(0, 1 * Math.PI, 0);
 		gltf.scene.scale.set(5, 5, 5);
@@ -1152,7 +1148,6 @@ const init = () => {
 
 	//laziness
 	modelLoader.load('/models/boi2skinned.glb', (gltf) => {
-		console.log("Loaded Skinned model: ", gltf);
 		gltf.scene.position.set(10, -1.65, 8);
 		scene.add(gltf.scene);
 	},
@@ -1198,7 +1193,6 @@ const init = () => {
 	});
 
 	modelLoader.load('/models/table.glb', (gltf) => {
-		console.log("Added model: ", gltf);
 		gltf.scene.position.set(10, -4, -8);
 
 		const mesh = gltf.scene.children[0] as THREE.Mesh;
@@ -1220,7 +1214,6 @@ const init = () => {
 		});
 
 	modelLoader.load('/models/table2.glb', (gltf) => {
-		console.log("Added model: ", gltf);
 		gltf.scene.position.set(10, -4, 8);
 		gltf.scene.scale.set(2, 2, 2);
 
@@ -1369,6 +1362,11 @@ const rendererSetup = (surface) => {
 
 	return renderer;
 };
+
+export const destroyScene = () => {
+	scene.clear();
+	initialized = false;
+}
 
 export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement) => {
 	renderer = rendererSetup(surface);

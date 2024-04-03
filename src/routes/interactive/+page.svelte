@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { createSceneWithContainer, resize, lockControls } from '$lib/scene';
+	import { onDestroy, onMount } from 'svelte';
+	import { createSceneWithContainer, resize, lockControls, destroyScene } from '$lib/scene';
 
 	let surface: HTMLCanvasElement;
 	let container: HTMLDivElement;
@@ -17,6 +17,10 @@
 			lockControls();
 		}, false);
 	});
+
+	onDestroy(() => {
+		destroyScene();
+	})
 </script>
 
 <section>

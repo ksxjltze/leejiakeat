@@ -23,6 +23,7 @@
 	<section class="projects-section">
 		<h1>Projects</h1>
 		<h2
+			class="project-title"
 			style="text-align: center; border-radius: 4px; border: 2px solid white; width: fit-content; margin: auto; padding: 1rem; margin-bottom: 1rem;"
 		>
 			<b>{projects[index].meta.title}</b>
@@ -65,6 +66,9 @@
 				>
 					<img class="carousel-arrow-image" src="/images/svg/arrow.svg" alt="previous" /></button
 				>
+				<h2 class="project-title">
+					<b>{projects[index].meta.title}</b>
+				</h2>
 				<button
 					class="carousel-arrow carousel-arrow-right image-button"
 					on:click={nextCarouselItem}
@@ -236,13 +240,17 @@
 	}
 
 	@media only screen and (max-width: 600px) {
-		.carousel {
-			flex-wrap: wrap;
-			flex-basis: 100%;
+		.project-title {
+			display: none;
 		}
 
 		.carousel-arrow {
 			display: none;
+		}
+
+		.carousel {
+			flex-wrap: wrap;
+			flex-basis: 100%;
 		}
 
 		.carousel-mobile-controls {
@@ -256,6 +264,15 @@
 		.carousel-mobile-controls .carousel-arrow {
 			display: block;
 			height: 4rem;
+		}
+
+		.carousel-mobile-controls .project-title {
+			display: flex;
+			flex-direction: column;
+			
+			text-align: center;
+			width: fit-content;
+			margin: auto;
 		}
 	}
 </style>

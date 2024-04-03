@@ -10,7 +10,7 @@ src: https://github.com/ksxjltze/web-basics
 description: Basic web page.
 
 icon: /images/web-basics/web-basics-darrick.jpg
-background:
+background: "/images/web-basics/darrick.jpg"
 ---
 
 A simple webpage project to refresh my HTML and CSS skills.

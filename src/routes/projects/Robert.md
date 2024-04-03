@@ -5,6 +5,10 @@ permalink: "side-projects/robert/"
 date: '2021-07-30'
 endDate: '2021-08-22'
 src: https://github.com/ksxjltze/robert
+
+background: "/images/robert/robert.jpg"
+description: Extremely simple Discord reminder bot.
+lastUpdated: '03-04-2024'
 ---
 
 Robert is a simple Discord bot I made for fun in Python.

@@ -6,6 +6,9 @@
     <section id="project-info">
         <h1>{data.title}</h1>
         <p>Date: {data.date}</p>
+        {#if data.lastUpdated}
+            <p>Last Updated: {data.lastUpdated}</p>
+        {/if}
         {#if data.src}
             <p><a href="{data.src}">Source: {data.src}</a></p>
         {/if}

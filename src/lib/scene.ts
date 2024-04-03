@@ -1364,6 +1364,9 @@ const rendererSetup = (surface) => {
 };
 
 export const destroyScene = () => {
+	if (!scene)
+		return;
+	
 	scene.clear();
 	initialized = false;
 }

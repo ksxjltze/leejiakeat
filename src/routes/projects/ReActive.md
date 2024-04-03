@@ -8,6 +8,9 @@ endDate: '2018-01-01'
 academic: True
 school: Ngee Ann Polytechnic
 module: Portfolio 2
+
+background: "/images/reactive/reactive-shop.jpg"
+description: 2D Mobile fitness game.
 ---
 
 2D Mobile fitness game developed in Unity.

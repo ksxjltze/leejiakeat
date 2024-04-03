@@ -16,13 +16,15 @@ export async function load({params}) {
         module,
 
         description, 
-        iconSrc
+        iconSrc,
+        lastUpdated
     } = post.metadata;
     const content = post.default;
 
     return {
         content,
         title,
-        date
+        date,
+        lastUpdated
     }
 }

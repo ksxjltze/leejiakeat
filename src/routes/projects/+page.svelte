@@ -9,6 +9,14 @@
 
 		return pA - pB;
 	});
+
+	const nextCarouselItem = () => {
+		index = index + 1 >= projects.length ? index : index + 1;
+	};
+
+	const previousCarouselItem = () => {
+		index = index - 1 < 0 ? 0 : index - 1;
+	};
 </script>
 
 <section>
@@ -47,8 +55,23 @@
 					index = index + 1 >= projects.length ? index : index + 1;
 				}}
 			>
-				<img class="carousel-arrow-image" src="/images/svg/arrow.svg" alt="previous" />
+				<img class="carousel-arrow-image" src="/images/svg/arrow.svg" alt="next" />
 			</button>
+
+			<section class="carousel-mobile-controls">
+				<button
+					class="carousel-arrow carousel-arrow-left image-button"
+					on:click={previousCarouselItem}
+				>
+					<img class="carousel-arrow-image" src="/images/svg/arrow.svg" alt="previous" /></button
+				>
+				<button
+					class="carousel-arrow carousel-arrow-right image-button"
+					on:click={nextCarouselItem}
+				>
+					<img class="carousel-arrow-image" src="/images/svg/arrow.svg" alt="next" /></button
+				>
+			</section>
 		</section>
 
 		<p>
@@ -201,10 +224,38 @@
 		filter: contrast(110%) brightness(110%);
 	}
 
+	.carousel-mobile-controls {
+		display: none;
+	}
+
 	@media only screen and (min-width: 1080px) {
 		.carousel {
 			/* lol */
 			width: 122.775%;
+		}
+	}
+
+	@media only screen and (max-width: 600px) {
+		.carousel {
+			flex-wrap: wrap;
+			flex-basis: 100%;
+		}
+
+		.carousel-arrow {
+			display: none;
+		}
+
+		.carousel-mobile-controls {
+			display: block;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			width: 100%;
+		}
+
+		.carousel-mobile-controls .carousel-arrow {
+			display: block;
+			height: 4rem;
 		}
 	}
 </style>

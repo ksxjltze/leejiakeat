@@ -1133,13 +1133,19 @@ const init = () => {
 						element.id = "iconoclasm-iframe"
 						element.style.width = "100vw";
 						element.style.height = "100vh";
-						element.src = "https://www.youtube.com/embed/BCFzNFtZF_E";
+
+						const autoPlayURL = "https://www.youtube.com/embed/BCFzNFtZF_E?autoplay=1&enablejsapi=1";
+						const url = "https://www.youtube.com/embed/BCFzNFtZF_E";
+						element.src = url;
 
 						let isVideoPlaying = false;
 
 						createInteractableObject(object, () => {
 							isVideoPlaying = !isVideoPlaying;
-							element.src += "?autoplay=1&enablejsapi=1";
+							if (isVideoPlaying)
+								element.src = autoPlayURL;
+							else
+								element.src = url;
 						});
 
 						css3DRenderer.domElement.append(element);

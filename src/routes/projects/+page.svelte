@@ -12,7 +12,7 @@
 </script>
 
 <section>
-	<section>
+	<section class="projects-section">
 		<h1>Projects</h1>
 		<h2
 			style="text-align: center; border-radius: 4px; border: 2px solid white; width: fit-content; margin: auto; padding: 1rem; margin-bottom: 1rem;"
@@ -52,16 +52,17 @@
 		</section>
 
 		<p>
-			{projects[index].meta.description ? projects[index].meta.description : "No description provided."}
+			{projects[index].meta.description
+				? projects[index].meta.description
+				: 'No description provided.'}
 		</p>
-		<hr/>
+		<hr style="width: 100%; margin: auto;" />
 
 		<h3>Interactive Portfolio (WIP)</h3>
 		<p>
 			Click
 			<a href="/interactive"> here </a>
-			to view my projects in an interactive mode (WIP).
-			Or just explore the world I've created.
+			to view my projects in an interactive mode (WIP). Or just explore the world I've created.
 		</p>
 	</section>
 
@@ -88,6 +89,13 @@
 </section>
 
 <style lang="postcss">
+	.projects-section {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
 	#project-heroes {
 		margin: auto;
 		width: 100%;
@@ -115,7 +123,7 @@
 	}
 
 	#hero:hover {
-		transform: scale(1.05);
+		transform: scale(1.025);
 		filter: drop-shadow(0 0 0.5rem #ffffff);
 	}
 
@@ -136,9 +144,14 @@
 	}
 
 	.carousel-arrow {
-		position: absolute;
+		/* position: absolute;
 		top: 25%;
-		height: 50%;
+		height: 50%; */
+
+		height: 8rem;
+		margin: auto;
+		margin-inline-start: 0.5rem;
+		margin-inline-end: 0.5rem;
 	}
 
 	.carousel-arrow-left:hover {
@@ -149,7 +162,6 @@
 	}
 
 	.carousel-arrow-left {
-		left: -25%;
 		transform: scaleX(0.5);
 		filter: drop-shadow(10px 10px 1px black);
 
@@ -164,7 +176,6 @@
 	}
 
 	.carousel-arrow-right {
-		right: -25%;
 		transform: rotateZ(180deg) scaleX(0.5);
 		filter: drop-shadow(10px -10px 1px black);
 	}
@@ -188,5 +199,12 @@
 		height: 100%;
 
 		filter: contrast(110%) brightness(110%);
+	}
+
+	@media only screen and (min-width: 1080px) {
+		.carousel {
+			/* lol */
+			width: 122.775%;
+		}
 	}
 </style>

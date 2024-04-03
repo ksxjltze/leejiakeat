@@ -7,17 +7,18 @@
 	let showSideNav = false;
 
 	onMount(() => {
-		document.addEventListener("pointerup", (pointerEvent) => {
-			const sideNav = document.getElementById("side-nav-bar");
+		document.addEventListener('pointerup', (pointerEvent) => {
+			const sideNav = document.getElementById('side-nav-bar');
 
-			if (!sideNav)
-				return;
+			if (!sideNav) return;
 
-			if (!sideNav.contains(pointerEvent.target)) {
-				showSideNav = false;
+			if (pointerEvent.target instanceof Node) {
+				if (!sideNav.contains(pointerEvent.target)) {
+					showSideNav = false;
+				}
 			}
 		});
-	})
+	});
 </script>
 
 <header>
@@ -121,7 +122,7 @@
 	.navbar {
 		display: flex;
 		justify-content: center;
-		--background: rgba(255, 255, 255, 0.7);
+		--background: rgba(255, 255, 255, 1.0);
 	}
 
 	svg {

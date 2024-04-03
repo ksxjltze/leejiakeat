@@ -4,12 +4,13 @@
 
 	let surface: HTMLCanvasElement;
 	let container: HTMLDivElement;
+	let overlay: HTMLDivElement;
 
 	onMount(() => {
 		surface.width = container.clientWidth;
 		surface.height = container.clientHeight;
 
-		createSceneWithContainer(surface, container);
+		createSceneWithContainer(surface, container, overlay);
 
 		window.addEventListener('click', lockControls);
 		window.addEventListener('fullscreenchange', () => {
@@ -56,6 +57,7 @@
 
 <div bind:this={container} style="position:fixed; left:0; top:0; width: 100%; height: 100%; z-index: 1;">
 	<canvas bind:this={surface} />
+	<div class="overlay" bind:this={overlay}></div>
 </div>
 
 <style lang="postcss">
@@ -66,5 +68,16 @@
 		outline: none;
 		width: 100vw;
 		height: 100vh;
+	}
+
+	.overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		outline: none;
+		width: 100vw;
+		height: 100vh;
+
+		z-index: 2;
 	}
 </style>

@@ -16,6 +16,8 @@ import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 
+import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
+
 import * as CANNON from 'cannon-es';
 import CannonUtils from './utils/cannonUtils';
 import CannonDebugRenderer from './utils/cannonDebugRenderer';
@@ -52,9 +54,11 @@ const InteractionType = {
 } as const;
 
 let stats;
-let renderer;
+let renderer: THREE.WebGLRenderer;
+let css3DRenderer: CSS3DRenderer;
 
 let scene: THREE.Scene;
+let cssScene: THREE.Scene;
 let crosshair: THREE.Sprite;
 
 let camera;
@@ -410,6 +414,7 @@ const render = () => {
 	}
 
 	composer.render();
+	css3DRenderer.render(cssScene, camera);
 }
 
 const interactWithSelected = (event: PointerEvent) => {
@@ -558,6 +563,7 @@ export const resize = () => {
 
 	const updateSizes = (width, height) => {
 		renderer.setSize(width, height);
+		css3DRenderer.setSize(width, height);
 
 		if (bloomComposer)
 			bloomComposer.setSize(width, height);
@@ -797,7 +803,7 @@ const updateCrosshair = (width, height) => {
 	if (!crosshair) {
 		const canvasCrosshairTexture = new THREE.CanvasTexture(crosshairCanvas);
 		const material = new THREE.SpriteMaterial({ map: canvasCrosshairTexture });
-	
+
 		const sprite = new THREE.Sprite(material);
 		scene.add(sprite);
 		crosshair = sprite;
@@ -848,6 +854,7 @@ const setBoiFallCountAndUpdateCanvasTexture = (newFallCount: number) => {
 
 const init = () => {
 	scene = new THREE.Scene();
+	cssScene = new THREE.Scene();
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 	const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 
@@ -923,6 +930,20 @@ const init = () => {
 				console.log("Found object: " + name);
 			}
 			return match;
+		};
+
+		const getObjectBoundingSphere = (object) => {
+			const geometry: THREE.BufferGeometry = object.geometry;
+			geometry.computeBoundingSphere();
+			
+			return geometry.boundingSphere;
+		};
+
+		const getObjectBoundingBox = (object) => {
+			const geometry: THREE.BufferGeometry = object.geometry;
+			geometry.computeBoundingBox();
+			
+			return geometry.boundingBox;
 		};
 
 		//lazy hack 2
@@ -1003,9 +1024,7 @@ const init = () => {
 
 			if (isObjectNameMatch(object, "ConnectorScreenMesh")) {
 				const root = object.parent;
-				const geometry: THREE.BufferGeometry = object.geometry;
-				geometry.computeBoundingSphere();
-				const position = geometry.boundingSphere.center;
+				const position = getObjectBoundingSphere(object).center;
 
 				traverseObjectTreeWithPredicate(root, (object) => {
 					object.userData.root = root;
@@ -1068,6 +1087,31 @@ const init = () => {
 						});
 
 						return false;
+					}
+
+					if (isObjectNameMatch(object, "Screen4Mesh_1")) {
+						const boundingSphere = getObjectBoundingSphere(object);
+						const position = boundingSphere.center;
+						
+						const boundingBox = getObjectBoundingBox(object);
+
+						const width = boundingBox.max.x - boundingBox.min.x;
+						const height = boundingBox.max.y - boundingBox.min.y;
+
+						const element = document.createElement("iframe");
+						element.style.width = "100vw";
+						element.style.height = "100vh";
+						element.src = "https://www.youtube.com/embed/BCFzNFtZF_E?autoplay=1&mute=1&enablejsapi=1";
+
+						css3DRenderer.domElement.append(element);
+						
+						//I'll just set it manually for now
+						const css3DObject = new CSS3DObject(element);
+						css3DObject.position.set(50, 2.5, 19.65);
+						css3DObject.rotateY(Math.PI);
+						css3DObject.scale.set(0.01, 0.01, 0.01);
+						cssScene.add(css3DObject);
+
 					}
 				};
 				setupLobbyScreens();
@@ -1363,16 +1407,30 @@ const rendererSetup = (surface) => {
 	return renderer;
 };
 
+const css3DRendererSetup = (surface: HTMLDivElement) => {
+	const css3DRenderer = new CSS3DRenderer({ element: surface });
+	css3DRenderer.setSize(window.innerWidth, window.innerHeight);
+	return css3DRenderer;
+}
+
 export const destroyScene = () => {
 	if (!scene)
 		return;
-	
+
+	if (renderer)
+		renderer.dispose();
+
+	if (domAttachmentContainer)
+		domAttachmentContainer.remove();
+
 	scene.clear();
 	initialized = false;
 }
 
-export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement) => {
+export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement, overlay?: HTMLDivElement) => {
 	renderer = rendererSetup(surface);
+	css3DRenderer = css3DRendererSetup(overlay);
+
 	surfaceContainer = container;
 
 	//invisible DOM element to attach HTML stuff I guess

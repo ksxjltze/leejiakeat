@@ -362,6 +362,28 @@ const setSelectedObject = (object) => {
 	outlinePass.hiddenEdgeColor = Outline.Interactable;
 };
 
+const checkIntersectingObjectsForCSS3D = () => {
+	//probably really expensive, TODO: optimize
+	cssScene.children.forEach((child) => {
+		raycaster.set(camera.position, child.position.clone().sub(camera.position));
+		const intersects = raycaster.intersectObjects(scene.children);
+
+		child.visible = false;
+
+		let nearestObjectIndex = 0;
+		while (intersects.length > nearestObjectIndex && intersects[nearestObjectIndex].object.type == "Sprite") {
+			nearestObjectIndex++;
+		}
+
+		//temp hardcode
+		if (intersects.length > nearestObjectIndex
+			&& intersects[nearestObjectIndex].object.name == "Screen4Mesh"
+			|| intersects[nearestObjectIndex].object.name == "Screen4Mesh_1") {
+			child.visible = true;
+		}
+	});
+};
+
 const checkIntersectingObjects = () => {
 	raycaster.setFromCamera(pointer, camera);
 
@@ -405,6 +427,7 @@ const render = () => {
 
 	crosshair.position.copy(camPos.clone().add(offset));
 
+	checkIntersectingObjectsForCSS3D();
 	checkIntersectingObjects();
 
 	if (bloomComposer && settings.enableBloom) {
@@ -935,14 +958,14 @@ const init = () => {
 		const getObjectBoundingSphere = (object) => {
 			const geometry: THREE.BufferGeometry = object.geometry;
 			geometry.computeBoundingSphere();
-			
+
 			return geometry.boundingSphere;
 		};
 
 		const getObjectBoundingBox = (object) => {
 			const geometry: THREE.BufferGeometry = object.geometry;
 			geometry.computeBoundingBox();
-			
+
 			return geometry.boundingBox;
 		};
 
@@ -1089,29 +1112,44 @@ const init = () => {
 						return false;
 					}
 
+					//Embed Iconoclasm gameplay video
 					if (isObjectNameMatch(object, "Screen4Mesh_1")) {
-						const boundingSphere = getObjectBoundingSphere(object);
-						const position = boundingSphere.center;
-						
-						const boundingBox = getObjectBoundingBox(object);
+						// const boundingSphere = getObjectBoundingSphere(object);
+						// const position = boundingSphere.center;
 
-						const width = boundingBox.max.x - boundingBox.min.x;
-						const height = boundingBox.max.y - boundingBox.min.y;
+						// const boundingBox = getObjectBoundingBox(object);
+
+						// const width = boundingBox.max.x - boundingBox.min.x;
+						// const height = boundingBox.max.y - boundingBox.min.y;
+
+						if (!document.getElementById("youtube-embed-api-script")) {
+							const tag = document.createElement('script');
+							tag.src = 'https://www.youtube.com/iframe_api';
+							tag.id = 'youtube-embed-api-script'
+							domAttachmentContainer.append(tag);
+						};
 
 						const element = document.createElement("iframe");
+						element.id = "iconoclasm-iframe"
 						element.style.width = "100vw";
 						element.style.height = "100vh";
-						element.src = "https://www.youtube.com/embed/BCFzNFtZF_E?autoplay=1&mute=1&enablejsapi=1";
+						element.src = "https://www.youtube.com/embed/BCFzNFtZF_E";
+
+						let isVideoPlaying = false;
+
+						createInteractableObject(object, () => {
+							isVideoPlaying = !isVideoPlaying;
+							element.src += "?autoplay=1&enablejsapi=1";
+						});
 
 						css3DRenderer.domElement.append(element);
-						
+
 						//I'll just set it manually for now
 						const css3DObject = new CSS3DObject(element);
 						css3DObject.position.set(50, 2.5, 19.65);
 						css3DObject.rotateY(Math.PI);
 						css3DObject.scale.set(0.01, 0.01, 0.01);
 						cssScene.add(css3DObject);
-
 					}
 				};
 				setupLobbyScreens();

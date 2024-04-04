@@ -683,6 +683,10 @@ const setupPhysics = () => {
 	return world;
 }
 
+const showPauseMenu = () => {
+
+};
+
 const createTexturePlane = (width, height, texture) => {
 	const planeGeometry = new THREE.PlaneGeometry(width, height);
 	const planeMaterial = new THREE.MeshStandardMaterial({ map: texture });
@@ -1676,8 +1680,8 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 const loadingScreenWidthPercent = 50;
 const loadingScreenHeightPercent = 15;
 
-let loadingScreenDiv;
-let loadingScreenInnerDiv;
+let loadingScreenDiv: HTMLDivElement;
+let loadingScreenInnerDiv: HTMLDivElement;
 
 THREE.DefaultLoadingManager.onStart = function (url, itemsLoaded, itemsTotal) {
 	console.log('Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
@@ -1699,11 +1703,15 @@ THREE.DefaultLoadingManager.onStart = function (url, itemsLoaded, itemsTotal) {
 	loadingScreenDiv.style.backgroundColor = "grey";
 	loadingScreenDiv.style.width = loadingScreenWidthPercent.toString() + "%";
 	loadingScreenDiv.style.height = loadingScreenHeightPercent.toString() + "%";
+	loadingScreenDiv.style.position = "relative";
+	loadingScreenDiv.style.borderRadius = "8rem";
 
 	loadingScreenInnerDiv.style.backgroundColor = "white";
 	loadingScreenInnerDiv.style.width = loadingScreenWidthPercent.toString() + "%";
 	loadingScreenInnerDiv.style.height = "100%";
-	loadingScreenInnerDiv.style.marginRight = "auto";
+	loadingScreenInnerDiv.style.position = "absolute";
+	loadingScreenInnerDiv.style.left = "0";
+	loadingScreenInnerDiv.style.borderRadius = "inherit";
 
 	uiOverlay.append(loadingScreenDiv);
 	loadingScreenDiv.append(loadingScreenInnerDiv);
@@ -1717,7 +1725,9 @@ THREE.DefaultLoadingManager.onLoad = function () {
 
 	loadingScreenDiv.style.setProperty("display", "none");
 	loadingScreenDiv.style.setProperty("background", "none");
+
 	uiOverlay.style.background = "none";
+	uiOverlay.style.transition = "background 2s";
 };
 
 THREE.DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {

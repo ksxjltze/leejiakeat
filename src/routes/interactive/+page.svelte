@@ -4,13 +4,14 @@
 
 	let surface: HTMLCanvasElement;
 	let container: HTMLDivElement;
-	let overlay: HTMLDivElement;
+	let css3DRenderSurface: HTMLDivElement;
+	let uiOverlay: HTMLDivElement;
 
 	onMount(() => {
 		surface.width = container.clientWidth;
 		surface.height = container.clientHeight;
 
-		createSceneWithContainer(surface, container, overlay);
+		createSceneWithContainer(surface, container, css3DRenderSurface, uiOverlay);
 
 		window.addEventListener('click', lockControls);
 		window.addEventListener('fullscreenchange', () => {
@@ -57,7 +58,8 @@
 
 <div bind:this={container} style="position:fixed; left:0; top:0; width: 100%; height: 100%; z-index: 1;">
 	<canvas bind:this={surface} />
-	<div class="overlay" bind:this={overlay}></div>
+	<div class="overlay" bind:this={css3DRenderSurface}></div>
+	<div class="overlay z-index-3" bind:this={uiOverlay}></div>
 </div>
 
 <style lang="postcss">
@@ -79,5 +81,9 @@
 		height: 100vh;
 
 		z-index: 2;
+	}
+
+	.z-index-3 {
+		z-index: 3;
 	}
 </style>

@@ -56,6 +56,7 @@ const InteractionType = {
 let stats;
 let renderer: THREE.WebGLRenderer;
 let css3DRenderer: CSS3DRenderer;
+let uiOverlay: HTMLDivElement;
 
 let scene: THREE.Scene;
 let cssScene: THREE.Scene;
@@ -1471,9 +1472,10 @@ export const destroyScene = () => {
 	initialized = false;
 }
 
-export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement, overlay?: HTMLDivElement) => {
+export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement, css3DRenderSurface?: HTMLDivElement, UIOverlay?: HTMLDivElement) => {
 	renderer = rendererSetup(surface);
-	css3DRenderer = css3DRendererSetup(overlay);
+	css3DRenderer = css3DRendererSetup(css3DRenderSurface);
+	uiOverlay = UIOverlay;
 
 	surfaceContainer = container;
 
@@ -1671,16 +1673,60 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	animate();
 };
 
+const loadingScreenWidthPercent = 50;
+const loadingScreenHeightPercent = 15;
+
+let loadingScreenDiv;
+let loadingScreenInnerDiv;
+
 THREE.DefaultLoadingManager.onStart = function (url, itemsLoaded, itemsTotal) {
 	console.log('Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+	uiOverlay.style.setProperty("background-color", "black");
+
+	uiOverlay.style.display = "flex";
+	uiOverlay.style.alignItems = "center";
+	uiOverlay.style.justifyContent = "center";
+
+	loadingScreenDiv = document.createElement("div");
+	loadingScreenInnerDiv = document.createElement("div")
+
+	if (!loadingScreenDiv || !loadingScreenInnerDiv)
+		return;
+
+	loadingScreenDiv.style.display = "flex";
+	loadingScreenDiv.style.alignItems = "center";
+	loadingScreenDiv.style.justifyContent = "center";
+	loadingScreenDiv.style.backgroundColor = "grey";
+	loadingScreenDiv.style.width = loadingScreenWidthPercent.toString() + "%";
+	loadingScreenDiv.style.height = loadingScreenHeightPercent.toString() + "%";
+
+	loadingScreenInnerDiv.style.backgroundColor = "white";
+	loadingScreenInnerDiv.style.width = loadingScreenWidthPercent.toString() + "%";
+	loadingScreenInnerDiv.style.height = "100%";
+	loadingScreenInnerDiv.style.marginRight = "auto";
+
+	uiOverlay.append(loadingScreenDiv);
+	loadingScreenDiv.append(loadingScreenInnerDiv);
 };
 
 THREE.DefaultLoadingManager.onLoad = function () {
 	console.log('Loading Complete!');
+
+	if (!loadingScreenDiv)
+		return;
+
+	loadingScreenDiv.style.setProperty("display", "none");
+	loadingScreenDiv.style.setProperty("background", "none");
+	uiOverlay.style.background = "none";
 };
 
 THREE.DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
 	console.log('Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+
+	const progress = (itemsLoaded / itemsTotal) * 100;
+	loadingScreenInnerDiv.style.width = progress.toString() + "%";
+
+	console.log(progress);
 };
 
 THREE.DefaultLoadingManager.onError = function (url) {

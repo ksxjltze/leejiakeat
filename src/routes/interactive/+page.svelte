@@ -92,6 +92,7 @@
 				videoId: 'BCFzNFtZF_E',
 				playerVars: {
 					enablejsapi: 1,
+					origin: "https://leejiakeat.online"
 				},
 				events: {
 					onReady: onPlayerReady

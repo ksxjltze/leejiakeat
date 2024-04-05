@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { createSceneWithContainer, resize, lockControls, destroyScene } from '$lib/scene';
+	import {
+		createSceneWithContainer,
+		resize,
+		lockControls,
+		destroyScene
+	} from '$lib/scene';
 
 	let surface: HTMLCanvasElement;
 	let container: HTMLDivElement;
@@ -14,15 +19,24 @@
 		createSceneWithContainer(surface, container, css3DRenderSurface, uiOverlay);
 
 		window.addEventListener('click', lockControls);
-		window.addEventListener('fullscreenchange', () => {
-			resize();
-			lockControls();
-		}, false);
+		window.addEventListener(
+			'fullscreenchange',
+			() => {
+				resize();
+				lockControls();
+			},
+			false
+		);
+
+		const ytIFrameAPIScript = document.createElement('script');
+		ytIFrameAPIScript.id = 'iframe-demo';
+		ytIFrameAPIScript.src = 'https://www.youtube.com/iframe_api';
+		container.append(ytIFrameAPIScript);
 	});
 
 	onDestroy(() => {
 		destroyScene();
-	})
+	});
 </script>
 
 <section>
@@ -56,10 +70,35 @@
 	</script>
 </section>
 
-<div bind:this={container} style="position:fixed; left:0; top:0; width: 100%; height: 100%; z-index: 1;">
+<div
+	bind:this={container}
+	style="position:fixed; left:0; top:0; width: 100%; height: 100%; z-index: 1;"
+>
 	<canvas bind:this={surface} />
-	<div class="overlay" bind:this={css3DRenderSurface}></div>
-	<div class="overlay z-index-3" bind:this={uiOverlay}></div>
+	<div id="css3DSurface" class="overlay" bind:this={css3DRenderSurface} />
+	<div id="iframe-yt-embed" />
+	<div id="uiOverlay" class="overlay z-index-3" bind:this={uiOverlay} />
+
+	<script type="text/javascript">
+		function onPlayerReady(event) {
+			console.log('Youtube Player ready!');
+		}
+
+		var ytPlayer;
+		function onYouTubePlayerAPIReady() {
+			ytPlayer = new YT.Player('iframe-yt-embed', {
+				height: '1920',
+				width: '1080',
+				videoId: 'BCFzNFtZF_E',
+				playerVars: {
+					enablejsapi: 1,
+				},
+				events: {
+					onReady: onPlayerReady
+				}
+			});
+		}
+	</script>
 </div>
 
 <style lang="postcss">

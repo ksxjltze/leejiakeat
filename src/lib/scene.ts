@@ -170,6 +170,14 @@ function createPhysicsObjectFrom3DObject(object: THREE.Object3D, shape: CANNON.S
 	return createPhysicsObject(object, body);
 }
 
+function onYoutubePlayerReady(event) {
+	console.log(event);
+}
+
+function onYoutubePlayerStateChange(event) {
+	console.log(event);
+}
+
 //yoink
 function darkenNonBloomed(obj) {
 	if (obj.isMesh && bloomLayer.test(obj.layers) === false) {
@@ -1127,30 +1135,40 @@ const init = () => {
 						// const width = boundingBox.max.x - boundingBox.min.x;
 						// const height = boundingBox.max.y - boundingBox.min.y;
 
-						if (!document.getElementById("youtube-embed-api-script")) {
-							const tag = document.createElement('script');
-							tag.src = 'https://www.youtube.com/iframe_api';
-							tag.id = 'youtube-embed-api-script'
-							domAttachmentContainer.append(tag);
-						};
-
-						const element = document.createElement("iframe");
-						element.id = "iconoclasm-iframe"
+						const element = document.getElementById("iframe-yt-embed");
 						element.style.width = "100vw";
 						element.style.height = "100vh";
 
-						const autoPlayURL = "https://www.youtube.com/embed/BCFzNFtZF_E?autoplay=1&mute=1&enablejsapi=1";
-						const url = "https://www.youtube.com/embed/BCFzNFtZF_E";
-						element.src = url;
-
-						let isVideoPlaying = false;
-
 						createInteractableObject(object, () => {
-							isVideoPlaying = !isVideoPlaying;
-							if (isVideoPlaying)
-								element.src = autoPlayURL;
-							else
-								element.src = url;
+							//@ts-ignore
+							if (ytPlayer) { //globul
+								//@ts-ignore
+								const youtubePlayer = ytPlayer as any;
+								const youtubePlayerState = youtubePlayer.getPlayerState()
+
+								console.log(youtubePlayerState);
+
+								if (youtubePlayer.isMuted())
+									youtubePlayer.unMute();
+
+								switch (youtubePlayerState) {
+									case -1:
+									case 0:
+										youtubePlayer.playVideo();
+										break;
+									case 1:
+										youtubePlayer.pauseVideo();
+										break;
+									case 2:
+										youtubePlayer.playVideo();
+										break;
+									case 5:
+										youtubePlayer.playVideo();
+										break;
+
+								}
+
+							}
 						});
 
 						css3DRenderer.domElement.append(element);
@@ -1735,8 +1753,6 @@ THREE.DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal)
 
 	const progress = (itemsLoaded / itemsTotal) * 100;
 	loadingScreenInnerDiv.style.width = progress.toString() + "%";
-
-	console.log(progress);
 };
 
 THREE.DefaultLoadingManager.onError = function (url) {

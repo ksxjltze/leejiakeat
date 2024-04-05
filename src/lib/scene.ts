@@ -22,7 +22,7 @@ import * as CANNON from 'cannon-es';
 import CannonUtils from './utils/cannonUtils';
 import CannonDebugRenderer from './utils/cannonDebugRenderer';
 import { ToCannonVec3, ToCannonQuat, ToCannonVec3Scaled } from './utils/cannonUtils';
-import { lerp } from 'three/src/math/MathUtils';
+import { clamp, lerp } from 'three/src/math/MathUtils';
 
 const clock = new THREE.Clock();
 const modelLoader = new GLTFLoader();
@@ -143,20 +143,30 @@ const bloom = {
 	darkMaterial: new THREE.MeshBasicMaterial({ color: 'black' })
 };
 
-let physicsObjects = [];
+let gameObjects = [];
 
-interface PhysicsObject {
+interface GameObject {
 	mesh: THREE.Object3D,
 	body: CANNON.Body
 };
 
 function createPhysicsObject(mesh: THREE.Object3D, body: CANNON.Body) {
-	const object: PhysicsObject = {
+	const object: GameObject = {
 		mesh: mesh,
 		body: body
 	};
 
-	physicsObjects.push(object);
+	gameObjects.push(object);
+	return object;
+}
+
+function createGameObject(mesh: THREE.Object3D) {
+	const object: GameObject = {
+		mesh: mesh,
+		body: null
+	};
+
+	gameObjects.push(object);
 	return object;
 }
 
@@ -295,8 +305,8 @@ const update = (dt) => {
 	updateBoi(dt);
 
 	//scuffed
-	physicsObjects.forEach((physicsObject: PhysicsObject) => {
-		const object = physicsObject.mesh;
+	gameObjects.forEach((gameObject: GameObject) => {
+		const object = gameObject.mesh;
 		if (!object)
 			return;
 
@@ -574,7 +584,10 @@ function updatePhysics(dt) {
 	// Step the physics world
 	world.step(dt);
 
-	physicsObjects.forEach((object: PhysicsObject) => {
+	gameObjects.forEach((object: GameObject) => {
+		if (!object.body)
+			return;
+
 		if (object.body.mass == 0)
 			return;
 
@@ -888,6 +901,11 @@ const setBoiFallCountAndUpdateCanvasTexture = (newFallCount: number) => {
 	}
 };
 
+const setObjectUpdate = (object, updateFn: (dt) => void, enabled?) => {
+	object.userData.update = updateFn;
+	object.userData.enabled = enabled;
+}
+
 const init = () => {
 	scene = new THREE.Scene();
 	cssScene = new THREE.Scene();
@@ -982,6 +1000,8 @@ const init = () => {
 			return geometry.boundingBox;
 		};
 
+		const objectsMap = {};
+
 		//lazy hack 2
 		let lightIndex = 0;
 		traverseObjectTreeWithPredicate(gltf.scene, (object) => {
@@ -999,6 +1019,32 @@ const init = () => {
 				object.layers.toggle(BLOOM_SCENE);
 			};
 
+			if (isObjectNameMatch(object, "LauncherIndicator")) {
+				// createGameObject(object);
+
+				const setInitialUVs = () => {
+					const uvs = object.geometry.attributes.uv;
+					for (let i = 0; i < uvs.count; i++) {
+						const u = uvs.getX(i);
+						let v = uvs.getY(i);
+	
+						v *= 0.5;
+						v += 0.5;
+	
+						uvs.setXY(i, u, v);
+					}
+				};
+				setInitialUVs();
+
+				// const scrollSpeed = 0.1;
+				// setObjectUpdate(object, (dt) => {
+				// 	object.material.map.offset.y += scrollSpeed * dt;
+				// }, true);
+
+				object.layers.toggle(BLOOM_SCENE);
+				objectsMap["launcherIndicator"] = object;
+			}
+
 			if (isObjectNameMatch(object, "LauncherRod")) {
 				const shape = new CANNON.Cylinder(16, 16, 24, 12);
 				const physicsObject = createPhysicsObjectFrom3DObject(object, shape, 0, new CANNON.Vec3(0, 21, 0));
@@ -1009,9 +1055,11 @@ const init = () => {
 
 				const maxHeight = -15;
 				const minHeight = -40;
+				const totalheight = maxHeight - minHeight;
+
 				let goingUp = true;
 
-				object.userData.update = (dt) => {
+				setObjectUpdate(object, (dt) => {
 					const launchSpeed = 200;
 					const retractSpeed = 10;
 
@@ -1020,6 +1068,14 @@ const init = () => {
 						speed = retractSpeed;
 
 					let movement = speed * dt;
+
+					const indicator = objectsMap["launcherIndicator"];
+					if (indicator) {
+						const t = (physicsObject.body.position.y - minHeight) / totalheight;
+						const uvOffset = lerp(1.0, 0.5, t);
+
+						indicator.material.map.offset.y = clamp(uvOffset, 0, 0.99);
+					}
 
 					if (physicsObject.body.position.y > maxHeight) {
 						goingUp = false;
@@ -1044,18 +1100,12 @@ const init = () => {
 
 					physicsObject.body.position.y += movement;
 					physicsObject.mesh.position.y += movement;
-				};
+				}, false);
 
 				createInteractableObject(object, () => {
 					object.userData.enabled = true;
 				}, InteractionType.Physics);
 				return false;
-			}
-
-			if (isObjectNameMatch(object, "LauncherIndicator")) {
-				object.material.emissive = new THREE.Color(0x0011FF);
-				object.material.emissiveIntensity = 20;
-				object.layers.toggle(BLOOM_SCENE);
 			}
 
 			if (isObjectNameMatch(object, "ConnectorScreenMesh")) {

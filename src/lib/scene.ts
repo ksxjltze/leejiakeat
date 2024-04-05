@@ -844,9 +844,10 @@ const updateCrosshair = (width, height) => {
 	ctx.fillStyle = "green";
 
 	const crosshairSize = 16;
+	const aspectRatio = width / height;
 
 	ctx.beginPath();
-	ctx.ellipse(width / 2, height / 2, crosshairSize, crosshairSize / 2, 0, 0, 2 * Math.PI);
+	ctx.ellipse(width / 2, height / 2, crosshairSize, crosshairSize / aspectRatio, 0, 0, 2 * Math.PI);
 	ctx.fill();
 
 	if (!crosshair) {
@@ -1020,26 +1021,16 @@ const init = () => {
 			};
 
 			if (isObjectNameMatch(object, "LauncherIndicator")) {
-				// createGameObject(object);
+				const uvs = object.geometry.attributes.uv;
+				for (let i = 0; i < uvs.count; i++) {
+					const u = uvs.getX(i);
+					let v = uvs.getY(i);
 
-				const setInitialUVs = () => {
-					const uvs = object.geometry.attributes.uv;
-					for (let i = 0; i < uvs.count; i++) {
-						const u = uvs.getX(i);
-						let v = uvs.getY(i);
-	
-						v *= 0.5;
-						v += 0.5;
-	
-						uvs.setXY(i, u, v);
-					}
-				};
-				setInitialUVs();
+					v *= 0.5;
+					v += 0.5;
 
-				// const scrollSpeed = 0.1;
-				// setObjectUpdate(object, (dt) => {
-				// 	object.material.map.offset.y += scrollSpeed * dt;
-				// }, true);
+					uvs.setXY(i, u, v);
+				}
 
 				object.layers.toggle(BLOOM_SCENE);
 				objectsMap["launcherIndicator"] = object;
@@ -1074,7 +1065,7 @@ const init = () => {
 						const t = (physicsObject.body.position.y - minHeight) / totalheight;
 						const uvOffset = lerp(1.0, 0.5, t);
 
-						indicator.material.map.offset.y = clamp(uvOffset, 0, 0.99);
+						indicator.material.map.offset.y = clamp(uvOffset, 0, 1.0);
 					}
 
 					if (physicsObject.body.position.y > maxHeight) {

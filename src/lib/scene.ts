@@ -1036,6 +1036,7 @@ const init = () => {
 				objectsMap["launcherIndicator"] = object;
 			}
 
+			let launcherTimer = 0;
 			if (isObjectNameMatch(object, "LauncherRod")) {
 				const shape = new CANNON.Cylinder(16, 16, 24, 12);
 				const physicsObject = createPhysicsObjectFrom3DObject(object, shape, 0, new CANNON.Vec3(0, 21, 0));
@@ -1048,25 +1049,71 @@ const init = () => {
 				const minHeight = -40;
 				const totalheight = maxHeight - minHeight;
 
+				const cooldown = 3;
+				const dischargeTime = 0.25;
+				const rechargeDelay = 0.25;
+
 				let goingUp = true;
+				const resetLauncherState = () => {
+					object.userData.enabled = false;
+
+					goingUp = true;
+					launcherTimer = 0;
+				};
+
+				const updateIndicator = (dt) => {
+					const indicator = objectsMap["launcherIndicator"];
+					if (!indicator)
+						return;
+
+					const updateTimer = () => {
+						launcherTimer = clamp(launcherTimer + dt, 0, cooldown);
+					};
+
+					const updateAnimation = (offset) => {
+						indicator.material.map.offset.y = clamp(offset, 0, 1.0);
+						updateTimer();
+					};
+
+					const step = (edge, x) => {
+						return x < edge ? 0 * x : 1 * x;
+					};
+
+					const updateAnimationStepped = (interval, v) => {
+						const dv = (indicator.material.map.offset.y - v);
+						const uvOffset = indicator.material.map.offset.y + step(dv, interval);
+						updateAnimation(uvOffset);
+					};
+
+					if (launcherTimer < dischargeTime) {
+						const t = launcherTimer / dischargeTime;
+						const uvOffset = lerp(1.0, 0.5, t);
+						updateAnimation(uvOffset);
+						return;
+					}
+
+					const timeOffset = dischargeTime + rechargeDelay;
+					if (launcherTimer < dischargeTime + rechargeDelay) {
+						updateAnimation(0.5);
+						return;
+					}
+
+					const interval = 0.021;
+					const t = (launcherTimer - timeOffset) / (cooldown - timeOffset);
+					const v = lerp(0.5, 1, t);
+					updateAnimationStepped(interval, v);
+				};
 
 				setObjectUpdate(object, (dt) => {
 					const launchSpeed = 200;
-					const retractSpeed = 10;
+					const retractSpeed = totalheight / cooldown;
 
 					let speed = launchSpeed;
 					if (!goingUp)
 						speed = retractSpeed;
 
 					let movement = speed * dt;
-
-					const indicator = objectsMap["launcherIndicator"];
-					if (indicator) {
-						const t = (physicsObject.body.position.y - minHeight) / totalheight;
-						const uvOffset = lerp(1.0, 0.5, t);
-
-						indicator.material.map.offset.y = clamp(uvOffset, 0, 1.0);
-					}
+					updateIndicator(dt);
 
 					if (physicsObject.body.position.y > maxHeight) {
 						goingUp = false;
@@ -1077,8 +1124,7 @@ const init = () => {
 						return;
 					}
 					else if (physicsObject.body.position.y < minHeight) {
-						object.userData.enabled = false;
-						goingUp = true;
+						resetLauncherState();
 
 						const offset = physicsObject.body.position.y - minHeight;
 						physicsObject.body.position.y -= offset;

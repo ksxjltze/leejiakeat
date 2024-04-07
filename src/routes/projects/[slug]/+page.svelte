@@ -52,4 +52,9 @@
         all: unset;
         margin: auto;
     }
+
+    :global(article img) {
+        max-width: 100%;
+        margin: auto;
+    }
 </style>

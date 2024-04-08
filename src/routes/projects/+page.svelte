@@ -85,16 +85,80 @@
 		</p>
 		<hr style="width: 100%; margin: auto;" />
 
-		<h3>Interactive Portfolio (WIP)</h3>
-		<p>
-			Click
-			<a href="/interactive"> here </a>
-			to view my projects in an immersive mode (WIP). Or just explore the world I've created.
-		</p>
+		<section style="margin-top: 1rem;">
+			<h3>Interactive Portfolio (WIP)</h3>
+			<p>
+				Click
+				<a href="/interactive"> here </a>
+				to view my projects in an immersive mode (WIP). Or just explore the world I've created.
+			</p>
+		</section>
+
+		<hr style="width: 100%; margin: auto;" />
+
+		<section id="projects-list">
+			<h1>All Projects</h1>
+			<div class="project-grid">
+				{#each projects as project, i}
+					<div class="project-grid-item flex-row-items-3">
+						<a class="project-grid-item-link" href={project.path}
+							><img alt="project icon" src={project.meta.background} /></a
+						>
+						<a class="project-grid-item-link" href={project.path}><p>{project.meta.title}</p></a>
+					</div>
+				{/each}
+			</div>
+		</section>
 	</section>
 </section>
 
 <style lang="postcss">
+	.project-grid {
+		display: flex;
+		flex-wrap: wrap;
+
+		width: 100%;
+		column-gap: 2rem;
+		row-gap: 0.5rem;
+
+		align-items: center;
+		justify-content: center;
+	}
+
+	.project-grid-item-link {
+		width: 100%;
+
+		display: flex;
+		flex-direction: column;
+
+		align-items: center;
+		justify-content: center;
+	}
+
+	.project-grid-item-link img {
+		transition: transform 0.25s ease;
+	}
+
+	.project-grid-item-link img:hover {
+		transform: scale(1.05);
+		filter: drop-shadow(0 0 0.5rem #ffffff);
+	}
+
+	.flex-row-items-3 {
+		flex: 0 0 calc(1 / 3 * 100% - 2rem);
+	}
+
+	.project-grid-item {
+		width: 100%;
+	}
+
+	.project-grid-item img {
+		width: 100%;
+		height: 12rem;
+
+		border-radius: 8px;
+	}
+
 	.projects-section {
 		display: flex;
 		flex-direction: column;

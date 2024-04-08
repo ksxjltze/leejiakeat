@@ -5,19 +5,21 @@
 	import Header from './Header.svelte';
 	import '../app.css';
 	import './styles.css';
-	// import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit"
+	import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit"
 
 	/** @type {import('./$types').LayoutServerData} */
 
-	// injectSpeedInsights();
+	injectSpeedInsights();
 
-	// $: if (browser && data?.analyticsId) {
-	// 	webVitals({
-	// 		path: $page.url.pathname,
-	// 		params: $page.params,
-	// 		analyticsId: data.analyticsId
-	// 	});
-	// }
+	//@ts-ignore
+	$: if (browser && data?.analyticsId) {
+		webVitals({
+			path: $page.url.pathname,
+			params: $page.params,
+			//@ts-ignore
+			analyticsId: data.analyticsId
+		});
+	}
 </script>
 
 <div class="app">

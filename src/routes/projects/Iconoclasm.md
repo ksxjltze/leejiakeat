@@ -3,7 +3,7 @@ layout: project
 title: "Iconoclasm: Fall of the False God"
 permalink: "projects/iconoclasm/"
 engine: "EngineEngine"
-background: /images/iconoclasm/iconoclasm-title.png
+background: /images/iconoclasm/iconoclasm-title.jpg
 date: '2022-09-01'
 endDate: '2023-03-01'
 
@@ -188,7 +188,7 @@ u_Material.roughness GL_FLOAT 1
 This module, which takes place a trimester after Software Engineer Project 4, focuses on developing a video game using the custom game engine that was built in the previous module.
 The gameplay of Iconoclasm: Fall of the False God, is largely developed by a team of 3 designers, with the rest of the programmer team providing technical support for the engine.
 
-<img alt="iconoclasm's title screen" src="/images/iconoclasm/iconoclasm-title.png" width="100%" height="100%">
+<img alt="iconoclasm's title screen" src="/images/iconoclasm/iconoclasm-title.jpg" width="100%" height="100%">
 
 ### Gameplay Showcase
 <iframe width="100%" height="450" src="https://www.youtube.com/embed/BCFzNFtZF_E" title="Iconoclasm GameplayVideo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>

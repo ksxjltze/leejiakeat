@@ -15,7 +15,7 @@ src: https://github.com/ksxjltze/StarBangBang
 description: Stealth game where the player has to juggle two characters.
 
 icon: /images/captain-stealth/captain-stealth-player.png
-background: /images/captain-stealth/captain-stealth-menu.png
+background: /images/captain-stealth/captain-stealth-menu.webp
 priority: 2
 ---
 
@@ -82,7 +82,7 @@ These are some of the other features that were not implemented by me.
 <iframe title="gameplay demo" src="https://drive.google.com/file/d/1OaPQCj2O88W9qHDNm-h-FbGT-6YiNMLh/preview" width="100%" height="480" allow="autoplay" allowfullscreen></iframe>
 <i>Gameplay Demo</i>
 
-<img alt="menu" src="/images/captain-stealth/captain-stealth-menu.png">
+<img alt="menu" src="/images/captain-stealth/captain-stealth-menu.webp">
 <i>Main Menu</i>
 
 <img alt="gameplay" src="/images/captain-stealth/captain-stealth-gameplay.png">

@@ -9,6 +9,7 @@
 
 	/** @type {import('./$types').LayoutServerData} */
 
+	export let data;
 	injectSpeedInsights();
 
 	//@ts-ignore

@@ -5,12 +5,15 @@
 	import Header from './Header.svelte';
 	import '../app.css';
 	import './styles.css';
+
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+	import { inject } from '@vercel/analytics'
 
 	/** @type {import('./$types').LayoutServerData} */
 
 	export let data;
 	injectSpeedInsights();
+	inject();
 
 	//@ts-ignore
 	$: if (browser && data?.analyticsId) {

@@ -1579,6 +1579,10 @@ export const destroyScene = () => {
 
 	scene.clear();
 	initialized = false;
+
+	scene = null;
+	camera = null;
+	renderer = null;
 }
 
 export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement, css3DRenderSurface?: HTMLDivElement, UIOverlay?: HTMLDivElement) => {

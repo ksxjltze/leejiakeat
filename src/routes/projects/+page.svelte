@@ -85,7 +85,7 @@
 		</p>
 		<hr style="width: 100%; margin: auto;" />
 
-		<section style="margin-top: 1rem;">
+		<section style="margin-top: 1rem; margin-bottom: 1rem;">
 			<h3>Interactive Portfolio (WIP)</h3>
 			<p>
 				Click
@@ -100,7 +100,7 @@
 			<h1>All Projects</h1>
 			<div class="project-grid">
 				{#each projects as project, i}
-					<div class="project-grid-item flex-row-items-3">
+					<div class="project-grid-item">
 						<a class="project-grid-item-link" href={project.path}
 							><img alt="project icon" src={project.meta.background} /></a
 						>
@@ -144,12 +144,9 @@
 		filter: drop-shadow(0 0 0.5rem #ffffff);
 	}
 
-	.flex-row-items-3 {
-		flex: 0 0 calc(1 / 3 * 100% - 2rem);
-	}
-
 	.project-grid-item {
 		width: 100%;
+		flex: 0 0 calc(1 / 3 * 100% - 2rem);
 	}
 
 	.project-grid-item img {
@@ -287,12 +284,20 @@
 	}
 
 	@media only screen and (max-width: 600px) {
-		h1 {
+		#hero {
 			margin-bottom: 1rem;
 		}
 
-		#hero {
-			margin-bottom: 1rem;
+		#project-heroes {
+			padding-top: 0;
+		}
+
+		.project-grid-item {
+			flex: 0 0 calc(100% - 2rem);
+		}
+
+		.project-grid-item-link p {
+			margin-top: 0.5rem;
 		}
 
 		.hero-height {

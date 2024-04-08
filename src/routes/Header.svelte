@@ -56,11 +56,11 @@
 			<li aria-current={$page.url.pathname === '/projects' ? 'page' : undefined}>
 				<a href="/projects">Projects</a>
 			</li>
-			<li
-				id="interactive-link"
-				aria-current={$page.url.pathname === '/interactive' ? 'page' : undefined}
-			>
+			<li class="mobile-hide" aria-current={$page.url.pathname === '/interactive' ? 'page' : undefined}>
 				<a href="/interactive">Interactive</a>
+			</li>
+			<li class="mobile-hide" aria-current={$page.url.pathname === '/blog' ? 'page' : undefined}>
+				<a href="/blog">Blog</a>
 			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
@@ -82,6 +82,9 @@
 				</li>
 				<li aria-current={$page.url.pathname === '/interactive' ? 'page' : undefined}>
 					<a href="/interactive">Interactive</a>
+				</li>
+				<li aria-current={$page.url.pathname === '/blog' ? 'page' : undefined}>
+					<a href="/blog">Blog</a>
 				</li>
 			</ul>
 		</nav>
@@ -122,7 +125,7 @@
 	.navbar {
 		display: flex;
 		justify-content: center;
-		--background: rgba(255, 255, 255, 1.0);
+		--background: rgba(255, 255, 255, 1);
 	}
 
 	svg {
@@ -193,7 +196,7 @@
 	}
 
 	@media only screen and (max-width: 600px) and (orientation: portrait) {
-		#interactive-link {
+		.mobile-hide {
 			display: none;
 		}
 

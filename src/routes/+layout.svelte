@@ -5,7 +5,7 @@
 	import Header from './Header.svelte';
 	import '../app.css';
 	import './styles.css';
-	import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit"
+	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 
 	/** @type {import('./$types').LayoutServerData} */
 
@@ -31,7 +31,7 @@
 	</main>
 
 	<footer>
-		<h1>Lee Jia Keat</h1>
+		<h2 style="font-size: x-large">Lee Jia Keat</h2>
 		<section>
 			<nav>
 				<ul style="display: flex; flex-direction: row; gap: 1rem; padding-left: 0">
@@ -44,11 +44,11 @@
 					<li aria-current={$page.url.pathname === '/projects' ? 'page' : undefined}>
 						<a href="/projects">Projects</a>
 					</li>
-					<li
-						id="interactive-link"
-						aria-current={$page.url.pathname === '/interactive' ? 'page' : undefined}
-					>
+					<li aria-current={$page.url.pathname === '/interactive' ? 'page' : undefined}>
 						<a href="/interactive">Interactive</a>
+					</li>
+					<li aria-current={$page.url.pathname === '/blog' ? 'page' : undefined}>
+						<a href="/blog">Blog</a>
 					</li>
 				</ul>
 			</nav>

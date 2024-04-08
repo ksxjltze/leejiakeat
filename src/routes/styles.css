@@ -92,6 +92,12 @@ button:focus:not(:focus-visible) {
 	}
 }
 
+@media (max-width: 720px) {
+	html {
+		display: flex;
+	}
+}
+
 .visually-hidden {
 	border: 0;
 	clip: rect(0 0 0 0);

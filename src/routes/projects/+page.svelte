@@ -39,7 +39,7 @@
 			</button>
 			<div id="project-heroes">
 				<a class="w-full" href={projects[index].path}>
-					<div id="hero" class="border-radius-large">
+					<div id="hero" class="border-radius-large hero-height">
 						<img
 							class="hero-image"
 							src={projects[index].meta.background
@@ -185,11 +185,14 @@
 		align-items: center;
 
 		justify-content: center;
-		height: 32rem;
 
 		background-color: #000;
 		transition: transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1),
 			filter 1s cubic-bezier(0.075, 0.82, 0.165, 1), border 0.5s ease-in-out;
+	}
+
+	.hero-height {
+		height: 32rem;
 	}
 
 	#hero:hover {
@@ -269,6 +272,7 @@
 		height: 100%;
 
 		filter: contrast(110%) brightness(110%);
+		border-radius: 1rem;
 	}
 
 	.carousel-mobile-controls {
@@ -283,6 +287,17 @@
 	}
 
 	@media only screen and (max-width: 600px) {
+		h1 {
+			margin-bottom: 1rem;
+		}
+
+		#hero {
+			margin-bottom: 1rem;
+		}
+
+		.hero-height {
+			height: 15rem;
+		}
 		.project-title {
 			display: none;
 		}

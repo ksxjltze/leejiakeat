@@ -382,24 +382,31 @@ const setSelectedObject = (object) => {
 };
 
 const checkIntersectingObjectsForCSS3D = () => {
-	//probably really expensive, TODO: optimize?
+	//naive intersect check for occlusion, idk
 	cssScene.children.forEach((child) => {
-		raycaster.set(camera.position, child.position.clone().sub(camera.position));
-		const intersects = raycaster.intersectObjects(scene.children);
+		
+		//making a kinda hacky assumption here
+		if (!child.userData.visibilityPoints)
+			return;
 
+		//assume hidden unless any "control" point is visible, or something like that
 		child.visible = false;
+		child.userData.visibilityPoints.forEach((point) => {
+			raycaster.set(camera.position, point.clone().sub(camera.position));
+			const intersects = raycaster.intersectObjects(scene.children);
 
-		let nearestObjectIndex = 0;
-		while (intersects.length > nearestObjectIndex && intersects[nearestObjectIndex].object.type == "Sprite") {
-			nearestObjectIndex++;
-		}
+			let nearestObjectIndex = 0;
+			while (intersects.length > nearestObjectIndex && intersects[nearestObjectIndex].object.type == "Sprite") {
+				nearestObjectIndex++;
+			}
 
-		//temp hardcode
-		if (intersects.length > nearestObjectIndex
-			&& intersects[nearestObjectIndex].object.name == "Screen4Mesh"
-			|| intersects[nearestObjectIndex].object.name == "Screen4Mesh_1") {
-			child.visible = true;
-		}
+			//temp hardcode
+			if (intersects.length > nearestObjectIndex
+				&& intersects[nearestObjectIndex].object.name == "Screen4Mesh"
+				|| intersects[nearestObjectIndex].object.name == "Screen4Mesh_1") {
+				child.visible = true;
+			}
+		});
 	});
 };
 

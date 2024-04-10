@@ -382,7 +382,7 @@ const setSelectedObject = (object) => {
 };
 
 const checkIntersectingObjectsForCSS3D = () => {
-	//probably really expensive, TODO: optimize
+	//probably really expensive, TODO: optimize?
 	cssScene.children.forEach((child) => {
 		raycaster.set(camera.position, child.position.clone().sub(camera.position));
 		const intersects = raycaster.intersectObjects(scene.children);
@@ -1002,6 +1002,7 @@ const init = () => {
 		};
 
 		const objectsMap = {};
+		GLTFGroupToStaticBodies(gltf, magicScale.clone());
 
 		//lazy hack 2
 		let lightIndex = 0;
@@ -1214,14 +1215,6 @@ const init = () => {
 
 					//Embed Iconoclasm gameplay video
 					if (isObjectNameMatch(object, "Screen4Mesh_1")) {
-						// const boundingSphere = getObjectBoundingSphere(object);
-						// const position = boundingSphere.center;
-
-						// const boundingBox = getObjectBoundingBox(object);
-
-						// const width = boundingBox.max.x - boundingBox.min.x;
-						// const height = boundingBox.max.y - boundingBox.min.y;
-
 						const element = document.getElementById("iframe-yt-embed");
 						element.style.width = "100vw";
 						element.style.height = "100vh";
@@ -1258,14 +1251,57 @@ const init = () => {
 							}
 						});
 
-						css3DRenderer.domElement.append(element);
+						if (object instanceof THREE.Mesh) {
+							const geometry = object.geometry;
+							geometry.computeBoundingBox();
+							const boundingBox: THREE.Box3 = geometry.boundingBox;
 
-						//I'll just set it manually for now
-						const css3DObject = new CSS3DObject(element);
-						css3DObject.position.set(50, 2.5, 19.65);
-						css3DObject.rotateY(Math.PI);
-						css3DObject.scale.set(0.01, 0.01, 0.01);
-						cssScene.add(css3DObject);
+							const magicOffset = 5;
+							const magicScale = 0.01;
+
+							boundingBox.min.y -= magicOffset;
+							boundingBox.max.y -= magicOffset;
+
+							const screenPosition = boundingBox.min.clone()
+								.add(boundingBox.max)
+								.divideScalar(2);
+
+							//lets naively assume that z forward is normal for now
+							//project to x and y
+
+							const v = boundingBox.max.clone().sub(boundingBox.min);
+
+							const pB = boundingBox.max.clone();
+							const pC = boundingBox.min.clone();
+
+							const vCA = v.clone().projectOnVector(new THREE.Vector3(0, 1, 0));
+							const vCD = v.clone().projectOnVector(new THREE.Vector3(1, 0, 0));
+
+							const pA = pC.clone().add(vCA);
+							const pD = pC.clone().add(vCD);
+
+							//create css3D object
+							css3DRenderer.domElement.append(element);
+							const css3DObject = new CSS3DObject(element);
+							css3DObject.position.copy(screenPosition);
+							css3DObject.rotateY(Math.PI);
+							css3DObject.scale.setScalar(magicScale);
+
+							//visibility points for occlusion check
+							css3DObject.userData.visibilityPoints = [pA, pB, pC, pD];
+							cssScene.add(css3DObject);
+
+							//debug
+							// css3DObject.userData.visibilityPoints.forEach((p) => {
+							// 	const mesh = new THREE.Mesh(new THREE.SphereGeometry());
+							// 	mesh.position.copy(p);
+							// 	scene.add(mesh)
+							// })
+
+						}
+						else
+							console.error("Something went wrong loading screen mesh")
+
 					}
 				};
 				setupLobbyScreens();
@@ -1274,7 +1310,6 @@ const init = () => {
 			return false;
 		});
 
-		GLTFGroupToStaticBodies(gltf, magicScale.clone());
 		onFloorLoaded();
 
 	}, undefined,

@@ -29,7 +29,7 @@ The lack of an editor makes developing the game feel tedious at times, but I do 
 
 When it comes to my productivity during the game jam, let me just say that I did not spend the majority of my time during the game jam period on developing the game.
 This was mainly due to certain personal circumstances (medical), as well as general procrastination and lack of motivation/mood.
-I am still fairly satisfied with the end product, although I will say that I do feel a little burned out.
+I am still fairly satisfied with the end product, although I will say that I do still feel a little burned out.
 
 The game in its current state is very unpolished, lacking proper animations, music, sound effects for most things, etc. 
 While playable, I have not delved deeply into testing the game and balancing the stats of the player and enemy unit(s).
@@ -46,4 +46,6 @@ Art-wise, I stuck with simple pixel art, with most sprites being 64x64 pixels.
 I decided to re-use the first ever sprite I drew (in DigiPen), the mushroom (boi), and added some noise. In hindsight, I should have drawn a new mushroom.
 
 The ground is just some brown/orange with noise.
-The sky is blue, and a sun in the top left corner, but no noise for some reason.
+The sky is some blue, and a sun in the top left corner.
+
+I tried to embed wasm into a HTML file for submission, and while it worked on my local development server, it failed to properly load when it was uploaded to itch.io, and at that point I was too tired to try and figure out why. It vaguely had to do with my assets not being loaded due to a 403 error (forbidden). In hindsight, maybe I should have uploaded it directly to the ludum dare website, but I was lazy to change the game's resolution to fit the requirements.

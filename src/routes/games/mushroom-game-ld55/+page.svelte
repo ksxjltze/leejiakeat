@@ -21,6 +21,7 @@
 
 	#mushroom-game-iframe {
 		position: absolute;
-		left: calc((1280px / 4));
+		left: calc((var(--game-width) / 4));
+		margin-top: 1rem;
 	}
 </style>

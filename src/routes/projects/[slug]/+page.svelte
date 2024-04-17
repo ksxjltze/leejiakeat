@@ -21,6 +21,14 @@
         margin-bottom: 1rem;
     }
 
+    :global(article .figure-label) {
+        all: unset;
+        font-style: italic;
+
+        margin-top: -1rem;
+        margin-bottom: 0.5rem;
+    }
+
     :global(article > h2) {
         all: unset;
 

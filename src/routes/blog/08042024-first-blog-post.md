@@ -1,6 +1,6 @@
 ---
 title: "My first blog post"
-date: '08/04/2024'
+date: '2024/04/08'
 ---
 
 woo

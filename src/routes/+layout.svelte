@@ -53,6 +53,9 @@
 					<li aria-current={$page.url.pathname === '/blog' ? 'page' : undefined}>
 						<a href="/blog">Blog</a>
 					</li>
+					<li aria-current={$page.url.pathname === '/games' ? 'page' : undefined}>
+						<a href="/games">Games</a>
+					</li>
 				</ul>
 			</nav>
 		</section>

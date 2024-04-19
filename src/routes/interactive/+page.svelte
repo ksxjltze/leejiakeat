@@ -142,8 +142,9 @@
 	<canvas bind:this={surface} />
 	<div id="css3DSurface" class="overlay" bind:this={css3DRenderSurface} />
 	<div id="iframe-yt-embed" />
-	<div id="uiOverlay" class="overlay z-index-3" bind:this={uiOverlay} />
-	<canvas class="z-index-4" bind:this={debugCanvas} />
+	<div id="uiOverlay" class="overlay z-index-3" bind:this={uiOverlay}>
+		<canvas id="debugCanvas" bind:this={debugCanvas} />
+	</div>
 
 	<script type="text/javascript">
 		function onPlayerReady(event) {
@@ -178,6 +179,17 @@
 		height: 100vh;
 	}
 
+	#debugCanvas {
+		position: fixed;
+		top: 0;
+		left: 0;
+		outline: none;
+		width: 100vw;
+		height: 100vh;
+
+		z-index: 3;
+	}
+
 	.overlay {
 		position: fixed;
 		top: 0;
@@ -191,9 +203,5 @@
 
 	.z-index-3 {
 		z-index: 3;
-	}
-
-	.z-index-4 {
-		z-index: 4;
 	}
 </style>

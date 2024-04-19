@@ -64,6 +64,7 @@ let crosshair: THREE.Sprite;
 
 let occludeRenderTexture: THREE.WebGLRenderTarget;
 let occludeMaterial: THREE.ShaderMaterial;
+let occludePixelBuffer: Uint8Array;
 let visibilityBuffer = [];
 
 //Object ID as key
@@ -76,6 +77,8 @@ let surfaceContainer: HTMLElement;
 let domAttachmentContainer: HTMLElement;
 let initialized = false;
 let debugCanvas: HTMLCanvasElement;
+
+const DEBUG_CANVAS_ENABLED = true as const;
 
 let mixer: THREE.AnimationMixer;
 let world: CANNON.World;
@@ -441,6 +444,26 @@ const preOccludeCSS3D = () => {
 	});
 };
 
+const computeOccludeClipPath = () => {
+	let width = window.innerWidth;
+
+	//aabb or smth idk
+	let min, max;
+
+	for (let i = 0; i < occludePixelBuffer.length; i += 4) {
+		const b = occludePixelBuffer[i + 2]; //because the shader colors it blue
+
+		if (!min && b != 0) {
+			const x = (i / 4) % width;
+			const y = (i / 4) / width;
+			min = [x, y];
+		}
+	}
+
+	if (min)
+		console.log(min);
+}
+
 const performOccludeCheckForCSS3DObjects = () => {
 	cssScene.children.forEach((child) => {
 		if (!child.userData.visibilityPoints)
@@ -489,17 +512,21 @@ const performOccludeCheckForCSS3DObjects = () => {
 		const canvas = renderer.domElement;
 
 		scene.background = null;
-		// renderer.setRenderTarget(occludeRenderTexture);
 
-		if (debugCanvas) {
+		if (debugCanvas && DEBUG_CANVAS_ENABLED) {
 			renderer.autoClearColor = false;
 			renderer.domElement = debugCanvas;
 			renderer.render(scene, camera);
 			renderer.domElement = canvas;
 			renderer.autoClearColor = true;
 		}
+		// else {
+		// 	renderer.setRenderTarget(occludeRenderTexture);
+		// 	renderer.render(scene, camera);
+		// 	renderer.readRenderTargetPixels(renderer.getRenderTarget(), 0, 0, window.innerWidth, window.innerHeight, occludePixelBuffer);
+		// 	renderer.setRenderTarget(null);
+		// }
 
-		// renderer.setRenderTarget(null);
 		scene.background = background;
 
 		//restore visiblity
@@ -573,10 +600,11 @@ const render = () => {
 	composer.render();
 
 	preOccludeCSS3D();
+	
+	css3DRenderer.render(cssScene, camera);
 	performOccludeCheckForCSS3DObjects();
+	// computeOccludeClipPath();
 	restoreOccludeMaterials();
-
-	// css3DRenderer.render(cssScene, camera);
 }
 
 const interactWithSelected = (event: PointerEvent) => {
@@ -729,7 +757,10 @@ export const resize = () => {
 	const updateSizes = (width, height) => {
 		renderer.setSize(width, height);
 		css3DRenderer.setSize(width, height);
+
+		//for CSS3D occlusion check
 		occludeRenderTexture.setSize(width, height);
+		occludePixelBuffer = new Uint8Array(window.innerWidth * window.innerHeight * 4);
 
 		if (bloomComposer)
 			bloomComposer.setSize(width, height);
@@ -1033,6 +1064,7 @@ const init = () => {
 	cssScene = new THREE.Scene();
 
 	occludeRenderTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
+	occludePixelBuffer = new Uint8Array(window.innerWidth * window.innerHeight * 4);
 	materialBuffer = new Map<number, THREE.Material>();
 
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);

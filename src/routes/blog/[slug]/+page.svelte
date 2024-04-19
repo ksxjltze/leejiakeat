@@ -24,6 +24,15 @@
     :global(article.blog .figure-label) {
         all: unset;
         font-style: italic;
-        margin-bottom: 0.5rem;
+        margin-bottom: 1rem;
     }
+
+	:global(article.blog .figure-image) {
+		margin-bottom: 1rem;
+	}
+
+	:global(article.blog .image-half-size) {
+		width: 50%;
+		height: 50%;
+	}
 </style>

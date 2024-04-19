@@ -175,6 +175,96 @@ const checkIntersectingObjectsForCSS3D = () => {
 <p class="figure-label">Code Snippet: Hardcoded checks for visibility</p>
 
 ### Proper occlusion
-Somehow compute the occluding pixels using ShaderMaterial and do some clipping (or so I think)
+What if I want proper occlusion? To do this, we can try to compute the fragments that overlap with the youtube video.
+Using the previously computed visiblity points, we can define a region in world space that corresponds to the viewable area of the YouTube video.
 
-TODO
+My current method involves taking these visiblity points, converting them to screen space (or NDC), and then computing the overlapping fragments to use as a mask for the embedded YouTube iframe. I am sure that there are more efficient ways to go about this, but I decided to stick with this one for now.
+
+To compute these overlapped fragments, I use a second render pass, where I pass in the points defining the YouTube video's viewable region.
+In the vertex shader, these points are transformed to clip space coordinates, and passed onto the fragment shader for further processing.
+
+To prevent the shader from checking objects that are behind the YouTube video's "geometry", the distance of each vertex from the camera (in world space), is compared with the distance of each visiblity point from the camera. If the distance of the vertex from the camera is greater than all of the visiblity points' distances, then it must be behind the viewing plane of the YouTube video (I think). In hindsight, maybe doing a dot product with the plane's normal would be a better idea?
+
+Anyway, the smallest distance difference (between each vertex and each visiblity point) is stored in a varying variable and passed to the fragment shader for further processing.
+
+Finally, in the fragment shader, edge equations are used to check if each fragment is within the viewable region of the YouTube video on the screen.
+Fragments outside the region are discarded, as well as fragments that are "behind" the viewing plane of the YouTube video.
+
+TODO: clip/mask
+
+<img class="figure-image image-half-size" alt="Simple diagram for occlusion check" src="/images/blog/embed-youtube/hastily-drawn-diagram.webp">
+<p class="figure-label">Hastily drawn diagram: Visibility points for occlusion check</p>
+
+```
+<script type="x-shader/x-vertex" id="occludevertex">
+    uniform vec3 u_points[4];
+    uniform vec3 u_camera_pos;
+    uniform float u_distances[4];
+
+    varying vec3 v_points[4];
+    varying float v_occluding;
+    
+    void main() {
+        vec4 pos = modelMatrix * vec4(position, 1.0);
+        float distance_to_camera = length(pos.xyz - u_camera_pos);
+
+        for (int i = 0; i < 4; ++i) {
+            vec4 point = projectionMatrix * viewMatrix * vec4(u_points[i], 1.0);
+
+            if (point.w > 0.0)
+                v_points[i] = point.xyz / point.w;
+        }
+
+        v_occluding = 0.0;
+        for (int i = 0; i < 4; ++i) {
+            v_occluding = min(v_occluding, u_distances[i] - distance_to_camera);
+        }
+
+        gl_Position = projectionMatrix * viewMatrix * pos;
+    }
+</script>
+```
+<p class="figure-label">Code snippet: Occlude vertex shader</p>
+
+```
+<script type="x-shader/x-fragment" id="occludefragment">
+    uniform vec2 u_resolution;
+    varying vec3 v_points[4];
+    varying float v_occluding;
+
+    vec3 edge_eqn(vec2 p0, vec2 p1) {
+        //a, b, c
+        return vec3(p0.y - p1.y, p1.x - p0.x, p0.x * p1.y - p1.x * p0.y);
+    }
+
+    bool point_in_edge(vec3 edge_eq, vec2 p) {
+        if ((edge_eq.x * p.x + edge_eq.y * p.y + edge_eq.z) >= 0.0)
+            return true;
+
+        return false;
+    }
+
+    void main() {
+        if (v_occluding < 0.0)
+            discard;
+
+        vec2 st = gl_FragCoord.xy / u_resolution;
+        vec2 points[4];
+        
+        for (int i = 0; i < 4; ++i) {
+            points[i] = vec2((v_points[i].xy + 1.0) / 2.0);
+        }
+
+        vec3 e0 = edge_eqn(points[0], points[1]);
+        vec3 e1 = edge_eqn(points[1], points[3]);
+        vec3 e2 = edge_eqn(points[3], points[2]);
+        vec3 e3 = edge_eqn(points[2], points[0]);
+
+        if (point_in_edge(e0, st) && point_in_edge(e1, st) && point_in_edge(e2, st) && point_in_edge(e3, st))
+            gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+        else
+            discard;
+    }
+</script>
+```
+<p class="figure-label">Code snippet: Occlude fragment shader</p>

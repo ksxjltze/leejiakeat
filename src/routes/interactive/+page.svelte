@@ -7,11 +7,13 @@
 	let css3DRenderSurface: HTMLDivElement;
 	let uiOverlay: HTMLDivElement;
 
+	let debugCanvas: HTMLCanvasElement;
+
 	onMount(() => {
 		surface.width = container.clientWidth;
 		surface.height = container.clientHeight;
 
-		createSceneWithContainer(surface, container, css3DRenderSurface, uiOverlay);
+		createSceneWithContainer(surface, container, css3DRenderSurface, uiOverlay, debugCanvas);
 
 		window.addEventListener('click', lockControls);
 		window.addEventListener(
@@ -128,16 +130,7 @@
 			if (point_in_edge(e0, st) && point_in_edge(e1, st) && point_in_edge(e2, st) && point_in_edge(e3, st))
 				gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
 			else
-				gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-
-			
-			for (int i = 0; i < 4; ++i) {
-				float dx = abs(st.x - points[i].x);
-				float dy = abs(st.y - points[i].y);
-
-				if (dx < 0.01 && dy < 0.01)
-					gl_FragColor = vec4(float(i) * 0.25, 0.25, 0.0, 1.0);
-			}
+				discard;
 		}
 	</script>
 </section>
@@ -150,6 +143,7 @@
 	<div id="css3DSurface" class="overlay" bind:this={css3DRenderSurface} />
 	<div id="iframe-yt-embed" />
 	<div id="uiOverlay" class="overlay z-index-3" bind:this={uiOverlay} />
+	<canvas class="z-index-4" bind:this={debugCanvas} />
 
 	<script type="text/javascript">
 		function onPlayerReady(event) {
@@ -197,5 +191,9 @@
 
 	.z-index-3 {
 		z-index: 3;
+	}
+
+	.z-index-4 {
+		z-index: 4;
 	}
 </style>

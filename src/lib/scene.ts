@@ -62,7 +62,7 @@ let scene: THREE.Scene;
 let cssScene: THREE.Scene;
 let crosshair: THREE.Sprite;
 
-let occludeScene: THREE.Scene;
+let occludeRenderTexture: THREE.WebGLRenderTarget;
 let occludeMaterial: THREE.ShaderMaterial;
 let visibilityBuffer = [];
 
@@ -75,6 +75,7 @@ let controls: PointerLockControls;
 let surfaceContainer: HTMLElement;
 let domAttachmentContainer: HTMLElement;
 let initialized = false;
+let debugCanvas: HTMLCanvasElement;
 
 let mixer: THREE.AnimationMixer;
 let world: CANNON.World;
@@ -430,6 +431,9 @@ const preOccludeCSS3D = () => {
 				child.userData.worldObjectNames.forEach((name) => {
 					if (intersects[nearestObjectIndex].object.name == name) {
 						child.visible = true;
+
+						//exclude "self" geometry from occlude check
+						intersects[nearestObjectIndex].object.userData.occludeCheck = false;
 					}
 				});
 			}
@@ -444,7 +448,7 @@ const performOccludeCheckForCSS3DObjects = () => {
 
 		let resolution = new THREE.Vector2();
 		resolution = renderer.getSize(resolution);
-		
+
 		occludeMaterial.uniforms = {
 			u_points: {
 				value: child.userData.visibilityPoints
@@ -459,7 +463,6 @@ const performOccludeCheckForCSS3DObjects = () => {
 				value: resolution
 			}
 		};
-		// occludeMaterial.depthTest = false;
 
 		visibilityBuffer = [];
 		materialBuffer.clear();
@@ -481,7 +484,23 @@ const performOccludeCheckForCSS3DObjects = () => {
 			}
 		});
 
-		renderer.render(scene, camera); //test
+		//hide skybox
+		const background = scene.background;
+		const canvas = renderer.domElement;
+
+		scene.background = null;
+		// renderer.setRenderTarget(occludeRenderTexture);
+
+		if (debugCanvas) {
+			renderer.autoClearColor = false;
+			renderer.domElement = debugCanvas;
+			renderer.render(scene, camera);
+			renderer.domElement = canvas;
+			renderer.autoClearColor = true;
+		}
+
+		// renderer.setRenderTarget(null);
+		scene.background = background;
 
 		//restore visiblity
 		visibilityBuffer.forEach((child) => {
@@ -710,6 +729,7 @@ export const resize = () => {
 	const updateSizes = (width, height) => {
 		renderer.setSize(width, height);
 		css3DRenderer.setSize(width, height);
+		occludeRenderTexture.setSize(width, height);
 
 		if (bloomComposer)
 			bloomComposer.setSize(width, height);
@@ -1012,7 +1032,7 @@ const init = () => {
 	scene = new THREE.Scene();
 	cssScene = new THREE.Scene();
 
-	occludeScene = new THREE.Scene();
+	occludeRenderTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
 	materialBuffer = new Map<number, THREE.Material>();
 
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
@@ -1729,10 +1749,11 @@ export const destroyScene = () => {
 	renderer = null;
 }
 
-export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement, css3DRenderSurface?: HTMLDivElement, UIOverlay?: HTMLDivElement) => {
+export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement, css3DRenderSurface?: HTMLDivElement, UIOverlay?: HTMLDivElement, debugSurface?: HTMLCanvasElement) => {
 	renderer = rendererSetup(surface);
 	css3DRenderer = css3DRendererSetup(css3DRenderSurface);
 	uiOverlay = UIOverlay;
+	debugCanvas = debugSurface;
 
 	surfaceContainer = container;
 

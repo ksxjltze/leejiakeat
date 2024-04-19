@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import {
-		createSceneWithContainer,
-		resize,
-		lockControls,
-		destroyScene
-	} from '$lib/scene';
+	import { createSceneWithContainer, resize, lockControls, destroyScene } from '$lib/scene';
 
 	let surface: HTMLCanvasElement;
 	let container: HTMLDivElement;
@@ -68,6 +63,67 @@
 		}
 
 	</script>
+
+	<script type="x-shader/x-vertex" id="occludevertex">
+		uniform vec3 u_points[4];
+		varying vec3 v_points[4];
+		
+		void main() {
+			for (int i = 0; i < 4; ++i) {
+				vec4 point = projectionMatrix * viewMatrix * vec4(u_points[i], 1.0);
+
+				if (point.w > 0.0)
+					v_points[i] = point.xyz / point.w;
+			}
+
+			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+		}
+	</script>
+
+	<script type="x-shader/x-fragment" id="occludefragment">
+		uniform vec2 u_resolution;
+		varying vec3 v_points[4];
+
+		vec3 edge_eqn(vec2 p0, vec2 p1) {
+			//a, b, c
+			return vec3(p0.y - p1.y, p1.x - p0.x, p0.x * p1.y - p1.x * p0.y);
+		}
+
+		bool point_in_edge(vec3 edge_eq, vec2 p) {
+			if ((edge_eq.x * p.x + edge_eq.y * p.y + edge_eq.z) >= 0.0)
+				return true;
+
+			return false;
+		}
+
+		void main() {
+			vec2 st = gl_FragCoord.xy / u_resolution;
+			vec2 points[4];
+			
+			for (int i = 0; i < 4; ++i) {
+				points[i] = vec2((v_points[i].xy + 1.0) / 2.0);
+			}
+
+			vec3 e0 = edge_eqn(points[0], points[1]);
+			vec3 e1 = edge_eqn(points[1], points[3]);
+			vec3 e2 = edge_eqn(points[3], points[2]);
+			vec3 e3 = edge_eqn(points[2], points[0]);
+
+			if (point_in_edge(e0, st) && point_in_edge(e1, st) && point_in_edge(e2, st) && point_in_edge(e3, st))
+				gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+			else
+				gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+
+			
+			for (int i = 0; i < 4; ++i) {
+				float dx = abs(st.x - points[i].x);
+				float dy = abs(st.y - points[i].y);
+
+				if (dx < 0.01 && dy < 0.01)
+					gl_FragColor = vec4(float(i) * 0.25, 0.25, 0.0, 1.0);
+			}
+		}
+	</script>
 </section>
 
 <div
@@ -92,7 +148,7 @@
 				videoId: 'BCFzNFtZF_E',
 				playerVars: {
 					enablejsapi: 1,
-					origin: "https://leejiakeat.online"
+					origin: 'https://leejiakeat.online'
 				},
 				events: {
 					onReady: onPlayerReady

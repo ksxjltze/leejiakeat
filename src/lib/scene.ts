@@ -62,6 +62,13 @@ let scene: THREE.Scene;
 let cssScene: THREE.Scene;
 let crosshair: THREE.Sprite;
 
+let occludeScene: THREE.Scene;
+let occludeMaterial: THREE.ShaderMaterial;
+let visibilityBuffer = [];
+
+//Object ID as key
+let materialBuffer: Map<number, THREE.Material>;
+
 let camera;
 let controls: PointerLockControls;
 
@@ -197,7 +204,7 @@ function darkenNonBloomed(obj) {
 
 }
 
-function restoreMaterial(obj) {
+function restoreBloomMaterial(obj) {
 	if (bloom.materials[obj.uuid]) {
 		obj.material = bloom.materials[obj.uuid];
 		delete bloom.materials[obj.uuid];
@@ -381,34 +388,107 @@ const setSelectedObject = (object) => {
 	outlinePass.hiddenEdgeColor = Outline.Interactable;
 };
 
-const checkIntersectingObjectsForCSS3D = () => {
-	//naive intersect check for occlusion, idk
+const preOccludeCSS3D = () => {
+	//reset occlude flag
+	scene.traverse((child) => {
+		if (child.userData.occludeCheck)
+			child.userData.occludeCheck = false;
+	});
+
+	//naive intersect check for occlusion
 	cssScene.children.forEach((child) => {
-		
-		//making a kinda hacky assumption here
+
+		//assume that each css object has visiblity points computed for occlusion checks
 		if (!child.userData.visibilityPoints)
 			return;
 
-		//assume hidden unless any "control" point is visible, or something like that
+		//assume CSS Object is hidden unless any "control" point is visible, or something like that
 		child.visible = false;
+
 		child.userData.visibilityPoints.forEach((point) => {
 			raycaster.set(camera.position, point.clone().sub(camera.position));
 			const intersects = raycaster.intersectObjects(scene.children);
 
+			//hacky method to ignore crosshair sprite
 			let nearestObjectIndex = 0;
 			while (intersects.length > nearestObjectIndex && intersects[nearestObjectIndex].object.type == "Sprite") {
 				nearestObjectIndex++;
 			}
 
-			//temp hardcode
-			if (intersects.length > nearestObjectIndex
-				&& intersects[nearestObjectIndex].object.name == "Screen4Mesh"
-				|| intersects[nearestObjectIndex].object.name == "Screen4Mesh_1") {
-				child.visible = true;
+			if (intersects.length > nearestObjectIndex) {
+				intersects[nearestObjectIndex].object.userData.occludeCheck = true;
+
+				if (!child.userData.worldObjectNames)
+					return;
+
+				//temp measure to specifically check for WebGL geometry tied to the CSS3DObject
+				child.userData.worldObjectNames.forEach((name) => {
+					if (intersects[nearestObjectIndex].object.name == name) {
+						child.visible = true;
+					}
+				});
 			}
 		});
 	});
 };
+
+const performOccludeCheckForCSS3DObjects = () => {
+	cssScene.children.forEach((child) => {
+		if (!child.userData.visibilityPoints)
+			return;
+
+		let resolution = new THREE.Vector2();
+		resolution = renderer.getSize(resolution);
+
+		occludeMaterial.uniforms = {
+			u_points: {
+				value: child.userData.visibilityPoints
+			},
+			u_resolution: {
+				value: resolution
+			}
+		};
+		// occludeMaterial.depthTest = false;
+
+		visibilityBuffer = [];
+		materialBuffer.clear();
+
+		scene.traverse((child) => {
+			if (child instanceof THREE.Mesh) {
+
+				//don't render non-occluding objects in occlude shader
+				if (!child.userData.occludeCheck && child.visible) {
+					child.visible = false;
+					visibilityBuffer.push(child);
+					return;
+				}
+
+				if (child instanceof THREE.Mesh) {
+					materialBuffer[child.id] = child.material;
+					child.material = occludeMaterial;
+				}
+			}
+		});
+
+		renderer.render(scene, camera); //test
+
+		//restore visiblity
+		visibilityBuffer.forEach((child) => {
+			child.visible = true;
+		});
+	});
+}
+
+const restoreOccludeMaterials = () => {
+	scene.traverse((child) => {
+		if (!materialBuffer[child.id])
+			return;
+
+		if (child instanceof THREE.Mesh) {
+			child.material = materialBuffer[child.id];
+		}
+	})
+}
 
 const checkIntersectingObjects = () => {
 	raycaster.setFromCamera(pointer, camera);
@@ -452,18 +532,21 @@ const render = () => {
 	offset.applyEuler(camera.rotation);
 
 	crosshair.position.copy(camPos.clone().add(offset));
-
-	checkIntersectingObjectsForCSS3D();
 	checkIntersectingObjects();
 
 	if (bloomComposer && settings.enableBloom) {
 		scene.traverse(darkenNonBloomed);
 		bloomComposer.render();
-		scene.traverse(restoreMaterial);
+		scene.traverse(restoreBloomMaterial);
 	}
 
 	composer.render();
-	css3DRenderer.render(cssScene, camera);
+
+	preOccludeCSS3D();
+	performOccludeCheckForCSS3DObjects();
+	restoreOccludeMaterials();
+
+	// css3DRenderer.render(cssScene, camera);
 }
 
 const interactWithSelected = (event: PointerEvent) => {
@@ -917,6 +1000,10 @@ const setObjectUpdate = (object, updateFn: (dt) => void, enabled?) => {
 const init = () => {
 	scene = new THREE.Scene();
 	cssScene = new THREE.Scene();
+
+	occludeScene = new THREE.Scene();
+	materialBuffer = new Map<number, THREE.Material>();
+
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);
 	const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 
@@ -1298,13 +1385,10 @@ const init = () => {
 							css3DObject.userData.visibilityPoints = [pA, pB, pC, pD];
 							cssScene.add(css3DObject);
 
-							//debug
-							// css3DObject.userData.visibilityPoints.forEach((p) => {
-							// 	const mesh = new THREE.Mesh(new THREE.SphereGeometry());
-							// 	mesh.position.copy(p);
-							// 	scene.add(mesh)
-							// })
-
+							//lol
+							css3DObject.userData.worldObjectNames = [];
+							css3DObject.userData.worldObjectNames.push(object.name);
+							css3DObject.userData.worldObjectNames.push("Screen4Mesh");
 						}
 						else
 							console.error("Something went wrong loading screen mesh")
@@ -1609,6 +1693,13 @@ const css3DRendererSetup = (surface: HTMLDivElement) => {
 	return css3DRenderer;
 }
 
+const materialSetup = () => {
+	occludeMaterial = new THREE.ShaderMaterial({
+		vertexShader: document.getElementById('occludevertex').textContent,
+		fragmentShader: document.getElementById('occludefragment').textContent
+	});
+}
+
 export const destroyScene = () => {
 	if (!scene)
 		return;
@@ -1657,6 +1748,8 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 
 	//init scene
 	init();
+
+	materialSetup();
 
 	//crosshair
 	updateCrosshair(window.innerWidth, window.innerHeight);

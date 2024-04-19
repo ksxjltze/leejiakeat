@@ -405,9 +405,14 @@ const preOccludeCSS3D = () => {
 		//assume CSS Object is hidden unless any "control" point is visible, or something like that
 		child.visible = false;
 
+		//parallel array storing distance from camera to visiblity point
+		child.userData.visiblityPointDistances = [];
 		child.userData.visibilityPoints.forEach((point) => {
-			raycaster.set(camera.position, point.clone().sub(camera.position));
-			const intersects = raycaster.intersectObjects(scene.children);
+			const vCameraToPoint = point.clone().sub(camera.position);
+			raycaster.set(camera.position, vCameraToPoint);
+			const intersects = raycaster.intersectObjects(scene.children)
+
+			child.userData.visiblityPointDistances.push(vCameraToPoint.length());
 
 			//hacky method to ignore crosshair sprite
 			let nearestObjectIndex = 0;
@@ -439,10 +444,16 @@ const performOccludeCheckForCSS3DObjects = () => {
 
 		let resolution = new THREE.Vector2();
 		resolution = renderer.getSize(resolution);
-
+		
 		occludeMaterial.uniforms = {
 			u_points: {
 				value: child.userData.visibilityPoints
+			},
+			u_distances: {
+				value: child.userData.visiblityPointDistances
+			},
+			u_camera_pos: {
+				value: camera.position
 			},
 			u_resolution: {
 				value: resolution

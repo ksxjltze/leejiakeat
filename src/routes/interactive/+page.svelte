@@ -66,9 +66,16 @@
 
 	<script type="x-shader/x-vertex" id="occludevertex">
 		uniform vec3 u_points[4];
+		uniform vec3 u_camera_pos;
+		uniform float u_distances[4];
+
 		varying vec3 v_points[4];
+		varying float v_occluding;
 		
 		void main() {
+			vec4 pos = modelMatrix * vec4(position, 1.0);
+			float distance_to_camera = length(pos.xyz - u_camera_pos);
+
 			for (int i = 0; i < 4; ++i) {
 				vec4 point = projectionMatrix * viewMatrix * vec4(u_points[i], 1.0);
 
@@ -76,13 +83,19 @@
 					v_points[i] = point.xyz / point.w;
 			}
 
-			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+			v_occluding = 0.0;
+			for (int i = 0; i < 4; ++i) {
+				v_occluding = min(v_occluding, u_distances[i] - distance_to_camera);
+			}
+
+			gl_Position = projectionMatrix * viewMatrix * pos;
 		}
 	</script>
 
 	<script type="x-shader/x-fragment" id="occludefragment">
 		uniform vec2 u_resolution;
 		varying vec3 v_points[4];
+		varying float v_occluding;
 
 		vec3 edge_eqn(vec2 p0, vec2 p1) {
 			//a, b, c
@@ -97,6 +110,9 @@
 		}
 
 		void main() {
+			if (v_occluding < 0.0)
+				discard;
+
 			vec2 st = gl_FragCoord.xy / u_resolution;
 			vec2 points[4];
 			

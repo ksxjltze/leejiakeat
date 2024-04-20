@@ -82,7 +82,7 @@ let visibilityBuffer = [];
 //Object ID as key
 let materialBuffer: Map<number, THREE.Material>;
 
-let camera;
+let camera: THREE.PerspectiveCamera;
 let controls: PointerLockControls;
 
 let surfaceContainer: HTMLElement;
@@ -122,7 +122,7 @@ let canvasWidth: number, canvasHeight: number;
 const settings = {
 	debugDraw: false,
 	enableBloom: true,
-	occludeMode: CSS3DOccludeMode.Any
+	occludeMode: CSS3DOccludeMode.Occlude
 };
 
 let selectedObjects = [];
@@ -643,6 +643,7 @@ const updateController = (keys: any[], dt: number) => {
 		}
 	};
 
+	//it works, so whatever
 	for (let i = 0; i < keys.length; i++) {
 		const key = keys[i];
 		switch (key) {
@@ -661,13 +662,18 @@ const updateController = (keys: any[], dt: number) => {
 			case 'f2':
 				onKeyTriggered('f2', () => {
 					settings.debugDraw = !settings.debugDraw;
-					cannonDebugRenderer.setVisible(settings.debugDraw); //I'll make this better later
+					cannonDebugRenderer.setVisible(settings.debugDraw);
 				})
 				break;
 			case 'g':
 				player.body.position.set(0, 0, 0);
 				player.body.velocity.set(0, 0, 0);
 				break;
+			// case 'esc':
+			// 	onKeyTriggered('esc', () => {
+			// 		settingsMenu.style.display = "block";
+			// 	})
+			// 	break;
 		}
 	}
 }
@@ -1418,6 +1424,8 @@ const init = () => {
 							const magicOffset = 5;
 							const magicScale = 0.01;
 
+							//expand bounding box slightly to prevent artifacts
+							boundingBox.expandByVector(new THREE.Vector3(0.1, 0.1, 0));
 							boundingBox.min.y -= magicOffset;
 							boundingBox.max.y -= magicOffset;
 
@@ -1427,7 +1435,6 @@ const init = () => {
 
 							//lets naively assume that z forward is normal for now
 							//project to x and y
-
 							const v = boundingBox.max.clone().sub(boundingBox.min);
 
 							const pB = boundingBox.max.clone();
@@ -1789,7 +1796,7 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	uiOverlay = UIOverlay;
 
 	occludeCanvas = occludeSurface;
-	occludeRenderer = new THREE.WebGLRenderer({ antialias: false, canvas: occludeCanvas });
+	occludeRenderer = new THREE.WebGLRenderer({ antialias: true, canvas: occludeCanvas });
 	occludeRenderer.setPixelRatio(window.devicePixelRatio);
 	occludeRenderer.setSize(surface.width, surface.height);
 

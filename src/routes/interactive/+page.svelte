@@ -141,7 +141,11 @@
 	<canvas bind:this={surface} />
 	<div id="css3DSurface" class="overlay" bind:this={css3DRenderSurface} />
 	<div id="iframe-yt-embed" />
-	<div id="uiOverlay" class="overlay z-index-3" bind:this={uiOverlay} />
+	<div id="uiOverlay" class="overlay z-index-3" bind:this={uiOverlay}>
+		<div id="settingsOverlay">
+			
+		</div>
+	</div>
 	<canvas id="occludeCanvas" bind:this={occludeCanvas} />
 
 	<script type="text/javascript">

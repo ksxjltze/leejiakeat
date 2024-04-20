@@ -190,8 +190,6 @@ Anyway, the smallest distance difference (between each vertex and each visiblity
 Finally, in the fragment shader, edge equations are used to check if each fragment is within the viewable region of the YouTube video on the screen.
 Fragments outside the region are discarded, as well as fragments that are "behind" the viewing plane of the YouTube video.
 
-TODO: clip/mask
-
 <img class="figure-image image-half-size" alt="Simple diagram for occlusion check" src="/images/blog/embed-youtube/hastily-drawn-diagram.webp">
 <p class="figure-label">Hastily drawn diagram: Visibility points for occlusion check</p>
 
@@ -268,3 +266,39 @@ TODO: clip/mask
 </script>
 ```
 <p class="figure-label">Code snippet: Occlude fragment shader</p>
+
+Below are some examples of the fragment shader in action, the overlapping fragments/pixels are rendered in white.
+<img class="figure-image" alt="Overlapping Fragments Figure 1" src="/images/blog/embed-youtube/overlapping-fragments-1.webp">
+<p class="figure-label">Screenshot: Occluding fragments from behind wall</p>
+
+<img class="figure-image" alt="Overlapping Fragments Figure 2" src="/images/blog/embed-youtube/overlapping-fragments-2.webp">
+<p class="figure-label">Screenshot: Occluding fragments from behind mushroom</p>
+
+### Masking
+Now that we have the overlapping pixels, we can use these pixels with a CSS mask to hide the parts of the YouTube video that are "occluded".
+Alternatively, we should be able to use CSS clip-path to do the same thing, but this would require additional computation (Convex Hull probably).
+
+As we currently only have the overlapping fragments, we first have to "invert" the mask, which can be done using the "exclude" mask composite operation.
+See: https://developer.mozilla.org/en-US/docs/Web/CSS/mask-composite
+
+```
+const setOccludeMaskForCSS3DRenderer = () => {
+	occludeMaskImageURL = occludeRenderer.domElement.toDataURL();
+	css3DRenderer.domElement.style.maskMode = "luminance";
+
+	css3DRenderer.domElement.style.maskImage = "url(" + occludeMaskImageURL + "), linear-gradient(white, white)";
+	css3DRenderer.domElement.style.maskComposite = "exclude";
+}
+```
+<p class="figure-label">Code Snippet: Setting the mask</p>
+
+### Results
+<img class="figure-image" alt="Overlapping Fragments Figure 2" src="/images/blog/embed-youtube/result.webp">
+<p class="figure-label">Screenshot: Result</p>
+
+TODO: fix artifacts
+
+### Future
+Put in compute shader instead
+
+Optimize FPS

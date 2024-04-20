@@ -28,7 +28,7 @@
     }
 
 	:global(article.blog .figure-image) {
-		margin-bottom: 1rem;
+		margin-bottom: 0.5rem;
 	}
 
 	:global(article.blog .image-half-size) {

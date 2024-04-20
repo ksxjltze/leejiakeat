@@ -63,9 +63,7 @@ let scene: THREE.Scene;
 let cssScene: THREE.Scene;
 let crosshair: THREE.Sprite;
 
-let occludeRenderTexture: THREE.WebGLRenderTarget;
 let occludeMaterial: THREE.ShaderMaterial;
-let occludePixelBuffer: Uint8Array;
 let occludeMaskImageURL;
 let visibilityBuffer = [];
 
@@ -732,10 +730,7 @@ export const resize = () => {
 	const updateSizes = (width, height) => {
 		renderer.setSize(width, height);
 		css3DRenderer.setSize(width, height);
-
-		//for CSS3D occlusion check
-		occludeRenderTexture.setSize(width, height);
-		occludePixelBuffer = new Uint8Array(window.innerWidth * window.innerHeight * 4);
+		occludeRenderer.setSize(width, height);
 
 		if (bloomComposer)
 			bloomComposer.setSize(width, height);
@@ -1037,9 +1032,6 @@ const setObjectUpdate = (object, updateFn: (dt) => void, enabled?) => {
 const init = () => {
 	scene = new THREE.Scene();
 	cssScene = new THREE.Scene();
-
-	occludeRenderTexture = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
-	occludePixelBuffer = new Uint8Array(window.innerWidth * window.innerHeight * 4);
 	materialBuffer = new Map<number, THREE.Material>();
 
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10001);

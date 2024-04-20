@@ -65,6 +65,7 @@ let crosshair: THREE.Sprite;
 let occludeRenderTexture: THREE.WebGLRenderTarget;
 let occludeMaterial: THREE.ShaderMaterial;
 let occludePixelBuffer: Uint8Array;
+let occludeMaskImageURL;
 let visibilityBuffer = [];
 
 //Object ID as key
@@ -76,9 +77,7 @@ let controls: PointerLockControls;
 let surfaceContainer: HTMLElement;
 let domAttachmentContainer: HTMLElement;
 let initialized = false;
-let debugCanvas: HTMLCanvasElement;
-
-const DEBUG_CANVAS_ENABLED = true as const;
+let occludeCanvas: HTMLCanvasElement;
 
 let mixer: THREE.AnimationMixer;
 let world: CANNON.World;
@@ -444,27 +443,28 @@ const preOccludeCSS3D = () => {
 	});
 };
 
-const computeOccludeClipPath = () => {
-	let width = window.innerWidth;
+let test = false;
+const setOccludeMaskForCSS3DRenderer = () => {
+	occludeMaskImageURL = occludeCanvas.toDataURL();
+	css3DRenderer.domElement.style.maskMode = "luminance";
+	css3DRenderer.domElement.style.maskImage = "url(" + occludeMaskImageURL + ")";
 
-	//aabb or smth idk
-	let min, max;
-
-	for (let i = 0; i < occludePixelBuffer.length; i += 4) {
-		const b = occludePixelBuffer[i + 2]; //because the shader colors it blue
-
-		if (!min && b != 0) {
-			const x = (i / 4) % width;
-			const y = (i / 4) / width;
-			min = [x, y];
-		}
+	if (!test && input.keys.includes('t')) {
+		var link = document.createElement("a"); // Or maybe get it from the current document
+		link.href = occludeMaskImageURL;
+		link.download = "mask.png";
+		document.body.appendChild(link); // Or append it whereever you want
+		link.click();
 	}
 
-	if (min)
-		console.log(min);
+
+	// css3DRenderer.domElement.style.maskImage = "url(" + occludeMaskImageURL + "), linear_gradient(#000, 0, 0)";
+	// css3DRenderer.domElement.style.maskComposite = "exclude";
+	// css3DRenderer.domElement.style.maskRepeat = "no-repeat";
+	// css3DRenderer.domElement.style.maskOrigin = "content-box";
 }
 
-const performOccludeCheckForCSS3DObjects = () => {
+const renderOccludingForCSS3D = () => {
 	cssScene.children.forEach((child) => {
 		if (!child.userData.visibilityPoints)
 			return;
@@ -513,19 +513,13 @@ const performOccludeCheckForCSS3DObjects = () => {
 
 		scene.background = null;
 
-		if (debugCanvas && DEBUG_CANVAS_ENABLED) {
+		if (occludeCanvas) {
 			renderer.autoClearColor = false;
-			renderer.domElement = debugCanvas;
+			renderer.domElement = occludeCanvas;
 			renderer.render(scene, camera);
 			renderer.domElement = canvas;
 			renderer.autoClearColor = true;
 		}
-		// else {
-		// 	renderer.setRenderTarget(occludeRenderTexture);
-		// 	renderer.render(scene, camera);
-		// 	renderer.readRenderTargetPixels(renderer.getRenderTarget(), 0, 0, window.innerWidth, window.innerHeight, occludePixelBuffer);
-		// 	renderer.setRenderTarget(null);
-		// }
 
 		scene.background = background;
 
@@ -600,10 +594,10 @@ const render = () => {
 	composer.render();
 
 	preOccludeCSS3D();
-	
+
 	css3DRenderer.render(cssScene, camera);
-	performOccludeCheckForCSS3DObjects();
-	// computeOccludeClipPath();
+	renderOccludingForCSS3D();
+	setOccludeMaskForCSS3DRenderer();
 	restoreOccludeMaterials();
 }
 
@@ -1781,11 +1775,11 @@ export const destroyScene = () => {
 	renderer = null;
 }
 
-export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement, css3DRenderSurface?: HTMLDivElement, UIOverlay?: HTMLDivElement, debugSurface?: HTMLCanvasElement) => {
+export const createSceneWithContainer = (surface: HTMLCanvasElement, container: HTMLElement, css3DRenderSurface?: HTMLDivElement, UIOverlay?: HTMLDivElement, occludeSurface?: HTMLCanvasElement) => {
 	renderer = rendererSetup(surface);
 	css3DRenderer = css3DRendererSetup(css3DRenderSurface);
 	uiOverlay = UIOverlay;
-	debugCanvas = debugSurface;
+	occludeCanvas = occludeSurface;
 
 	surfaceContainer = container;
 

@@ -128,7 +128,7 @@
 			vec3 e3 = edge_eqn(points[2], points[0]);
 
 			if (point_in_edge(e0, st) && point_in_edge(e1, st) && point_in_edge(e2, st) && point_in_edge(e3, st))
-				gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+				gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 			else
 				discard;
 		}

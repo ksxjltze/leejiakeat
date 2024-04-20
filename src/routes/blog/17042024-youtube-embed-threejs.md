@@ -5,7 +5,7 @@ date: '2024/04/17'
 
 This is probably my first actual blog post.
 
-## How do I render a YouTube video in a threejs WebGL scene?
+## How do I render a YouTube video to a texture in a threejs WebGL scene?
 It's not possible.
 
 Although threejs does provides a [VideoTexture](https://threejs.org/docs/#api/en/textures/VideoTexture) class to render the contents of a HTML video element, YouTube does not allow users to directly access the underlying media source file.
@@ -85,15 +85,9 @@ As long as the transforms match up, the illusion of the YouTube video appearing 
 Side Note: Due to some bad decisions made during the 3D modeling process, I had to resort to using some magic numbers to make the geometry fit properly within the scene.
 
 ## How do I control the YouTube video from within the scene?
-Say you want to have your users interact with objects in your scene, that correspond to controls on the embedded YouTube video player.
-Enter the [YouTube Player API](https://developers.google.com/youtube/iframe_api_reference).
-
-TODO
+See the [YouTube Player API](https://developers.google.com/youtube/iframe_api_reference).
 
 ## I can see the YouTube video through walls! What do I do?
-
-TODO
-
 ### Naive occlusion
 Let us assume that we just want to display the YouTube video on some sort of plane.
 
@@ -293,12 +287,13 @@ const setOccludeMaskForCSS3DRenderer = () => {
 <p class="figure-label">Code Snippet: Setting the mask</p>
 
 ### Results
-<img class="figure-image" alt="Overlapping Fragments Figure 2" src="/images/blog/embed-youtube/result.webp">
-<p class="figure-label">Screenshot: Result</p>
+Using the generated mask, we can fake the illusion that the embedded YouTube video exists within the WebGL scene, unfortunately, this method absolutely destroys the FPS of the experience, making it less than ideal for an immersive experience. Future optimizations are required.
 
-TODO: fix artifacts
+<img class="figure-image" alt="Result with artifacts" src="/images/blog/embed-youtube/result.webp">
+<p class="figure-label">Screenshot: Result with artifacts</p>
 
-### Future
-Put in compute shader instead
+<img class="figure-image" alt="Final Result" src="/images/blog/embed-youtube/final-result.webp">
+<p class="figure-label">Screenshot: Final Result</p>
 
-Optimize FPS
+<img class="figure-image" alt="Final Result" src="/images/blog/embed-youtube/final-result-2.webp">
+<p class="figure-label">Screenshot: Final Result 2</p>

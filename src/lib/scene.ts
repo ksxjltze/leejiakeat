@@ -55,6 +55,7 @@ const InteractionType = {
 
 let stats;
 let renderer: THREE.WebGLRenderer;
+let occludeRenderer: THREE.WebGLRenderer;
 let css3DRenderer: CSS3DRenderer;
 let uiOverlay: HTMLDivElement;
 
@@ -443,25 +444,12 @@ const preOccludeCSS3D = () => {
 	});
 };
 
-let test = false;
 const setOccludeMaskForCSS3DRenderer = () => {
-	occludeMaskImageURL = occludeCanvas.toDataURL();
+	occludeMaskImageURL = occludeRenderer.domElement.toDataURL();
 	css3DRenderer.domElement.style.maskMode = "luminance";
-	css3DRenderer.domElement.style.maskImage = "url(" + occludeMaskImageURL + ")";
 
-	if (!test && input.keys.includes('t')) {
-		var link = document.createElement("a"); // Or maybe get it from the current document
-		link.href = occludeMaskImageURL;
-		link.download = "mask.png";
-		document.body.appendChild(link); // Or append it whereever you want
-		link.click();
-	}
-
-
-	// css3DRenderer.domElement.style.maskImage = "url(" + occludeMaskImageURL + "), linear_gradient(#000, 0, 0)";
-	// css3DRenderer.domElement.style.maskComposite = "exclude";
-	// css3DRenderer.domElement.style.maskRepeat = "no-repeat";
-	// css3DRenderer.domElement.style.maskOrigin = "content-box";
+	css3DRenderer.domElement.style.maskImage = "url(" + occludeMaskImageURL + "), linear-gradient(white, white)";
+	css3DRenderer.domElement.style.maskComposite = "exclude";
 }
 
 const renderOccludingForCSS3D = () => {
@@ -509,16 +497,10 @@ const renderOccludingForCSS3D = () => {
 
 		//hide skybox
 		const background = scene.background;
-		const canvas = renderer.domElement;
-
 		scene.background = null;
 
 		if (occludeCanvas) {
-			renderer.autoClearColor = false;
-			renderer.domElement = occludeCanvas;
-			renderer.render(scene, camera);
-			renderer.domElement = canvas;
-			renderer.autoClearColor = true;
+			occludeRenderer.render(scene, camera);
 		}
 
 		scene.background = background;
@@ -592,7 +574,6 @@ const render = () => {
 	}
 
 	composer.render();
-
 	preOccludeCSS3D();
 
 	css3DRenderer.render(cssScene, camera);
@@ -1481,7 +1462,7 @@ const init = () => {
 
 		const shape = new CANNON.Sphere(3.4);
 		const body = new CANNON.Body({
-			mass: 1000
+			mass: 0.01
 		});
 
 		body.addShape(shape, new CANNON.Vec3(0, -1.4, 0));
@@ -1779,7 +1760,11 @@ export const createSceneWithContainer = (surface: HTMLCanvasElement, container: 
 	renderer = rendererSetup(surface);
 	css3DRenderer = css3DRendererSetup(css3DRenderSurface);
 	uiOverlay = UIOverlay;
+
 	occludeCanvas = occludeSurface;
+	occludeRenderer = new THREE.WebGLRenderer({ antialias: false, canvas: occludeCanvas });
+	occludeRenderer.setPixelRatio(window.devicePixelRatio);
+	occludeRenderer.setSize(surface.width, surface.height);
 
 	surfaceContainer = container;
 

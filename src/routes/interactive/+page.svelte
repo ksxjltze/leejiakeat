@@ -6,14 +6,13 @@
 	let container: HTMLDivElement;
 	let css3DRenderSurface: HTMLDivElement;
 	let uiOverlay: HTMLDivElement;
-
-	let debugCanvas: HTMLCanvasElement;
+	let occludeCanvas: HTMLCanvasElement;
 
 	onMount(() => {
 		surface.width = container.clientWidth;
 		surface.height = container.clientHeight;
 
-		createSceneWithContainer(surface, container, css3DRenderSurface, uiOverlay, debugCanvas);
+		createSceneWithContainer(surface, container, css3DRenderSurface, uiOverlay, occludeCanvas);
 
 		window.addEventListener('click', lockControls);
 		window.addEventListener(
@@ -142,9 +141,8 @@
 	<canvas bind:this={surface} />
 	<div id="css3DSurface" class="overlay" bind:this={css3DRenderSurface} />
 	<div id="iframe-yt-embed" />
-	<div id="uiOverlay" class="overlay z-index-3" bind:this={uiOverlay}>
-		<canvas id="debugCanvas" bind:this={debugCanvas} />
-	</div>
+	<div id="uiOverlay" class="overlay z-index-3" bind:this={uiOverlay} />
+	<canvas id="occludeCanvas" bind:this={occludeCanvas} />
 
 	<script type="text/javascript">
 		function onPlayerReady(event) {
@@ -179,7 +177,7 @@
 		height: 100vh;
 	}
 
-	#debugCanvas {
+	#occludeCanvas {
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -187,7 +185,7 @@
 		width: 100vw;
 		height: 100vh;
 
-		z-index: 3;
+		z-index: -2;
 	}
 
 	.overlay {

@@ -39,6 +39,18 @@ let composer: EffectComposer;
 let bloomComposer: EffectComposer;
 let effectFXAA, outlinePass: OutlinePass;
 
+/**
+ * Any: Show entire object if any point is visible
+ * All: Show object only if all points are visible
+ * Occlude: Perform occlusion clipping
+ */
+const CSS3DOccludeMode = {
+	Any: 0,
+	All: 1,
+	Occlude: 2
+};
+type CSS3DOccludeModeIndex = typeof CSS3DOccludeMode[keyof typeof CSS3DOccludeMode];
+
 //idk what to call these
 const Outline = {
 	Interactable: new THREE.Color(1, 0, 1),
@@ -109,7 +121,8 @@ let canvasWidth: number, canvasHeight: number;
 
 const settings = {
 	debugDraw: false,
-	enableBloom: true
+	enableBloom: true,
+	occludeMode: CSS3DOccludeMode.Occlude
 };
 
 let selectedObjects = [];
@@ -390,7 +403,7 @@ const setSelectedObject = (object) => {
 	outlinePass.hiddenEdgeColor = Outline.Interactable;
 };
 
-const preOccludeCSS3D = () => {
+const preOccludeCSS3D = (occludeMode: CSS3DOccludeModeIndex) => {
 	//reset occlude flag
 	scene.traverse((child) => {
 		if (child.userData.occludeCheck)
@@ -404,8 +417,7 @@ const preOccludeCSS3D = () => {
 		if (!child.userData.visibilityPoints)
 			return;
 
-		//assume CSS Object is hidden unless any "control" point is visible, or something like that
-		child.visible = false;
+		let visibleCount = 0;
 
 		//parallel array storing distance from camera to visiblity point
 		child.userData.visiblityPointDistances = [];
@@ -415,6 +427,7 @@ const preOccludeCSS3D = () => {
 			const intersects = raycaster.intersectObjects(scene.children)
 
 			child.userData.visiblityPointDistances.push(vCameraToPoint.length());
+			child.visible = false;
 
 			//hacky method to ignore crosshair sprite
 			let nearestObjectIndex = 0;
@@ -431,7 +444,7 @@ const preOccludeCSS3D = () => {
 				//temp measure to specifically check for WebGL geometry tied to the CSS3DObject
 				child.userData.worldObjectNames.forEach((name) => {
 					if (intersects[nearestObjectIndex].object.name == name) {
-						child.visible = true;
+						++visibleCount;
 
 						//exclude "self" geometry from occlude check
 						intersects[nearestObjectIndex].object.userData.occludeCheck = false;
@@ -439,6 +452,18 @@ const preOccludeCSS3D = () => {
 				});
 			}
 		});
+
+		switch (occludeMode) {
+			case CSS3DOccludeMode.Occlude:
+			case CSS3DOccludeMode.Any:
+				child.visible = visibleCount > 0;
+				break;
+			case CSS3DOccludeMode.All:
+				child.visible = visibleCount == child.userData.visibilityPoints.length;
+				break;
+			default:
+				break;
+		}
 	});
 };
 
@@ -554,6 +579,21 @@ const checkIntersectingObjects = () => {
 	}
 }
 
+const renderCSS3D = () => {
+	preOccludeCSS3D(settings.occludeMode);
+	css3DRenderer.render(cssScene, camera);
+
+	switch (settings.occludeMode) {
+		case CSS3DOccludeMode.Occlude:
+			renderOccludingForCSS3D();
+			setOccludeMaskForCSS3DRenderer();
+			restoreOccludeMaterials();
+			break;
+		default:
+			break;
+	}
+}
+
 const render = () => {
 	//crosshair (for now)
 	const camPos: THREE.Vector3 = camera.position;
@@ -572,12 +612,7 @@ const render = () => {
 	}
 
 	composer.render();
-	preOccludeCSS3D();
-
-	css3DRenderer.render(cssScene, camera);
-	renderOccludingForCSS3D();
-	setOccludeMaskForCSS3DRenderer();
-	restoreOccludeMaterials();
+	renderCSS3D();
 }
 
 const interactWithSelected = (event: PointerEvent) => {

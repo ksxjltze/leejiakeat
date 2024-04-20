@@ -122,7 +122,7 @@ let canvasWidth: number, canvasHeight: number;
 const settings = {
 	debugDraw: false,
 	enableBloom: true,
-	occludeMode: CSS3DOccludeMode.Occlude
+	occludeMode: CSS3DOccludeMode.Any
 };
 
 let selectedObjects = [];

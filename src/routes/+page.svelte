@@ -26,11 +26,7 @@
 		</p>
 	</section>
 
-	<h2 style="font-size: larger; margin-bottom: 2rem;">
-		Click <a style="text-decoration: underline" href="/projects">here</a> to see my work
-	</h2>
-
-	<section id="overview-section">
+	<section id="overview-section" class="section-space-bottom">
 		<div id="overview-panel" class="panel-darken mobile-flex-col">
 			<img id="leejiakeat-photo" src="/images/lee-jia-keat.png" alt="Lee Jia Keat">
 			<section id="panel-info">
@@ -76,17 +72,21 @@
 		</div>
 	</section>
 
-	<section id="certifications-and-badges-section">
-		<h3>Badges</h3>
+	<h2 style="font-size: larger; padding: 1rem; margin-bottom: 1rem;">
+		Click <a style="text-decoration: underline" href="/projects">here</a> to see my work
+	</h2>
+
+	<section id="certifications-and-badges-section" class="section-space-bottom">
+		<h2 class="section-title">Badges</h2>
 		<p>View my credly profile <a href="https://www.credly.com/users/jia-keat-lee">here</a></p>
-		<div id="badges">
+		<div id="badges" class="section-space-bottom">
 			<div data-iframe-width="150" data-iframe-height="270" data-share-badge-id="73b16c98-cbe5-49ec-abdf-5525e8fd4dd5" data-share-badge-host="https://www.credly.com">
 			</div>
 			<div data-iframe-width="150" data-iframe-height="270" data-share-badge-id="16aa2158-2525-469b-8c2a-70711ea79c5a" data-share-badge-host="https://www.credly.com">
 			</div>
 		</div>
 
-		<h3>Certifications</h3>
+		<h2 class="section-title">Certifications</h2>
 		<div id="certifications">
 			<ul>
 				<li>
@@ -98,8 +98,8 @@
 		</div>
 	</section>
 
-	<h3>Contact</h3>
-	<section id="contact">
+	<h2 class="section-title">Contact</h2>
+	<section id="contact" class="section-space-bottom">
 		<div>
 			<a href="https://www.linkedin.com/in/leejiakeat/" target="_blank">
 				<img
@@ -120,8 +120,8 @@
 		</section>
 	</section>
 	
-	<h3 style="margin-top: 2rem">Resume</h3>
-	<embed style="width: 100%;" src="/resume/LeeJiaKeatResume.pdf" height="950" type="application/pdf"/>
+	<h2 class="section-title">Resume</h2>
+	<embed style="width: 100%;" src="/resume/LeeJiaKeat.pdf" height="950" type="application/pdf"/>
 </section>
 
 <style lang="postcss">
@@ -138,6 +138,10 @@
 		background-color: #555;
 		padding: 1rem;
 		border-radius: 8px;
+	}
+
+	.section-space-bottom {
+		margin-bottom: 2rem;
 	}
 
 	#leejiakeat-photo {
@@ -207,8 +211,13 @@
 		list-style: none;
 	}
 
+	.section-title
+	{
+		font-weight: bold;
+		margin-bottom: 0.5rem;
+	}
+
 	#certifications-and-badges-section {
-		margin-top: 3rem;
 		display: flex;
 		flex-direction: column;
 

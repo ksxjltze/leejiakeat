@@ -30,7 +30,7 @@ The development of this entire project was a long and grueling two trimesters, t
 ### Engine Showcase <span name="gam300showcase"></span>
 <img alt="iconoclasm's game engine" src="/images/iconoclasm/iconoclasm-engine.png" width="100%" height="100%">
 <br>
-<iframe width="100%" height="450" src="https://www.youtube.com/embed/90ZM4lTItI8" title="GodKillers - EngineEngine Showcase" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="100%" height="600" src="https://www.youtube.com/embed/90ZM4lTItI8" title="GodKillers - EngineEngine Showcase" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 <br>
 <i>Credit: Bryan Koh Yan Wei, Editor Programmer of Team GodKillers</i>
 
@@ -191,6 +191,6 @@ The gameplay of Iconoclasm: Fall of the False God, is largely developed by a tea
 <img alt="iconoclasm's title screen" src="/images/iconoclasm/iconoclasm-title.jpg" width="100%" height="100%">
 
 ### Gameplay Showcase
-<iframe width="100%" height="450" src="https://www.youtube.com/embed/BCFzNFtZF_E" title="Iconoclasm GameplayVideo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="100%" height="600" src="https://www.youtube.com/embed/BCFzNFtZF_E" title="Iconoclasm GameplayVideo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 <br>
 <i>Credit: Gavin Lim, Product Manager of Team GodKillers.</i>

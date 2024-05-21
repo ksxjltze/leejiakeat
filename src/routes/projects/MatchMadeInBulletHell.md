@@ -20,20 +20,45 @@ See the game [here](https://rathsoft.itch.io/matchmadeinbullethell).
 
 ## Media
 ![Title](/images/mmibh/mmibh-title.png)
-![How to play](/images/mmibh/mmibh-instructions.png)
-![Selection](/images/mmibh/mmibh-selection.png)
-![Gameplay](/images/mmibh/mmibh-gameplay.png)
-![Graze](/images/mmibh/mmibh-graze-emote.png)
-![Boss](/images/mmibh/mmibh-boss.png)
-![Laser](/images/mmibh/mmibh-laser.png)
-![Boss Final Phase](/images/mmibh/mmibh-boss-final.png)
-![Boss Final Phase 2](/images/mmibh/mmibh-boss-final-2.png)
-![Victory](/images/mmibh/mmibh-victory.png)
+<i class="project-image-label">Title</i>
 
-## Role
-I was responsible for implementing the Match3 system.
-I came up with the algorithm from scratch, albeit with some inspiration.<br/>
+![How to play](/images/mmibh/mmibh-instructions.png)
+<i class="project-image-label">How to play</i>
+
+![Selection](/images/mmibh/mmibh-selection.png)
+<i class="project-image-label">Color Selection</i>
+
+![Gameplay](/images/mmibh/mmibh-gameplay.png)
+<i class="project-image-label">Gameplay</i>
+
+![Graze](/images/mmibh/mmibh-graze-emote.png)
+<i class="project-image-label">Graze Emote</i>
+
+![Boss](/images/mmibh/mmibh-boss.png)
+<i class="project-image-label">Boss</i>
+
+![Laser](/images/mmibh/mmibh-laser.png)
+<i class="project-image-label">Laser</i>
+
+![Boss Final Phase](/images/mmibh/mmibh-boss-final.png)
+<i class="project-image-label">Boss Final Phase</i>
+
+![Boss Final Phase 2](/images/mmibh/mmibh-boss-final-2.png)
+<i class="project-image-label">Boss Final Phase</i>
+
+![Victory](/images/mmibh/mmibh-victory.png)
+<i class="project-image-label">Victory</i>
+
+<hr style="width: 100%"/>
+
+## Responsibilities
+I was responsible for architecting and implementing the Match3 system, excluding gameplay design.<br/>
+I came up with the algorithm from scratch, albeit with some inspiration from various sources.<br/>
+
 The entire system was implemented in C#, as Unity MonoBehaviour scripts.
+
+All art by NIZ.
+Game Design, Game Programming, VFX, SFX, etc. by Cloud Yun.
 
 ## Match3 System
 The system is very much based on the Bejeweled one, although I don't know the implementation details.

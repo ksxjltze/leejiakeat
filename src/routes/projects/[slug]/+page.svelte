@@ -21,6 +21,11 @@
         margin-bottom: 1rem;
     }
 
+    :global(article .project-image-label) {
+        margin-top: -2rem; 
+        margin-bottom: 1rem
+    }
+
     :global(article .figure-label) {
         all: unset;
         font-style: italic;
@@ -64,5 +69,7 @@
     :global(article img) {
         max-width: 100%;
         margin: auto;
+
+        margin-bottom: 1rem;
     }
 </style>

@@ -21,8 +21,8 @@
 	<section style="line-height: normal; text-align: center; margin-bottom: 1rem;">
 		<p>Welcome to my humble website.</p>
 		<p>
-			My name is Jia Keat, an aspiring software engineer based in Singapore. I'm a graduating
-			student from the DigiPen Institute of Technology Singapore. I love all things technology.
+			My name is Jia Keat, a software engineer based in Singapore. I'm a CS RTIS graduate
+			from the DigiPen Institute of Technology Singapore. I love all things technology. Currently, I particularly enjoy making games.
 		</p>
 	</section>
 
@@ -45,6 +45,8 @@
 						<li>Visual Studio</li>
 						<li>Visual Studio Code</li>
 						<li>IntelliJ IDEA</li>
+						<li>Unity</li>
+						<li>Blender</li>
 					</ul>
 				</div>
 				<div>

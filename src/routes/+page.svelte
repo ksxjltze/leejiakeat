@@ -26,6 +26,10 @@
 		</p>
 	</section>
 
+	<section>
+		<p>See my new website here: <a href="https://www.leejiakeat.online">https://www.leejiakeat.online</a></p>
+	</section>
+
 	<section id="overview-section" class="section-space-bottom">
 		<div id="overview-panel" class="panel-darken mobile-flex-col">
 			<img id="leejiakeat-photo" src="/images/lee-jia-keat.png" alt="Lee Jia Keat">
